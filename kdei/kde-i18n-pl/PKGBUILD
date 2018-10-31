@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kde-i18n-pl
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kde-i18n-pl Polish language support for KDE."
 depends=('kdebase')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
-md5sums=('e058a3964abce47d8cd98c8edb49d6f2')
+md5sums=('7a57d7bf02a2700c71cb495894e08f81')
 
 build() {
 

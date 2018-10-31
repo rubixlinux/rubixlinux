@@ -1,0 +1,26 @@
+--- alsa-lib-1.0.11/src/conf/alsa.conf.orig	2006-04-20 23:15:30.000000000 -0600
++++ alsa-lib-1.0.11/src/conf/alsa.conf	2006-04-20 23:16:42.000000000 -0600
+@@ -55,8 +55,9 @@
+ defaults.pcm.subdevice -1
+ defaults.pcm.nonblock 1
+ defaults.pcm.ipc_key 5678293
++defaults.pcm.ipc_key_add_uid no
+ defaults.pcm.ipc_gid audio
+-defaults.pcm.ipc_perm 0660
++defaults.pcm.ipc_perm 0666
+ defaults.pcm.dmix_max_periods 0
+ defaults.pcm.front.card defaults.pcm.card
+ defaults.pcm.front.device defaults.pcm.device
+--- alsa-lib-1.0.11/src/conf/pcm/default.conf.orig	2006-04-20 23:16:53.000000000 -0600
++++ alsa-lib-1.0.11/src/conf/pcm/default.conf	2006-04-20 23:17:40.000000000 -0600
+@@ -35,8 +35,8 @@
+ 		# use plughw as default
+ 		type plug
+ 		slave.pcm {
+-			type hw
+-			card $CARD
++			@func concat
++			strings [ "dmix:" $CARD ]
+ 		}
+ 	}
+ }

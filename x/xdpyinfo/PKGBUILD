@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=xdpyinfo
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="X.Org xdpyinfo app"
+url="http://www.x.org"
+depends=('glibc' 'libXau' 'libXext' 'libXi' 'libXxf86vm' 'libXp' 'libdmx' 'libXxf86dga' 'libXxf86misc' 'libXtst' 'libX11' 'libXdmcp' 'libXrender' 'libXinerama')
+source=(ftp://ftp.x.org/pub/$X11/src/app/$pkgname-$X11-$pkgver.tar.bz2)
+md5sums=('2b08e9ca783e3aa91d7fb84fdd716e93')
+groups=('x11-app')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+}

@@ -1,13 +1,13 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=pmount
-pkgver=0.9.7
-pkgrel=1
+pkgver=0.9.9
+pkgrel=2
 pkgdesc="pmount is a wrapper around the standard mount program which permits normal users to mount removable devices without a matching /etc/fstab entry."
 url="http://www.piware.de/projects.shtml"
 depends=('glibc' 'sysfsutils' 'hal' 'dbus')
 source=(http://www.piware.de/projects/$pkgname-$pkgver.tar.gz)
-md5sums=('29c955ff520cea32ab3e0316306d0ac1')
+md5sums=('f62d39a33399dbb206791bf03f66da3f')
 
 ## Todo:
 ##   None
@@ -16,10 +16,14 @@ md5sums=('29c955ff520cea32ab3e0316306d0ac1')
 ##   None
 
 ## Changelog:
+##   rel2: so the /media -> /mnt symlink idea did not work as expected... 2006.04.24
+##   rel1: upgraded to 0.9.9 2006.04.23
 ##   rel1: upgraded to 0.9.7 2005.12.18
 ##   rel1: initial rubix release
 
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/$pkgname-$pkgver  
 

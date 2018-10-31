@@ -1,0 +1,19 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=koffice-l10n-af
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="koffice-l10n-af Afrikaans language support for KOffice."
+depends=('koffice')
+source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.5.0/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+md5sums=('03217f2f39b1a21cc685a5aa85200247')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/opt/kde --program-prefix="" --program-suffix=""
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+}

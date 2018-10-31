@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kde-i18n-cy
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kde-i18n-cy Welsh language support for KDE."
 depends=('kdebase')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
-md5sums=('af9b0cc9cb7b563e27029892d1645d95')
+md5sums=('81951549ad8740548b7109e94a0056a6')
 
 build() {
 

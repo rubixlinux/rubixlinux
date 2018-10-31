@@ -1,0 +1,22 @@
+--- xorg-server-X11R7.0-1.0.1/hw/xfree86/utils/xorgconfig/xorgconfig.c.orig	2006-03-15 00:31:16.000000000 -0700
++++ xorg-server-X11R7.0-1.0.1/hw/xfree86/utils/xorgconfig/xorgconfig.c	2006-03-15 00:31:42.000000000 -0700
+@@ -1954,7 +1954,7 @@
+ "#    Load        \"xtt\"\n"
+ "\n"
+ "# This loads the GLX module\n"
+-"#    Load       \"glx\"\n"
++"    Load       \"glx\"\n"
+ "# This loads the DRI module\n"
+ "#    Load       \"dri\"\n"
+ "\n"
+@@ -1993,8 +1993,8 @@
+ 	"/100dpi/:unscaled",
+ 	"/Speedo/",
+ 	"/Type1/",
+-	"/TrueType/",
+-	"/freefont/",
++	"/TTF/",
++	"/cyrillic/",
+ 	"/75dpi/",
+ 	"/100dpi/",
+ 	0 /* end of fontpaths */

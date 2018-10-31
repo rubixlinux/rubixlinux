@@ -1,46 +1,44 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=libgtkhtml
 pkgver=2.6.3
-pkgrel=1
-pkgdesc="libgtkhtml GtkHTML is a lightweight HTML rendering/printing/editing engine.  It was originally based on KHTMLW, part of the KDE project. libgtkhtml is used by the GIMP help browser."
-depends=('gtk'+'2' 'libxml2')
-source=(http://ftp.gnome.org/pub/gnome/sources/$pkgname/2.6/$pkgname-$pkgver.tar.bz2)
+pkgrel=2
+pkgdesc="libgtkhtml GtkHTML is a lightweight HTML rendering/printing/editing engine. It was originally based on KHTMLW, part of the KDE project. libgtkhtml is used by the GIMP help browser."
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libgnomecanvas' 'libXrender' 'gail' 'zlib' 'libart_lgpl' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'libxml2' 'glib2' 'libpng' 'libXrandr' 'libXinerama')
+source=(ftp://ftp.gnome.org/pub/gnome/sources/$pkgname/2.6/$pkgname-$pkgver.tar.bz2)
 md5sums=('c77789241d725e189ffc0391eda94361')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: Initial Rubix release 2005.05.12
+## Changelog:
+##   rel2: initial rubix release, added back 2006.03.27
 
 build() {
 
+	export MAKEFLAGS=""
+
 	cd $startdir/src/$pkgname-$pkgver
 
-	find . -perm 777 -exec chmod 755 {} \;
-	find . -perm 664 -exec chmod 644 {} \;
-
-	./configure				\
-		--prefix=/usr			\
-		--sysconfdir=/etc		\
-		--localstatedir=/var/lib	\
-		--enable-static=no		\
-		--disable-accessibility		\
-		$CHOST
-	make
-	make install DESTDIR=$startdir/pkg
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
 	cp	-a		\
 		AUTHORS		\
 		COPYING.LIB	\
+		ChangeLog	\
+		INSTALL		\
 		NEWS		\
 		README		\
 		TODO		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
+	find $startdir/pkg -name *.la -exec rm {} \;
+
 }
+

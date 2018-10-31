@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kde-i18n-af
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kde-i18n-af Afrikaans language support for KDE."
 depends=('kdebase')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
-md5sums=('3e08b84cafea0738a792f9c83ef01cf0')
+md5sums=('63cb83e7143b047497638c4315a3ee8a')
 
 build() {
 

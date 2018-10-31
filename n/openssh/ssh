@@ -35,8 +35,8 @@ case "$1" in
 	restart)
 		if [ ! -z "$DPID" ]; then
 			stat_err "WARNING: killing listener process only.  To kill every sshd process, you must"
-			stat_err "         use 'rc.sshd stop'.  'rc.sshd restart' kills only the parent sshd to"
-			stat_err "         allow an admin logged in through sshd to use 'rc.sshd restart' without"
+			stat_err "         use '/etc/rc.d/ssh stop'.  '/etc/rc.d/ssh restart' kills only the parent sshd to"
+			stat_err "         allow an admin logged in through sshd to use '/etc/rc.d/ssh restart' without"
 			stat_err "         being cut off.  If sshd has been upgraded, new connections will now"
 			stat_err "         use the new version, which should be a safe enough approach."
 			stop_daemon $SCRIPT kill $DPID

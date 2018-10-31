@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gob2
+pkgver=2.0.14
+pkgrel=1
+pkgdesc="gob2 - preprocessor for making gtk+ objects with inline c code"
+depends=('glibc' 'glib2')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.0/$pkgname-$pkgver.tar.bz2)
+md5sums=('be788fa5cf70483255e2099188a9dc33')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

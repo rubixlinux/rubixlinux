@@ -1,16 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=gtk+2
-pkgver=2.8.12
+pkgver=2.8.17
 pkgrel=1
 pkgdesc="GTK+ version 2 This is GTK+, a multi-platform toolkit for creating graphical user interfaces.  Offering a complete set of widgets, GTK+ is suitable for projects ranging from small one-off projects to complete application suites."
 url="http://www.gtk.org"
 install=gtk+2.install
-depends=('glibc' 'libtiff' 'freetype2' 'libjpeg' 'cairo' 'pango' 'atk' 'x11' 'fontconfig' 'expat' 'glib2' 'zlib' 'libpng')
+depends=('libXext' 'glibc' 'libXi' 'libtiff' 'atk' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libjpeg' 'pango' 'cairo' 'libXfixes' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'libpng' 'libXinerama' 'libXrandr')
 source=(ftp://ftp.gtk.org/pub/gtk/v2.8/gtk+-$pkgver.tar.bz2	\
 	gtk+.csh						\
 	gtk+.sh							)
-md5sums=('bdd3b950e4a3c65d61bceed9149888a9' \
+md5sums=('6d2deb63a5444808d2aeb7dcfffaa2f4' \
 	 'b295255b8d835baddab930021e2046eb' \
 	 'a3b2169717ad260836baadf7b5a2c141' )
 
@@ -21,6 +21,8 @@ md5sums=('bdd3b950e4a3c65d61bceed9149888a9' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 2.8.17 2006.04.22
+##   rel1: upgraded to 2.8.16 2006.03.21
 ##   rel1: upgraded to 2.8.12 2006.02.15
 ##   rel1: upgraded to 2.8.11 2006.01.31
 ##   rel1: upgraded to 2.8.10 2006.01.13
@@ -67,5 +69,7 @@ build() {
 		$startdir/src/gtk+.sh	\
 	$startdir/pkg/etc/profile.d
 	chmod 755 $startdir/pkg/etc/profile.d/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

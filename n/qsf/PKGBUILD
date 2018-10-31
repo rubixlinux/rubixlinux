@@ -1,18 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=qsf
-pkgver=1.1.0
+pkgver=1.1.6
 pkgrel=1
 pkgdesc="Quick Spam Filter (QSF) is an Open Source email classification filter, designed to be small, fast, and accurate, which works to classify incoming email as either spam or non-span."
 url="http://www.ivarch.com/programs/qsf"
-depends=('gdbm' 'mysql')
+depends=('glibc' 'mysql' 'openssl' 'zlib' 'gdbm')
 source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
-md5sums=('e1ce182655f046e209d2c6ba2207afbc')
+md5sums=('83dc00e6e75ae261e25f1d4b43b62111')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.1.6, rebuilt against mysql 5.0 2006.03.06
+##   rel1: initial rubix release
 
 build() {
-
-	export CFLAGS=""
-	export CXXFLAGS=""
 
 	cd $startdir/src/$pkgname-$pkgver
 

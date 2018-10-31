@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kde-i18n-fa
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kde-i18n-fa Persian (Farsi) language support for KDE."
 depends=('kdebase')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
-md5sums=('c6f39016be6ec0fa53c032645d9d7228')
+md5sums=('eab7859668e1942b52e86aa8a895bdb2')
 
 build() {
 

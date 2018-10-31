@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=razor
-pkgver=2.67
-pkgrel=3
+pkgver=2.80
+pkgrel=1
 pkgdesc="Vipul's Razor is a distributed, collaborative, spam detection and filtering network. Through user contribution, Razor establishes a distributed and constantly updating catalogue of spam in propagation that is consulted by email clients to filter out known spam. Detection is done with statistical and randomized signatures that efficiently spot mutating spam content. User input is validated through reputation assignments based on consensus on report and revoke assertions which in turn is used for computing confidence values associated with individual signatures."
 url="http://razor.sourceforge.net"
-depends=('perl' 'perl-net-dns' 'perl-digest-sha1' 'perl-uri' 'perl-digest-nilsimsa')
-source=(http://dl.sourceforge.net/sourceforge/razor/$pkgname-agents-$pkgver.tar.gz)
-md5sums=('0118b6030ea261ea85e73a55cc7eac8e')
+depends=('glibc' 'perl' 'perl-net-dns' 'perl-digest-sha1' 'perl-uri' 'perl-digest-nilsimsa')
+source=(http://dl.sourceforge.net/sourceforge/razor/$pkgname-agents-$pkgver.tar.bz2)
+md5sums=('544ceb4c5a55209e6ad00f4dbcf593ac')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release 2005.05.12
+## Changelog:
+##   rel1: upgraded to 2.80, built for perl 5.8.8 2006.03.07
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release 2005.05.12
 
 build() {
 
@@ -49,15 +50,6 @@ build() {
 
 	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
 	rmdir $startdir/pkg/usr/share
-
-	mv $startdir/pkg/man/man5 $startdir/pkg/usr/man
-	rmdir $startdir/pkg/man
-
-	cd $startdir/pkg/usr/bin
-	ln -s razor-client razor-admin
-	ln -s razor-client razor-check
-	ln -s razor-client razor-report
-	ln -s razor-client razor-revoke
 
 	find $startdir/pkg -name .packlist -exec rm {} \;
 

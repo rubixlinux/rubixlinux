@@ -1,26 +1,27 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-dbi
-pkgver=1.48
-pkgrel=3
+pkgver=1.50
+pkgrel=1
 pkgdesc="DBI - Database independent interface for Perl"
 url="http://search.cpan.org/~timb/DBI-$pkgver/DBI.pm"
-depends=('perl')
+depends=('glibc' 'perl')
 source=(http://search.cpan.org/CPAN/authors/id/T/TI/TIMB/DBI-$pkgver.tar.gz)
-md5sums=('87396e1a9c06d1190f1ca70e1da1163e')
+md5sums=('487cb22f89ab21029725eb6e0b861a2a')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel3: Rebuilt for perl 5.8.7 2005.06.13
-#rel2: Removed .packlist file 2005.05.12
-#rel1: Initial Rubix release 2005.04.25
+## Changelog:
+##   rel1: upgraded to 1.50, built for perl 5.8.8 2006.03.06
+##   rel3: Rebuilt for perl 5.8.7 2005.06.13
+##   rel2: Removed .packlist file 2005.05.12
+##   rel1: Initial Rubix release 2005.04.25
 
 build() {
 

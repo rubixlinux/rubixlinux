@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-python-desktop
+pkgver=2.14.0
+pkgrel=1
+pkgdesc="gnome-python-desktop - provides python interfacing modules for some gnome desktop libraries"
+depends=('glibc' 'libXi' 'libgnomeui' 'esound' 'libwnck' 'fontconfig' 'libgnomecanvas' 'metacity' 'expat' 'openssl' 'libXrender' 'libgnomeprintui' 'gnome-media' 'zlib' 'alsa-lib' 'libXau' 'libgnomeprint' 'libjpeg' 'libgnome' 'dbus' 'audiofile' 'libXdmcp' 'libxml2' 'gnome-panel' 'libbonoboui' 'startup-notification' 'nautilus-cd-burner' 'libpng' 'libXinerama' 'orbit2' 'libXext' 'libSM' 'libglade' 'gtk+2' 'atk' 'hal' 'gconf' 'libICE' 'libart_lgpl' 'gtksourceview' 'freetype2' 'libXres' 'cairo' 'pango' 'totem' 'libXfixes' 'libXcursor' 'libX11' 'libbonobo' 'libgtop' 'glib2' 'gnome-keyring' 'gnome-vfs' 'libXrandr' 'popt' 'python')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('d3f9c2d213b7d486ca7bd87dd106ca69')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

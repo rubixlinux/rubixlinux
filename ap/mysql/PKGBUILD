@@ -1,15 +1,15 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=mysql
-pkgver=4.1.20
+pkgver=5.0.22
 pkgrel=1
-pkgdesc="mysql (SQL-based relational database server) MySQL is a fast, multi-threaded, multi-user, and robust SQL (Structured Query Language) database server.  It comes with a nice API which makes it easy to integrate into other applications. The home page for MySQL is http://www.mysql.com/"
+pkgdesc="mysql (SQL-based relational database server) MySQL is a fast, multi-threaded, multi-user, and robust SQL (Structured Query Language) database server.  It comes with a nice API which makes it easy to integrate into other applications. The home page for MySQL is http://www.mysql.com"
 backup=(etc/rc.d/mysql)
 depends=('glibc' 'openssl' 'zlib' 'ncurses')
 url="http://www.mysql.org"
-source=(http://mysql.he.net/Downloads/MySQL-4.1/$pkgname-$pkgver.tar.gz	\
+source=(http://mysql.he.net/Downloads/MySQL-5.0/$pkgname-$pkgver.tar.gz	\
 	$pkgname							)
-md5sums=('a1dc5375f6580db5073d542200a9ad5b' \
+md5sums=('b0533dce52a3147234e588f51affbcab' \
 	 'acb4ceb5fbad11bc1e9bb435dce9cc7a' )
 
 ## Todo:
@@ -19,8 +19,11 @@ md5sums=('a1dc5375f6580db5073d542200a9ad5b' \
 ##   None
 
 ## Changelog:
-##   rel1: upgraded to 4.1.20 2006.06.04 *security*
-##   rel1: Upgraded to 4.1.19 2006.05.09 *security*
+##   rel1: upgraded to 5.0.22 2006.06.01 *security*
+##   rel2: added ndb cluster programs and docs 2006.05.25
+##   rel1: Upgraded to 5.0.21 2006.05.09 *security*
+##   rel1: Upgraded to 5.0.20 2006.04.21
+##   rel1: Upgraded to 5.0.18 2006.03.05
 ##   rel1: Upgraded to 4.1.16 and updated the rc script to new format 2006.01.16
 ##   rel1: Upgraded to 4.1.15 2005.12.05
 ##   rel1: Upgraded to 4.1.14 2005.09.03
@@ -43,7 +46,8 @@ build() {
 	find . -perm 664 -exec chmod 644 {} \;
 	find . -perm 444 -exec chmod 644 {} \;
 
-	./configure --prefix=/usr					\
+	./configure							\
+		--prefix=/usr						\
 		--with-mysqld-user=mysql				\
 		--with-unix-socket-path=/var/run/mysql/mysql.sock	\
 		--localstatedir=/var/lib/mysql				\
@@ -57,6 +61,8 @@ build() {
 		--with-openssl						\
 		--program-prefix=""					\
 		--program-suffix=""					\
+		--with-ndbcluster					\
+		--with-ndb-docs						\
 		$CHOST
 	make || return 1
 	make install DESTDIR=$startdir/pkg
@@ -96,11 +102,13 @@ build() {
 
 	cd $startdir/pkg/usr/lib
 	ln -s mysql/libmysqlclient.so .
-	ln -s mysql/libmysqlclient.so.14 .
+	ln -s mysql/libmysqlclient.so.15 .
 	ln -s mysql/libmysqlclient_r.so .
-	ln -s mysql/libmysqlclient_r.so.14 .
+	ln -s mysql/libmysqlclient_r.so.15 .
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }
 

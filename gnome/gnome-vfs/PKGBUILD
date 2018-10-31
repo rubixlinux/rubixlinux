@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-vfs
+pkgver=2.14.0
+pkgrel=3
+pkgdesc="gnome-vfs - gnome virtual file system"
+depends=('glibc' 'orbit2' 'db' 'heimdal' 'hal' 'gconf' 'e2fsprogs' 'openssl' 'zlib' 'cyrus-sasl' 'libbonobo' 'dbus' 'libxml2' 'bzip2' 'glib2' 'openldap' 'popt' 'samba' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('f45ff7d95f7adf49d5abe13f744f5545')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel2: added install script 2006.03.23
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

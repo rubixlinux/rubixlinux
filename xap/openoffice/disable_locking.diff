@@ -1,0 +1,13 @@
+--- openoffice.org2.0/program/soffice.orig	2005-10-23 11:32:49.000000000 -0600
++++ openoffice.org2.0/program/soffice	2005-10-23 11:33:10.000000000 -0600
+@@ -40,8 +40,8 @@
+ #
+ 
+ # file locking now enabled by default
+-SAL_ENABLE_FILE_LOCKING=1
+-export SAL_ENABLE_FILE_LOCKING
++# SAL_ENABLE_FILE_LOCKING=1
++# export SAL_ENABLE_FILE_LOCKING
+ 
+ # the following test is needed on Linux PPC with IBM j2sdk142
+ if [ `uname -s` = "Linux" -a  "`uname -m`" = "ppc" ] ; then

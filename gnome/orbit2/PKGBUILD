@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=orbit2
+pkgver=2.14.0
+pkgrel=2
+pkgdesc="ORBit2 is a high-performance CORBA ORB"
+depends=('glibc' 'glib2' 'popt' 'libidl')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/ORBit2/2.14/ORBit2-$pkgver.tar.bz2)
+md5sums=('bb1b4859522cb6e1a3a3dc4b7397db64')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added sysconfdir /etc 2006.03.23
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/ORBit2-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libgnomeprintui
+pkgver=2.12.1
+pkgrel=1
+pkgdesc="libgnomeprintui - user interface libraries for gnome print"
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libgnomecanvas' 'libXrender' 'zlib' 'libart_lgpl' 'libXau' 'freetype2' 'libgnomeprint' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'libxml2' 'glib2' 'libpng' 'libXrandr' 'libXinerama')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.12/$pkgname-$pkgver.tar.bz2)
+md5sums=('fa0b0410c3ba8b6899c5ed278f02cbe5')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog*	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

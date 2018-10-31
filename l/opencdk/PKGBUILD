@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=opencdk
+pkgver=0.5.8
+pkgrel=1
+url="http://www.gnu.org/software/gnutls"
+pkgdesc="opencdk provides basic parts of the openpgp message format"
+depends=('glibc' 'libgcrypt' 'libgpg-error' 'zlib')
+source=(ftp://ftp.gnutls.org/pub/gnutls/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('900c4dee7712845c19d7b2d2a93ea546')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

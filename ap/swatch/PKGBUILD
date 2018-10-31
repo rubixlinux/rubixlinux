@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=swatch
 pkgver=3.1.1
-pkgrel=2
+pkgrel=3
 pkgdesc="swatch is an active log file monitoring tool."
 url="http://swatch.sourceforge.net"
 depends=('perl-date-calc' 'perl-timedate' 'perl-date-manip')
 source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
 md5sums=('fe38cc8d073e692a7426693837c3749d')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Added perl-date-manip to deps 2005.06.15
-#rel1: Initial Rubix Release
+## Changelog:
+##   rel3: rebuilt for perl 5.8.8 2006.03.07
+##   rel2: Added perl-date-manip to deps 2005.06.15
+##   rel1: Initial Rubix Release
 
 build() {
 

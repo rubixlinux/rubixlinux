@@ -2,21 +2,34 @@
 
 pkgname=xpaint
 pkgver=2.7.8.1
-pkgrel=1
+pkgrel=2
 pkgdesc="xpaint (simple X paint program) XPaint is a versatile bitmap/pixmap editing tool with a feature set similar to MacPaint. The short features list: Brushes, Spray paint, Pencil, Lines, Arcs, Pattern Fill, Text, Boxes, Circles, Polygons. Works on multiple images simultaneously. Cut/Copy/Paste between all active images. Fatbits/Zoom on the image windows."
 url="http://sf-xpaint.sourceforge.net"
-depends=('glibc' 'x11' 'libtiff' 'libjpeg' 'zlib' 'libpng')
+depends=('libXau' 'libXext' 'libSM' 'glibc' 'libtiff' 'libXp' 'libjpeg' 'libX11' 'libXpm' 'libXdmcp' 'libXaw' 'libXmu' 'libICE' 'libXt' 'zlib' 'libpng')
 source=(http://dl.sourceforge.net/sourceforge/sf-$pkgname/$pkgname-$pkgver.tar.bz2)
 md5sums=('e608680bd362531231af521f0df377ae')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt for X11R7 2006.03.15
+##   rel1: initial rubix release
 
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
-	SHAREDIR=/usr/X11R6/share/xpaint xmkmf -a
-	make xaw SHAREDIR=/usr/X11R6/share/xpaint || return 1
-	make install SHAREDIR=/usr/X11R6/share/xpaint DESTDIR=$startdir/pkg
-	make install.man SHAREDIR=/usr/X11R6/share/xpaint DESTDIR=$startdir/pkg
+	SHAREDIR=/usr/X11R7/share/xpaint xmkmf -a
+	make xaw SHAREDIR=/usr/X11R7/share/xpaint || return 1
+	make install SHAREDIR=/usr/X11R7/share/xpaint DESTDIR=$startdir/pkg
+	make install.man SHAREDIR=/usr/X11R7/share/xpaint DESTDIR=$startdir/pkg
+
+	cp -a $startdir/pkg/usr/X11R6/* $startdir/pkg/usr/X11R7
+	rm -r $startdir/pkg/usr/X11R6
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
 	cp	-a		\
@@ -29,15 +42,17 @@ build() {
 
 	cd bitmaps
 
-	mkdir -p $startdir/pkg/usr/X11R6/include/X11/bitmaps
-	find . -name "*.xbm" -exec cp {} $startdir/pkg/usr/X11R6/include/X11/bitmaps \;
+	mkdir -p $startdir/pkg/usr/X11R7/include/X11/bitmaps
+	find . -name "*.xbm" -exec cp {} $startdir/pkg/usr/X11R7/include/X11/bitmaps \;
 
-	mkdir -p $startdir/pkg/usr/X11R6/include/X11/pixmaps
-	find . -name "*.xpm" -exec cp {} $startdir/pkg/usr/X11R6/include/X11/pixmaps \;
+	mkdir -p $startdir/pkg/usr/X11R7/include/X11/pixmaps
+	find . -name "*.xpm" -exec cp {} $startdir/pkg/usr/X11R7/include/X11/pixmaps \;
 
-	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
 	chmod 644 $startdir/pkg/etc/X11/app-defaults/XPaint
-	chmod 644 $startdir/pkg/usr/X11R6/lib/X11/doc/html/xpaint.1.html
-	chmod 644 $startdir/pkg/usr/X11R6/man/man1/xpaint.1x
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/html/xpaint.1.html
+	chmod 644 $startdir/pkg/usr/X11R7/man/man1/xpaint.1x
+
+	rm $startdir/pkg/usr/X11R7/lib/X11/app-defaults
 
 }

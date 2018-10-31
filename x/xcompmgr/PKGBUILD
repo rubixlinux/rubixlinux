@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=xcompmgr
+pkgver=20060315
+pkgrel=1
+pkgdesc="X.Org xcompmgr app"
+url="http://www.x.org"
+depends=('libXau' 'libXext' 'glibc' 'libXdamage' 'libXfixes' 'libX11' 'libXdmcp' 'libXrender' 'libXcomposite')
+source=(xcompmgr.tar.gz)
+md5sums=('bed595138898b2947eeb1aa0f70d9512')
+groups=('x11-app')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname
+
+	./autogen.sh --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+}

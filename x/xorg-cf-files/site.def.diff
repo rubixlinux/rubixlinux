@@ -1,0 +1,17 @@
+--- xorg-cf-files-X11R7.0-1.0.1/site.def.orig	2006-03-15 00:10:11.000000000 -0700
++++ xorg-cf-files-X11R7.0-1.0.1/site.def	2006-03-15 00:10:18.000000000 -0700
+@@ -120,10 +120,11 @@
+ */
+ 
+ /*
+-#undef DefaultUserPath
+-#define DefaultUserPath /bin:/usr/bin:$(BINDIR):/usr/ucb:/usr/local/bin
+ */
+-
++#undef DefaultUserPath
++#define DefaultUserPath /usr/local/bin:/bin:/usr/bin
++#undef DefaultSystemPath
++#define DefaultSystemPath /sbin:/usr/sbin:/bin:/usr/bin
+ 
+ /* You do NOT need SetUID if you only run the server under xdm */
+ /* You MAY need SetUID if users run the server by hand or under xinit */

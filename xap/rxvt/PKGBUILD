@@ -1,14 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=rxvt
 pkgver=2.7.10
-pkgrel=1
+pkgrel=2
 pkgdesc="rxvt (terminal emulator) rxvt is a color vt102 terminal emulator intended as an xterm replacement for users who do not require features such as Tektronix 4014 emulation and toolkit-style configurability.  As a result, rxvt uses much less memory -- a significant advantage on a machine serving many X sessions.  Also included is rclock, an analog clock for X."
 depends=('x11')
+depends=('libXpm' 'libX11' 'libXau' 'libXdmcp' 'glibc' 'utempter')
 source=(ftp://ftp.rxvt.org/pub/rxvt/$pkgname-$pkgver.tar.gz	\
-	$pkgname.utempter.diff.gz				)
+	$pkgname.utempter.diff					)
 md5sums=('302c5c455e64047b02d1ef19ff749141' \
-	 '7cfd080c5868c5c267c103c7d55357b9' )
+	 '3d4be1cfee9d5ce85e4a8d515915d248' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt for X11R7 2006.03.15
+##   rel1: initial rubix release
 
 build() {
 
@@ -17,7 +28,7 @@ build() {
 	patch -p1 < $startdir/src/$pkgname.utempter.diff
 
 	./configure			\
-		--prefix=/usr/X11R6	\
+		--prefix=/usr/X11R7	\
 		--enable-languages	\
 		--enable-utmp		\
 		--enable-wtmp		\
@@ -38,14 +49,14 @@ build() {
 		--enable-xgetdefault	\
 		--enable-old-selection	\
 		$CHOST
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
-	rmdir $startdir/pkg/usr/X11R6/lib $startdir/pkg/usr/X11R6/include
+	rmdir $startdir/pkg/usr/X11R7/lib $startdir/pkg/usr/X11R7/include
 
-	rm $startdir/pkg/usr/X11R6/bin/$pkgname-$pkgver
+	rm $startdir/pkg/usr/X11R7/bin/$pkgname-$pkgver
 
-	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
 	cp	-a			\

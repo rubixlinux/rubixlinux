@@ -1,4 +1,4 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 VERSION=4.2.3
 DBH=1.0.24
@@ -6,10 +6,10 @@ ENGINE=2.2.8
 
 pkgname=xfce
 pkgver=4.2.3.2
-pkgrel=1
+pkgrel=2
 pkgdesc="xfce (a fast and lightweight desktop environment for X) XFce is a fast and lightweight desktop environment that is both visually appealing and easy to use. For more information, see:  http://www.xfce.org XFce was developed by Olivier Fourdan."
 url="http://www.xfce.org"
-depends=('glibc' 'gtk+2' 'atk' 'fontconfig' 'x11' 'openssl' 'expat' 'zlib' 'freetype2' 'pango' 'cairo' 'libxml2' 'glib2' 'startup-notification' 'cups' 'libpng')
+depends=('libXext' 'libSM' 'glibc' 'libXxf86vm' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'openssl' 'expat' 'libICE' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libXpm' 'libX11' 'libxml2' 'libXdmcp' 'glib2' 'cups' 'startup-notification' 'libpng' 'libXinerama' 'libXrandr')
 source=(http://www.us.xfce.org/archive/$pkgname-$pkgver/src/dbh-$DBH.tar.gz				\
 	http://www.us.xfce.org/archive/$pkgname-$pkgver/src/libxfce4util-$pkgver.tar.gz			\
 	http://www.us.xfce.org/archive/$pkgname-$pkgver/src/libxfcegui4-$VERSION.tar.gz			\
@@ -33,7 +33,7 @@ source=(http://www.us.xfce.org/archive/$pkgname-$pkgver/src/dbh-$DBH.tar.gz				\
 	http://www.us.xfce.org/archive/$pkgname-$pkgver/src/xfwm4-$pkgver.tar.gz			\
 	http://www.us.xfce.org/archive/$pkgname-$pkgver/src/xfwm4-themes-$VERSION.tar.gz		\
 	http://www.us.xfce.org/archive/$pkgname-$pkgver/src/xfcalendar-$VERSION.tar.gz			\
-	xfce-utils-xinitrc.diff.gz									)
+	xfce-utils-xinitrc.diff										)
 md5sums=('42e122a321089f2429986d0d161ed92a' \
 	 '2d312ba48da612501d6776f8b4a65797' \
 	 '5d2bae78c5ef66e914ae7a930bbdeb57' \
@@ -57,7 +57,7 @@ md5sums=('42e122a321089f2429986d0d161ed92a' \
 	 'd73e89c50179ccb438c076b3b71d59a4' \
 	 '98dbf2f80f30206ca1bcaff9358bedfd' \
 	 'd2e2c8e010cca708295aeaf621086205' \
-	 '13e0d89f52c1388798131d1bc3075f18' )
+	 'f95d613689d3b3f5288fb85f42d61f5d' )
 
 ## Todo:
 ##   None
@@ -67,12 +67,15 @@ md5sums=('42e122a321089f2429986d0d161ed92a' \
 ##   This is built without the compositor
 
 ## Changelog:
+##   rel2: removed libtool files 2006.04.12
 ##   rel1: Upgraded to 4.2.3.1 2005.11.17
 ##   rel1: Upgraded to 4.2.3.1 2005.11.10
 ##   rel1: Upgraded to 4.2.2 2005.05.23
 ##   rel1: Initial Rubix Release
 
 build() {
+
+	export MAKEFLAGS=""
 
 	BUILD="$BUILD dbh-$DBH.tar.gz"
 	BUILD="$BUILD libxfce4util-$pkgver.tar.gz"
@@ -141,6 +144,8 @@ build() {
 	cd		$startdir/pkg/etc/X11/xinit
 	ln -s		../xdg/xfce4/xinitrc		xinitrc.xfce
 	chmod 755	../xdg/xfce4/xinitrc
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }
 

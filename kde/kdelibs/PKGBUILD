@@ -1,19 +1,17 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdelibs
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdelibs (KDE libraries) System libraries and other resources required by KDE: kdecore (KDE core library), kdeui (user interface), kimgio (image formats), kfile (file dialog), kspell (spelling checker), khtml (HTML widget), kab (addressbook), arts (sound, mixing and animation), kstyles, kparts, kjs (JavaScript), kio (URL fetcher), kdesu, dcop (desktop communication program), kssl (OpenSSL integration), kinit, libkmid, interfaces, libtldl, mimetypes, pics, and ksgmltools."
 url="http://www.kde.org"
 groups=('kde')
-depends=('glibc' 'qt' 'aspell' 'db' 'heimdal' 'libtiff' 'esound' 'e2fsprogs' 'xfsprogs' 'x11' 'fontconfig' 'openssl'	\
-	 'expat' 'libogg' 'zlib' 'libart_lgpl' 'alsa-lib' 'libxslt' 'freetype2' 'libjpeg' 'libidn' 'libxml2'		\
-	 'libvorbis' 'audiofile' 'pcre' 'arts' 'libmad' 'bzip2' 'glib2' 'libmng' 'cups' 'gcc' 'libpng'			)
+depends=('glibc' 'aspell' 'mesa3d' 'libtiff' 'db' 'heimdal' 'esound' 'fontconfig' 'openssl' 'expat' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'acl' 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'libxml2' 'libXdmcp' 'libXmu' 'libmad' 'libmng' 'cups' 'libXt' 'libXft' 'libpng' 'libXinerama' 'libXext' 'libSM' 'attr' 'mdnsresponder' 'e2fsprogs' 'libICE' 'libogg' 'libart_lgpl' 'qt' 'libxslt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'arts' 'bzip2' 'glib2' 'gcc' 'libXrandr')
 install="$pkgname.install"
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('2a22193ae7c23f3759b02723dab02d30')
+md5sums=('972c2c6855f912179bd7830bf2ed91d8')
 
 ## Todo:
 ##   None
@@ -22,6 +20,11 @@ md5sums=('2a22193ae7c23f3759b02723dab02d30')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt with acl and mdnsresponder 2006.05.07
+##   rel1: upgraded to 3.5.2 2006.03.28
+##   rel3: rebuilt without some more libtool files 2006.03.27
+##   rel2: rebuilt without dependence on qt's libtool files 2006.03.06
 ##   rel1: upgraded to 3.5.1 2006.01.31
 ##   rel2: fixed kjs security flaw 2006.01.21
 ##   rel1: upgraded to 3.5.0 2005.12.18

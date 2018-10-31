@@ -6,7 +6,7 @@ PROG=/usr/bin/mythbackend
 . /etc/rubixlib
 case "$1" in
 	start)
-		start_daemon $SCRIPT $PROG -d -l /var/log/mythbackend.log -v quiet
+		start_daemon $SCRIPT $PROG -d -l /var/log/mythbackend.log
 		;;
 	stop)
 		stop_daemon $SCRIPT $PROG

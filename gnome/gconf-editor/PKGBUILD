@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gconf-editor
+pkgver=2.14.0
+pkgrel=2
+pkgdesc="gconf-editor - an editor to the gnome 2 config system"
+depends=('glibc' 'libXi' 'libgnomeui' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'libbonoboui' 'libpng' 'libXinerama' 'libSM' 'orbit2' 'libXext' 'gtk+2' 'atk' 'gconf' 'libICE' 'libart_lgpl' 'freetype2' 'libXfixes' 'cairo' 'pango' 'libXcursor' 'libbonobo' 'libX11' 'glib2' 'gnome-keyring' 'gnome-vfs' 'popt' 'libXrandr' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('eb8b979464f6e383e5a27b57ee4e8382')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib --disable-scrollkeeper
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	rm -r $startdir/pkg/var
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

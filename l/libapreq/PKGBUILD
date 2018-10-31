@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=libapreq
+pkgver=1.33
+pkgrel=1
+pkgdesc="libapreq - Apache Request C Library"
+depends=('glibc' 'perl')
+url="http://search.cpan.org/~stas/libapreq-$pkgver/libapreq.pod"
+source=(http://search.cpan.org/CPAN/authors/id/S/ST/STAS/$pkgname-$pkgver.tar.gz)
+md5sums=('f5d2c36ae545aac6fd26cb03307df52b')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CREDITS		\
+		Changes		\
+		INSTALL		\
+		INSTALL.MacOSX	\
+		LICENSE		\
+		MANIFEST	\
+		README		\
+		ToDo		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

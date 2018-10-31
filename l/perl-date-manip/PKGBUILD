@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-date-manip
 pkgver=5.44
-pkgrel=1
+pkgrel=2
 pkgdesc="Date::Manip - date manipulation routines"
 url="http://cpan.uwinnipeg.ca/htdocs/DateManip/Date/Manip.html"
 depends=('perl')
 source=(http://cpan.uwinnipeg.ca/cpan/authors/id/S/SB/SBECK/DateManip-$pkgver.tar.gz)
 md5sums=('ebb1e17639fc4260b72690c1de2f5fdc')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: upgraded to 5.44 and rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel2: rebuilt against perl 5.8.8 2006.03.06
+##   rel1: upgraded to 5.44 and rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 

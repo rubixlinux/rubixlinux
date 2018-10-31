@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=hicolor-icon-theme
+pkgver=0.9
+pkgrel=1
+url="http://icon-theme.freedesktop.org/wiki/HicolorTheme"
+pkgdesc="hicolor-icon-theme is the default icon theme that all icon themes automatically inherit from. Its role in icon themes is described in the specification."
+source=(http://icon-theme.freedesktop.org/releases/$pkgname-$pkgver.tar.gz)
+md5sums=('1d0821cb80d394eac30bd8cec5b0b60c')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kde-i18n-tr
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kde-i18n-tr Turkish language support for KDE."
 depends=('kdebase')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
-md5sums=('d60ba5802f565cd7568bd4359fe01f06')
+md5sums=('598d5f55f9e4512757ee40f802968097')
 
 build() {
 

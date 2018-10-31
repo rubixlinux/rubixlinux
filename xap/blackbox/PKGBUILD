@@ -4,16 +4,16 @@ BBKEYS=0.9.0
 
 pkgname=blackbox
 pkgver=0.70.1
-pkgrel=1
+pkgrel=2
 pkgdesc="blackbox (Blackbox window manager) Blackbox is that fast, light window manager you have been looking for without all those annoying library dependencies. Also included in this package is the bbkeys utility for controlling keyboard shortcut commands from within Blackbox. The Blackbox home page is http://blackboxwm.sourceforge.ne"
-depends=('glibc' 'fontconfig' 'x11' 'expat' 'freetype2' 'zlib' 'gcc')
+depends=('libSM' 'libXau' 'glibc' 'libXext' 'freetype2' 'libX11' 'libXdmcp' 'fontconfig' 'libICE' 'expat' 'libXrender' 'gcc' 'zlib' 'libXft')
 url="http://blackboxwm.sourceforge.net"
 source=(http://dl.sourceforge.net/sourceforge/blackboxwm/$pkgname-$pkgver.tar.gz	\
         http://dl.sourceforge.net/sourceforge/bbkeys/bbkeys-$BBKEYS.tar.gz		\
-	xinitrc.blackbox.gz								)
+	xinitrc.blackbox								)
 md5sums=('2d173b95ca5e64ef478c6a5d2deee9df' \
 	 'bd4c4bb38344b5c596cea4a72d940827' \
-	 '351e7eb910f2ff44c5bb8829ccc9c4c0' )
+	 '97311b9001b932017cc2e0a2b8f5cc8d' )
 
 ## Todo:
 ##   None
@@ -22,6 +22,7 @@ md5sums=('2d173b95ca5e64ef478c6a5d2deee9df' \
 ##  None
 
 ## Changelog:
+##   rel2: rebuilt in X11R7 2006.03.15
 ##   rel1: upgraded to 0.70.1 2005.11.10
 ##   rel2: chanced doc location for bbkeys 2005.08.19
 ##   rel1: initial rubix release
@@ -31,7 +32,7 @@ build() {
 	cd $startdir/src/$pkgname-$pkgver
 
 	./configure			\
-		--prefix=/usr/X11R6	\
+		--prefix=/usr/X11R7	\
 		--enable-shape		\
 		--enable-slit		\
 		--enable-interlace	\
@@ -58,14 +59,16 @@ build() {
 	cd $startdir/src/bbkeys-$BBKEYS
 
 	./configure			\
-		--prefix=/usr/X11R6	\
+		--prefix=/usr/X11R7	\
 		--enable-interlace
 	make || return 1
 	make DESTDIR=$startdir/pkg install
 
-	mv $startdir/pkg/usr/X11R6/share/doc/bbkeys $startdir/pkg/usr/doc/bbkeys-$BBKEYS
-	rm -r $startdir/pkg/usr/X11R6/share/doc
+	mv $startdir/pkg/usr/X11R7/share/doc/bbkeys $startdir/pkg/usr/doc/bbkeys-$BBKEYS
+	rm -r $startdir/pkg/usr/X11R7/share/doc
 
-	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

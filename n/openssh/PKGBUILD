@@ -2,14 +2,14 @@
 
 pkgname=openssh
 pkgver=4.3p2
-pkgrel=1
+pkgrel=2
 pkgdesc="openssh (Secure Shell daemon and clients) ssh (Secure Shell) is a program for logging into a remote machine and for executing commands on a remote machine.  It is intended to replace rlogin and rsh, and provide secure encrypted communications between two untrusted hosts over an insecure network.  sshd (SSH Daemon) is the daemon program for ssh.  OpenSSH is based on the last free version of Tatu Ylonen's SSH, further enhanced and cleaned up by Aaron Campbell, Bob Beck, Markus Friedl, Niels Provos, Theo de Raadt, and Dug Song.  It has a homepage at http://www.openssh.com"
 url="http://www.openssh.org"
 depends=('e2fsprogs' 'glibc' 'skey' 'db' 'heimdal' 'openssl' 'zlib')
 source=(ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/$pkgname-$pkgver.tar.gz	\
 	ssh										)
 md5sums=('7e9880ac20a9b9db0d3fea30a9ff3d46' \
-	 'd41a256d5391bb57a68da0994dde3844' )
+	 'dbf3d9d1c337a69a6f7cd71e954af43c' )
 backup=('etc/ssh/ssh_config'	\
 	'etc/ssh/sshd_config'	)
 
@@ -20,6 +20,7 @@ backup=('etc/ssh/ssh_config'	\
 ##   None
 
 ## Changelog:
+##   rel2: fixed typo in rc script 2006.05.16
 ##   rel1: upgraded to 4.3p2 2006.02.12
 ##   rel1: upgraded to 4.3p1 2006.02.01
 ##   rel6: updated rc script to new format 2006.01.17

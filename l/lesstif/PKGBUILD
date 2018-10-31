@@ -2,9 +2,9 @@
 
 pkgname=lesstif
 pkgver=0.94.4
-pkgrel=1
+pkgrel=2
 pkgdesc="lesstif (a free replacement for OSF/Motif(R)) LessTif is the Hungry Programmers' (www.hungry.com) free clone of Motif(R). It aims to be source compatible with OSF/Motif(R) meaning that the same source code should compile with both and work exactly the same.  This package contains the libraries and header files to be able to run and compile Motif applications, along with the lesstif version of mwm, the Motif window manager."
-depends=('x11')
+depends=('libXau' 'glibc' 'libXext' 'libSM' 'freetype2' 'libXp' 'libX11' 'libXdmcp' 'fontconfig' 'expat' 'libICE' 'libXrender' 'libXt' 'zlib' 'libXft')
 url="http://www.lesstif.org"
 install=$pkgname.install
 source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
@@ -17,6 +17,7 @@ md5sums=('3096ca456c0bc299d895974d307c82d8')
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt for X11R7 2006.03.15
 ##   rel1: upgraded to 0.94.4 2005.06.13
 ##   rel1: Initial Rubix release
 
@@ -37,23 +38,25 @@ build() {
 		--enable-xbae-24bit		\
 		--enable-xbae-row-heights	\
 		--disable-debug			\
-		--prefix=/usr/X11R6		\
+		--prefix=/usr/X11R7		\
 		$CHOST
 	make || return 1
 	make DESTDIR=$startdir/pkg install
 
 	mkdir -p $startdir/pkg/usr/doc
 	cd $startdir/pkg/usr/doc
-	ln -sf /usr/X11R6/LessTif $pkgname-$pkgver
+	ln -sf /usr/X11R7/LessTif $pkgname-$pkgver
 
-	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
 
 	mkdir -p $startdir/pkg/etc/X11
-	mv $startdir/pkg/usr/X11R6/lib/X11/* $startdir/pkg/etc/X11
-	ln -s ../../../../etc/X11/mwm $startdir/pkg/usr/X11R6/lib/X11/mvm
+	mv $startdir/pkg/usr/X11R7/lib/X11/* $startdir/pkg/etc/X11
+	ln -s ../../../../etc/X11/mwm $startdir/pkg/usr/X11R7/lib/X11/mvm
 
-	mkdir -p $startdir/pkg/usr/X11R6/lib/X11/config
-	cp -a $startdir/pkg/usr/X11R6/lib/LessTif/config/* $startdir/pkg/usr/X11R6/lib/X11/config
-	mv $startdir/pkg/usr/X11R6/lib/X11/config/host.def $startdir/pkg/usr/X11R6/lib/X11/config/host.def-$pkgname
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/config
+	cp -a $startdir/pkg/usr/X11R7/lib/LessTif/config/* $startdir/pkg/usr/X11R7/lib/X11/config
+	mv $startdir/pkg/usr/X11R7/lib/X11/config/host.def $startdir/pkg/usr/X11R7/lib/X11/config/host.def-$pkgname
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

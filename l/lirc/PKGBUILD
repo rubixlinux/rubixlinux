@@ -2,15 +2,17 @@
 
 pkgname=lirc
 pkgver=0.8.0
-pkgrel=3
+pkgrel=10
 pkgdesc="LIRC is a package that allows you to decode and send infra-red signals of many (but not all) commonly used remote controls."
 depends=('glibc' 'x11' 'libusb' 'alsa-lib')
 backup=('etc/rc.d/lircd'	\
 	'etc/rc.d/lircmd'	)
 source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	linux-2.6.16.diff							\
 	lircd									\
 	lircmd									)
 md5sums=('0bf28bf82c7766a462f90927b6bf3af1' \
+	 'ffd478e500c79b4be37d4f46641ec2a6' \
 	 '95fee5481e37fd8fde0d6e412b6ee124' \
 	 'e4ad1e17411f71d2e1458c73130e954e' )
 url="http://www.lirc.org"
@@ -18,7 +20,8 @@ install=$pkgname.install
 
 vver24=2.4.32
 gver24=2.4.32-grsec
-vver26=2.6.15.5-Rubix
+vver26=2.6.16.20-Rubix
+xver26=2.6.16.20-XenRubix
 
 ## Todo:
 ##  None
@@ -28,6 +31,13 @@ vver26=2.6.15.5-Rubix
 ##  The mceusb2 driver only works for 2.6 kernels
 
 ## Changelog:
+##   rel9: rebuilt for 2.6.16.20 kernels 2006.06.07
+##   rel9: rebuilt for 2.6.16.19 kernels 2006.06.01
+##   rel8: rebuilt for 2.6.16.18 kernels 2006.05.22
+##   rel7: rebuilt for 2.6.16.16 kernels 2006.05.11
+##   rel6: rebuilt 2006.04.27
+##   rel5: addeed xen modules 2006.04.27
+##   rel4: rebuilt for 2.6.16.9 2006.04.21
 ##   rel3: rebuilt for 2.6.15.5 2006.03.03
 ##   rel2: rebuilt for 2.6.15.4 2006.02.12
 ##   rel1: upgraded to 0.8.0, built for 2.6.15.3, 2.4.32, 2.4.32-grsec 2006.02.07
@@ -49,10 +59,13 @@ build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
+	patch -p1 < $startdir/src/linux-2.6.16.diff || return 1
+
 	for kernel in	\
 		$vver24	\
 		$gver24	\
-		$vver26
+		$vver26	\
+		$xver26
 	do
 		makekernel $kernel || return 1
 	done

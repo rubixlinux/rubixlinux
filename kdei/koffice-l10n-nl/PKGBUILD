@@ -1,11 +1,12 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=koffice-l10n-nl
-pkgver=1.4.2
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="koffice-l10n-nl Dutch language support for KOffice."
 depends=('koffice')
-source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.4.2/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.5.0/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+md5sums=('f4bfc5952a2612c72443d266df034e7d')
 
 build() {
 

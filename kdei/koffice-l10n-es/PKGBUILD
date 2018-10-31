@@ -1,11 +1,12 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=koffice-l10n-es
-pkgver=1.4.2
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="koffice-l10n-es Spanish language support for KOffice."
 depends=('koffice')
-source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.4.2/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.5.0/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+md5sums=('0abef42c4ea3a0992b69933ad1e94287')
 
 build() {
 

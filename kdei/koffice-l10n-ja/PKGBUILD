@@ -1,0 +1,19 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=koffice-l10n-ja
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="koffice-l10n-ja Japanese language support for KOffice."
+depends=('koffice')
+source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.5.0/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+md5sums=('16435cf9fd545529bea61010fb35ad03')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/opt/kde --program-prefix="" --program-suffix=""
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+}

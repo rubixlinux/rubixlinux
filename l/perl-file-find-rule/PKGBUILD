@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-file-find-rule
+pkgver=0.28
+pkgrel=1
+pkgdesc="File::Find::Rule - Alternative interface to File::Find"
+url="http://search.cpan.org/~rclamp/File-Find-Rule-$pkgver/lib/File/Find/Rule.pm"
+depends=('perl' 'perl-number-compare' 'perl-text-glob')
+source=(http://search.cpan.org/CPAN/authors/id/R/RC/RCLAMP/File-Find-Rule-$pkgver.tar.gz)
+md5sums=('b12a6f02cb316ca62bd2411564606d1f')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/File-Find-Rule-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/File-Find-Rule-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/File-Find-Rule-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/File-Find-Rule-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

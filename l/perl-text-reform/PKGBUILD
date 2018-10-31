@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-text-reform
+pkgver=1.11
+pkgrel=1
+pkgdesc="Text::Reform - Manual text wrapping and reformatting"
+url="http://search.cpan.org/~dconway/Text-Reform-$pkgver/lib/Text/Reform.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/D/DC/DCONWAY/Text-Reform-$pkgver.tar.gz)
+md5sums=('18646b9fee3d2ddecdacde1d9210d83d')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Text-Reform-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Text-Reform-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Text-Reform-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/Text-Reform-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

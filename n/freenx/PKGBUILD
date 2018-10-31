@@ -1,0 +1,81 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+VERSION=0.5.0-test-2006-03-11-7
+
+pkgname=freenx
+pkgver=0.5.0snap7
+pkgrel=1
+pkgdesc="freenx -- free software (gpl) implementation of the nx server"
+url="http://freenx.berlios.de"
+depends=('openssh' 'nc' 'nx' 'expect')
+source=(http://studwww.ira.uka.de/~s_franz2/$pkgname/$pkgname-$VERSION.tar.gz	\
+	$pkgname.diff								)
+md5sums=('b627433904cd6eed38b14524d3b45cbd' \
+	 'a947cf34b4eebf269fbcb90e40560142' )
+backup=('etc/nxserver/passwords'	\
+	'etc/nxserver/node.conf'	)
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$VERSION
+
+	patch -p1 < $startdir/src/freenx.diff || return 1
+
+	mkdir -p $startdir/pkg/opt/NX/bin
+	mkdir -p $startdir/pkg/etc/nxserver
+	mkdir -p $startdir/pkg/var/lib/nxserver/db/closed
+	mkdir -p $startdir/pkg/var/lib/nxserver/db/running
+	mkdir -p $startdir/pkg/var/lib/nxserver/db/failed
+	mkdir -p $startdir/pkg/var/lib/nxserver/home/.ssh
+	mkdir -p $startdir/pkg/var/log
+
+	touch $startdir/pkg/var/log/nxserver.log
+	touch $startdir/pkg/etc/nxserver/passwords
+	touch $startdir/pkg/etc/nxserver/passwords.orig
+
+	cp node.conf.sample $startdir/pkg/etc/nxserver/node.conf
+	cp node.conf.sample $startdir/pkg/etc/nxserver/node.conf.orig
+
+	chmod 600 $startdir/pkg/etc/nxserver/passwords
+	chmod 600 $startdir/pkg/etc/nxserver/passwords.orig
+	chmod 600 $startdir/pkg/var/log/nxserver.log
+
+	chown -R nx.nx $startdir/pkg/etc/nxserver
+	chown nx.nx $startdir/pkg/var/log/nxserver.log
+	chown -R nx.nx $startdir/pkg/var/lib/nxserver
+	chmod 700 $startdir/pkg/var/lib/nxserver
+	chmod 700 $startdir/pkg/var/lib/nxserver/*
+	chmod 700 $startdir/pkg/var/lib/nxserver/db/*
+	chmod 711 $startdir/pkg/var/lib/nxserver/home
+	chmod 700 $startdir/pkg/var/lib/nxserver/home/.ssh
+
+	cp	-a		\
+		nxnode		\
+		nxkeygen	\
+		nxnode-login	\
+		nxserver	\
+		nxprint		\
+		nxsetup		\
+		nxloadconfig	\
+	$startdir/pkg/opt/NX/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$VERSION
+	cp	-a		\
+		AUTHORS		\
+		CONTRIB		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+	$startdir/pkg/usr/doc/$pkgname-$VERSION
+
+}

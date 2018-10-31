@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-module-pluggable
+pkgver=2.97
+pkgrel=1
+pkgdesc="Module::Pluggable - automatically give your module the ability to have plugins"
+url="http://search.cpan.org/~simonw/Module-Pluggable-$pkgver/lib/Module/Pluggable.pm"
+source=(http://search.cpan.org/CPAN/authors/id/S/SI/SIMONW/Module-Pluggable-$pkgver.tar.gz)
+md5sums=('f118696802530ecb4fdaf91f9b904136')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Module-Pluggable-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Module-Pluggable-$pkgver
+	cp	-a		\
+		Changes		\
+		INSTALL		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Module-Pluggable-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

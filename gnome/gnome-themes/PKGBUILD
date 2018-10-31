@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-themes
+pkgver=2.14.0
+pkgrel=1
+pkgdesc="gnome-themes - a set of gnome themes, with sets for users with limited or low vision"
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('329cfbfcb0add306e8bf6a09ada6f85b')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pycairo
+pkgver=1.0.2
+pkgrel=1
+url="http://cairographics.org/pycairo"
+depends=('libXau' 'glibc' 'freetype2' 'cairo' 'libX11' 'libXdmcp' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libpng' 'python')
+pkgdesc="pycairo - python wrapper for cairo vector graphics library"
+source=(http://cairographics.org/releases/$pkgname-$pkgver.tar.gz)
+md5sums=('5bb6a202ebc3990712bced1da6dfb7a8')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		NOTES		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

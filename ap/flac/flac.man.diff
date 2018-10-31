@@ -1,0 +1,30 @@
+--- ./man/flac.1.orig	2004-09-15 16:29:43.000000000 -0700
++++ ./man/flac.1	2004-10-01 14:00:33.000000000 -0700
+@@ -18,9 +18,8 @@
+ \fBflac\fR is a command-line tool for
+ encoding, decoding, testing and analyzing FLAC streams.
+ .PP
+-This manual page was originally written for the Debian GNU/Linux
+-distribution because the original program did not have a
+-manual page.
++FLAC stands for Free Lossless Audio Codec. Grossly oversimplified,
++FLAC is similar to MP3, but lossless.
+ .SH "OPTIONS"
+ .PP
+ A summary of options is included below.  For a complete
+@@ -380,11 +379,13 @@
+ .PP
+ metaflac(1).
+ .PP
++.PP
+ The programs are documented fully by HTML format
+ documentation, available in
+-\fI/usr/share/doc/flac/html\fR on
+-Debian GNU/Linux systems.
++\fI/usr/doc/flac-*.*.*/doc\fR on
++Slackware GNU/Linux systems.
+ .SH "AUTHOR"
+ .PP
++The flac program was developed by Josh Coalson.
+ This manual page was written by Matt Zimmerman <mdz@debian.org> for
+ the Debian GNU/Linux system (but may be used by others).

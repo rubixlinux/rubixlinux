@@ -1,0 +1,70 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=mesa3d
+pkgver=6.5
+pkgrel=1
+pkgdesc="mesa3d"
+source=(6.4-dont-install-gles-headers.patch	\
+	change-default-dri-driver-dir.patch	\
+	r200-copy-pixels-1.patch		\
+	i915_drm.h				\
+	r300.diff				\
+	xdemos.diff				)
+depends=('libSM' 'libXau' 'libXext' 'glibc' 'libXi' 'libXxf86vm' 'libX11' 'libXdmcp' 'libXmu' 'libICE' 'libXt' 'gcc' 'libdrm')
+md5sums=('ae36bba4e878c77dc2e823ce00e98869' \
+	 'b39a3d8a0996b85ac5066e74aafc4e95' \
+	 '9a6eaed5ab1fd6748d543679a335f72c' \
+	 '961073df4298e30ab5074ffa29f607b5' \
+	 '4c1db88150376753c8fba8f33de76b38' \
+	 'a069f90b58b11e2dc227194da82f8390' )
+install=mesa3d.install
+conflicts=('glut')
+provides=('glut')
+replaces=('glut')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 6.5 2006.04.29
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src
+
+	cvs -d:pserver:anonymous@cvs.freedesktop.org:/cvs/mesa co -r mesa_6_5 Mesa
+
+	cd Mesa
+
+	patch -p0 < $startdir/src/r200-copy-pixels-1.patch		|| return 1
+	patch -p1 < $startdir/src/6.4-dont-install-gles-headers.patch	|| return 1
+	patch -p1 < $startdir/src/change-default-dri-driver-dir.patch	|| return 1
+	patch -p1 < $startdir/src/r300.diff				|| return 1
+	patch -p1 < $startdir/src/xdemos.diff				|| return 1
+
+	cp $startdir/src/i915_drm.h src/mesa/drivers/dri/i915
+
+	make linux-dri-x86 || return 1
+	mkdir -p $startdir/pkg/usr/X11R7
+	make DESTDIR=$startdir/pkg/usr/X11R7 install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/opengl/mesa3d
+	mv $startdir/pkg/usr/X11R7/lib/libGL.so* $startdir/pkg/usr/X11R7/lib/opengl/mesa3d
+
+	ln -s linux-dri-x86 configs/current
+	cd progs/xdemos
+	export CFLAGS="$CFLAGS -L/usr/X11R7/lib"
+	make glxgears	|| return 1
+	make glxinfo	|| return 1
+
+	mkdir -p $startdir/pkg/usr/X11R7/bin
+	cp glxgears glxinfo $startdir/pkg/usr/X11R7/bin
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+}

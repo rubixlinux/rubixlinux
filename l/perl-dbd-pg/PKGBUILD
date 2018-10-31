@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-dbd-pg
+pkgver=1.45
+pkgrel=1
+pkgdesc="DBD::Pg - PostgreSQL database driver for the DBI module"
+url="http://search.cpan.org/~dbdpg/DBD-Pg-$pkgver/Pg.pm"
+depends=('e2fsprogs' 'glibc' 'postgresql' 'db' 'heimdal' 'openssl')
+source=(http://search.cpan.org/CPAN/authors/id/D/DB/DBDPG/DBD-Pg-$pkgver.tar.gz)
+md5sums=('321a8e0487b436d0643348919959a0e3')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release 2006.03.06
+
+build() {
+
+	cd $startdir/src/DBD-Pg-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/DBD-Pg-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README*		\
+		SIGNATURE	\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/DBD-Pg-$pkgver
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+}

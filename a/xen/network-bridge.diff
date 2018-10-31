@@ -1,0 +1,20 @@
+--- xen-3.0.2-2/tools/examples/network-bridge.orig	2006-04-28 22:48:29.000000000 -0600
++++ xen-3.0.2-2/tools/examples/network-bridge	2006-04-28 22:48:37.000000000 -0600
+@@ -61,7 +61,7 @@
+ 
+ vifnum=${vifnum:-0}
+ bridge=${bridge:-xenbr${vifnum}}
+-netdev=${netdev:-$(ip route list default scope global| awk '{ print $NF }')}
++netdev=${netdev:-$(ip route list default scope global| awk '{ print $5 }')}
+ netdev=${netdev:-eth${vifnum}}
+ antispoof=${antispoof:-no}
+ 
+@@ -71,7 +71,7 @@
+ 
+ get_ip_info() {
+     addr_pfx=`ip addr show dev $1 | egrep '^ *inet' | sed -e 's/ *inet //' -e 's/ .*//'`
+-    gateway=`ip route show dev $1 | fgrep default | sed 's/default via //'`
++    gateway=`ip route show dev $1 | fgrep default | sed 's/default via //' | sed 's/ metric.*//'`
+ }
+     
+ do_ifup() {

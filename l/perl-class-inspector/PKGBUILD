@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-class-inspector
+pkgver=1.13
+pkgrel=1
+pkgdesc="Class::Inspector - Get information about a class and its structure"
+url="http://search.cpan.org/~adamk/Class-Inspector-$pkgver/lib/Class/Inspector.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/A/AD/ADAMK/Class-Inspector-$pkgver.tar.gz)
+md5sums=('ffce59a030a0c2d3234d285be96530e0')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Class-Inspector-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Class-Inspector-$pkgver
+	cp	-a		\
+		Changes		\
+		LICENSE		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Class-Inspector-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,0 +1,20 @@
+--- linux-2.6.16.9/include/asm-i386/bitops.h.orig	2006-04-21 13:20:54.000000000 -0600
++++ linux-2.6.16.9/include/asm-i386/bitops.h	2006-04-21 13:20:57.000000000 -0600
+@@ -369,8 +369,6 @@
+ 
+ #define fls64(x)   generic_fls64(x)
+ 
+-#ifdef __KERNEL__
+-
+ /*
+  * Every architecture must define this function. It's the fastest
+  * way of searching a 140-bit bitmap where the first 100 bits are
+@@ -437,8 +435,6 @@
+ #define hweight16(x) generic_hweight16(x)
+ #define hweight8(x) generic_hweight8(x)
+ 
+-#endif /* __KERNEL__ */
+-
+ #ifdef __KERNEL__
+ 
+ #define ext2_set_bit(nr,addr) \

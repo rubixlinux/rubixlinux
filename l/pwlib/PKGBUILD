@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pwlib
+pkgver=1.10.0
+pkgrel=1
+pkgdesc="pwlib - portable multiplatform class libraries used by several voip applications"
+url="http://www.ekiga.org"
+depends=('libXau' 'libXext' 'sdl' 'glibc' 'libX11' 'libXdmcp' 'openssl' 'expat' 'openldap' 'gcc' 'alsa-lib' 'cyrus-sasl')
+source=(http://www.ekiga.org/admin/downloads/latest/sources/sources/$pkgname-$pkgver.tar.gz)
+md5sums=('97da19588bdc25cd8b48afb135eded1d')
+
+## Todo:
+##   None
+
+## Notes:
+##   Will not build with ssp, does not like pie either
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		History.txt	\
+		ReadMe.txt	\
+		ReadMe_QOS.txt	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -name *.so* -exec chmod 755 {} \;
+
+}

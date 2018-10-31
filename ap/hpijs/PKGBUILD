@@ -1,13 +1,24 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=hpijs
-pkgver=1.7.1
-pkgrel=1
+pkgver=2.1.4
+pkgrel=2
 pkgdesc="hpijs (Hewlett-Packard inkjet drivers for Ghostscript) The Hewlett-Packard Inkjet Driver Project (HPIJS) is an add-on printer driver for GNU Ghostscript.  There are two parts to the IJS interface: the IJS client that resides in GNU Ghostscript, and the IJS server (in this package).  HPIJS runs as a server or co-process to GNU Ghostscript. The server is spawned automatically by GNU Ghostscript. There are currently more than 80 HP inkjet printer models supported with HPIJS."
-depends=('gcc' 'cups' 'foomatic-filters' )
+depends=('glibc' 'libjpeg' 'gcc' 'cups' 'foomatic-filters' 'espgs')
 source=(http://dl.sourceforge.net/sourceforge/hpinkjet/$pkgname-$pkgver.tar.gz)
 url="http://hpinkjet.sourceforge.net/"
-md5sums=('cba40858e27204db0211c559bd606aaa')
+md5sums=('7f943ad155c50191a5facdfc2a083110')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: fixed my stupid dep mistake DOH! 2006.03.08
+##   rel1: upgraded to 2.1.4, added espgs as dep 2006.03.05
+##   rel1: initial rubix release
 
 build() {
 
@@ -25,7 +36,7 @@ build() {
 	find . -perm 555 -exec chmod 755 {} \;
 
 	./configure --prefix=/usr $CHOST
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	chown -R root.bin $startdir/pkg/usr/bin

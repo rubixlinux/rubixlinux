@@ -16,11 +16,20 @@ if [ "$DISPLAY_MANAGER" != "" ]; then
 			stat_err "kdm is not executable or is not installed!"
 			stat_err "Can not start a display manager."
 		fi
+	elif [ "$DISPLAY_MANAGER" = "gdm" ]; then
+		printh1 "starting gdm"
+		printsep
+		if [ -x /usr/sbin/gdm ]; then
+			exec /usr/sbin/gdm -nodaemon
+		else
+			stat_err "gdm is not executable or is not installed!"
+			stat_err "Can not start a display manager."
+		fi
 	elif [ "$DISPLAY_MANAGER" = "xdm" ]; then
 		printh1 "starting xdm"
 		printsep
-		if [ -x /usr/X11R6/bin/xdm ]; then
-			exec /usr/X11R6/bin/xdm -nodaemon
+		if [ -x /usr/X11R7/bin/xdm ]; then
+			exec /usr/X11R7/bin/xdm -nodaemon
 		else
 			stat_err "xdm is not executable or is not installed!"
 			stat_err "Can not start a display manager."
@@ -38,7 +47,7 @@ if [ "$DISPLAY_MANAGER" != "" ]; then
 		stty onlcr
 		clear
 		stat_err "The only valid values for DISPLAY_MANAGER in /etc/rc.conf are:"
-		stat_err "  kdm or xdm"
+		stat_err "  kdm, gdm or xdm"
 		stat_err "Please edir /etc/rc.conf and enter a valid value."
 		stat_err "Can not start a display manager."
 		stat_err "Will switch to runlevel 3 in 20 seconds..."

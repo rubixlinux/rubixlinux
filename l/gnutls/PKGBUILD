@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnutls
+pkgver=1.2.9
+pkgrel=1
+url="http://www.gnu.org/software/gnutls"
+pkgdesc="GnuTLS is a project that aims to develop a library which provides a secure layer, over a reliable transport layer. Currently the GnuTLS library implements the proposed standards by the IETF's TLS working group."
+depends=('glibc' 'libtasn1' 'libgcrypt' 'libgpg-error' 'zlib' 'readline' 'opencdk' 'libtermcap')
+source=(ftp://ftp.gnutls.org/pub/gnutls/$pkgname-$pkgver.tar.bz2)
+md5sums=('9b14bac9202c91dbc89431726dbf6b90')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		THANKS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/info/dir
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

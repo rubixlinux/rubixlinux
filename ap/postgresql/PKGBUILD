@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=postgresql
+pkgver=8.1.3
+pkgrel=1
+pkgdesc="PostgreSQL is a powerful, open source relational database system."
+url="http://www.postgresql.org"
+depends=('glibc' 'python' 'db' 'heimdal' 'e2fsprogs' 'openssl' 'tcl' 'zlib' 'readline' 'libtermcap' 'perl')
+source=(ftp://ftp.postgresql.org/pub/source/v$pkgver/$pkgname-$pkgver.tar.bz2	\
+	$pkgname								)
+md5sums=('bb510edbb533962c0692e211b3bd8cfa' \
+	 '5f2f5192c2e092960621ad81a9f9674a' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure		\
+		--prefix=/usr	\
+		--with-openssl	\
+		--with-perl	\
+		--with-python	\
+		--with-krb5	\
+		--with-tcl
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.root $startdir/pkg/usr/doc/$pkgname
+	mv $startdir/pkg/usr/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYRIGHT		\
+		HISTORY			\
+		INSTALL			\
+		README			\
+		doc/FAQ*		\
+		doc/KNOWN_BUGS		\
+		doc/MISSING_FEATURES	\
+		doc/TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

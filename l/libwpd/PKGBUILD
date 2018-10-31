@@ -1,29 +1,30 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=libwpd
-pkgver=0.8.2
+pkgver=0.8.4
 pkgrel=1
 url="http://libwpd.sourceforge.net"
 pkgdesc="libwpd (WordPerfect document format library) This package contains a library (libwpd) and tools to transform WordPerfect documents into other formats such as HTML, text, and raw. libwpd is used by AbiWord and KWord."
 depends=('glibc' 'libgsf' 'bzip2' 'glib2' 'zlib' 'gcc' 'libxml2')
 source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
-md5sums=('264e955e19c7e961e22382db09e19597')
+md5sums=('0461d4bf2da534b4bed041b67d7f7064')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: Initial Rubix Release
+## Changelog:
+##   rel1: upgraded to 0.8.4 2006.03.27
+##   rel1: Initial Rubix Release
 
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
 	./configure --prefix=/usr $CHOST
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	chown -R root.bin $startdir/pkg/usr/bin
@@ -41,5 +42,7 @@ build() {
 
 	rm -rf $startdir/pkg/usr/share/doc
 	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

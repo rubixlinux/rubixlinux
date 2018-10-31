@@ -1,0 +1,17 @@
+--- ./scripts/xinitrc.orig	2004-11-23 21:17:00.000000000 -0800
++++ ./scripts/xinitrc	2005-01-30 16:11:22.000000000 -0800
+@@ -6,7 +6,13 @@
+ fi
+ 
+ # create temp file for X resources
+-XRESOURCES="/tmp/xrdb-$UID.$$"
++if [ -x /usr/bin/tempfile ]; then
++  XRESOURCES="$(/usr/bin/tempfile -p xrdb-)"
++elif [ -x /usr/bin/mcookie ]; then
++  XRESOURCES="/tmp/xrdb-$(/usr/bin/mcookie)"
++else
++  XRESOURCES="/tmp/xrdb-$UID.$$"
++fi
+ 
+ # Has to go prior to merging Xft.xrdb, as its the "Defaults" file
+ test -r $HOME/.Xdefaults && cat $HOME/.Xdefaults >> $XRESOURCES

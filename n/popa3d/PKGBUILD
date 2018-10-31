@@ -1,15 +1,25 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=popa3d
-pkgver=1.0
+pkgver=1.0.1
 pkgrel=1
 pkgdesc="popa3d (a POP3 daemon) popa3d is a Post Office Protocol version 3 (POP3) server.  A POP3 server operates on local mailboxes on behalf of its remote users. Users can connect at any time to check their mailbox and fetch the mail that has accumulated.  The design goals of this POP3 server are security, reliability, RFC compliance (slightly relaxed to work with real-world POP3 clients), and high performance. The popa3d daemon was written by Solar Designer."
 url="http://www.openwall.com/popa3d"
 depends=('glibc' 'openssl')
 source=(http://www.openwall.com/$pkgname/$pkgname-$pkgver.tar.gz	\
-	$pkgname.diff.gz						)
-md5sums=('2e0f91765ff5935bbc24626f02a69ada' \
-	 '69b5bf44ef1247a7b4273da05ebd5e92' )
+	$pkgname.diff							)
+md5sums=('a1540e9cf856247d32f61c3cb881b127' \
+	 '9698224382023e6775593822153cdd73' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.0.1 2006.04.22
+##   rel1: initial rubix release
 
 build() {
 

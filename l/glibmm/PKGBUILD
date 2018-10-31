@@ -1,13 +1,23 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=glibmm
-pkgver=2.8.0
+pkgver=2.10.0
 pkgrel=1
 pkgdesc="glibmm is a C++ API for parts of glib that are useful for C++."
 url="http://www.gtkmm.org"
 depends=('glibc' 'libsigc++' 'glib2' 'gcc')
-source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.8/$pkgname-$pkgver.tar.bz2)
-md5sums=('e1823b926e01db09aacf3da69234e3c5')
+source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.10/$pkgname-$pkgver.tar.bz2)
+md5sums=('3024ad2b8f8fd4f512e1f58d087599bb')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.10.0 2006.04.12
+##   rel1: initial rubix release
 
 build() {
 
@@ -34,5 +44,7 @@ build() {
 
 	cd $startdir
 	rm -r $startdir/pkg/usr/share/doc
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

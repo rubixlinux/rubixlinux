@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-module-build
+pkgver=0.2612
+pkgrel=1
+pkgdesc="Module::Build - Build and install Perl modules"
+url="http://search.cpan.org/~kwilliams/Module-Build-$pkgver/lib/Module/Build.pm"
+source=(http://search.cpan.org/CPAN/authors/id/K/KW/KWILLIAMS/Module-Build-$pkgver.tar.gz)
+md5sums=('fa1504741e9c931f75e804953c1d5417')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Module-Build-$pkgver
+
+	perl Build.PL || return 1
+	./Build || return 1
+#	./Build test
+	./Build install destdir=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Module-Build-$pkgver
+	cp	-a		\
+		Changes		\
+		INSTALL		\
+		MANIFEST	\
+		README		\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/Module-Build-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-ipc-run
+pkgver=0.79
+pkgrel=1
+pkgdesc="IPC::Run - system() and background procs w/ piping, redirs, ptys"
+url="http://search.cpan.org/~rsod/IPC-Run-$pkgver/lib/IPC/Run.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/R/RS/RSOD/IPC-Run-$pkgver.tar.gz)
+md5sums=('a1044306a9669b376f58315884c13392')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/IPC-Run-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/IPC-Run-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		SIGNATURE	\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/IPC-Run-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

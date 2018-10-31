@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=metacity
+pkgver=2.14.1
+pkgrel=3
+pkgdesc="metacity - gnome default windowmanager"
+depends=('libXext' 'libSM' 'glibc' 'orbit2' 'libXi' 'gtk+2' 'atk' 'gconf' 'fontconfig' 'expat' 'libICE' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'startup-notification' 'popt' 'libpng' 'libXinerama' 'libXrandr' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('5172849a35be21bda78041623eb45656')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel2: added install script 2006.03.23
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

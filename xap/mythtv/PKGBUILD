@@ -1,39 +1,31 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-THEMEVER=0.18
-
 pkgname=mythtv
-pkgver=0.18.1
-pkgrel=5
+pkgver=0.19.2006.05.08
+pkgrel=1
 pkgdesc="MythTV is a suite of programs that allow you to build the mythical home media convergence box on your own using Open Source software and operating systems."
-depends=('cdparanoia' 'faad2' 'flac' 'kdelibs' 'lame' 'libcdaudio' 'libdvdread' 'libexif' 'libid3tag' 'libtiff' 'lirc' 'mysql' 'sdl' 'transcode' 'wget' 'xmltv')
+depends=('glibc' 'mesa3d' 'libtiff' 'libid3tag' 'fontconfig' 'expat' 'libXrender' 'libcdaudio' 'zlib' 'alsa-lib' 'libXau' 'acl' 'libjpeg' 'libidn' 'libvorbis' 'libXdmcp' 'libdvdnav' 'libXmu' 'libmad' 'libmng' 'libXt' 'libXft' 'libpng' 'libXinerama' 'sdl' 'fftw2' 'libXext' 'libSM' 'libXxf86vm' 'lame' 'flac' 'attr' 'faad2' 'lirc' 'libICE' 'libogg' 'libart_lgpl' 'qt' 'libXv' 'freetype2' 'cdparanoia' 'libXfixes' 'libdvdread' 'libXcursor' 'libX11' 'pcre' 'libexif' 'gcc' 'kdelibs' 'libXrandr' 'mysql' 'transcode' 'wget' 'xmltv')
 url="http://www.mythtv.org"
-source=(http://www.mythtv.org/mc/$pkgname-$pkgver.tar.bz2	\
-	http://www.mythtv.org/mc/mythplugins-$pkgver.tar.bz2	\
-	http://www.mythtv.org/mc/myththemes-$THEMEVER.tar.bz2	\
-	mythtv.diff						\
-	mythplugins.diff					\
-	myththemes.diff						\
+source=(mythplugins.diff					\
 	xinitrc.mythtv						\
 	mythbackend						\
 	mtd							)
-md5sums=('e6cabf88feeaf6ae8f830d3fdf7b113d' \
-	 '1d94d19e2a13c24a408ced9b6c4f5b47' \
-	 '9fe1f509b9ab7e6696e4d9aa0724c81f' \
-	 '2ea1eabac1d39f9083e7f2ba23247ecd' \
-	 'df1c7f991255458d5efcb8a0c6f1c1f9' \
-	 '43102401ddc1bdc303069802c59532f8' \
-	 '538633a33e51c8fa495c5c422e5000ad' \
-	 '603499b5a47160c2d69df6b9577aabcc' \
+md5sums=('f3afd49682fe706e9fd6e0c4140c07ea' \
+	 '216d1016a3a9a478fc7dbca4486b0655' \
+	 '782f3913f46400842f37591585ff04ee' \
 	 '566cceb4dbe314e0e9312163e9fe3513' )
 
 ## Todo:
 ##   None
 
 ## Notes:
+##   this package is built and optimized for i686 and newer only
 ##   mythplugins need include files from mythtv, so build, install mythtv first, then the whole package
 
 ## Changelog:
+##   rel1: upgraded to latest fixes branch 2006.05.08
+##   rel1: upgraded to 0.19-fixes branch 2006.04.16
+##   rel1: upgraded to 0.19 2006.02.12
 ##   rel5: added xinitrc.mythtv, mythtv home directory 2006.02.06
 ##   rel4: updated mythbackend and mtd rc scripts to new format 2006.01.16
 ##   rel3: Added mythweb to /usr/doc 2005.05.30
@@ -42,19 +34,69 @@ md5sums=('e6cabf88feeaf6ae8f830d3fdf7b113d' \
 
 build() {
 
-	cd $startdir/src/$pkgname-$pkgver
+	cd $startdir/src
 
-	patch -p0 < $startdir/src/mythtv.diff || return 1
+	svn co http://svn.mythtv.org/svn/branches/release-0-19-fixes/mythtv
+	svn co http://svn.mythtv.org/svn/branches/release-0-19-fixes/mythplugins
+	svn co http://svn.mythtv.org/svn/branches/release-0-19-fixes/myththemes
 
-	./configure					\
-		--prefix=/usr				\
-		--enable-dvb				\
-		--dvb-path=/usr/src/linux/include	\
-		--enable-dvb-eit			\
-		--enable-opengl-vsync			\
-		--arch=i486				\
-		--disable-mmx				\
-		$CHOST
+	export CFLAGS=""
+	export CXXFLAGS=""
+	export MAKEFLAGS=""
+
+	build_mythtv		|| return 1
+	build_mythplugins	|| return 1
+	build_myththemes	|| return 1
+
+	mkdir -p				$startdir/pkg/etc/rc.d
+	cp $startdir/src/mythbackend		$startdir/pkg/etc/rc.d
+	cp $startdir/src/mtd			$startdir/pkg/etc/rc.d
+
+	mkdir -p				$startdir/pkg/etc/X11/xinit
+	cp $startdir/src/xinitrc.mythtv		$startdir/pkg/etc/X11/xinit
+
+	mkdir -p				$startdir/pkg/home/mythtv
+	chown mythtv.users			$startdir/pkg/home/mythtv
+	chmod 711				$startdir/pkg/home/mythtv
+	ln -s /etc/X11/xinit/xinitrc.mythtv	$startdir/pkg/home/mythtv/.xinitrc
+
+	find $startdir/pkg/usr/doc -perm 664 -exec chmod 644 {} \;
+	find $startdir/pkg/usr/doc -perm 775 -exec chmod 755 {} \;
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -name *.png -exec chmod 644 {} \;
+
+	chown -R root.bin			$startdir/pkg/usr/bin
+
+}
+
+build_mythtv() {
+
+	cd $startdir/src/$pkgname
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-dvb		\
+		--enable-dvb-eit	\
+		--dvb-path=/usr/include	\
+		--enable-opengl-vsync	\
+		--cpu=i486		\
+		--tune=i686		\
+		--enable-dvd		\
+		--enable-joystick-menu	\
+		--enable-x11		\
+		--enable-xrandr		\
+		--enable-xv		\
+		--disable-audio-oss	\
+		--disable-audio-arts	\
+		--disable-audio-jack	\
+		--disable-directfb	\
+		--disable-dbox2		\
+		--disable-mmx		\
+		--disable-xvmc		\
+		--disable-altivec	\
+		--disable-distcc	\
+		--disable-ccache	\
+		--compile-type=release
 	qmake mythtv.pro
 	make || return 1
 	make INSTALL_ROOT=$startdir/pkg install || return 1
@@ -72,41 +114,54 @@ build() {
 		docs		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
-	find $startdir/pkg/usr/doc -perm 664 -exec chmod 644 {} \;
-	find $startdir/pkg/usr/doc -perm 775 -exec chmod 755 {} \;
+}
 
-	cd $startdir/src/mythplugins-$pkgver
+build_mythplugins() {
 
-	patch -p0 < $startdir/src/mythplugins.diff
+	cd $startdir/src/mythplugins
 
-	./configure		\
-		--enable-all	\
-		--disable-festival
+	patch -p1 < $startdir/src/mythplugins.diff || return 1
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-all		\
+		--disable-festival	\
+		--enable-dvb		\
+		--enable-dvb-eit	\
+		--dvb-path=/usr/include	\
+		--enable-opengl-vsync	\
+		--cpu=i486		\
+		--tune=i686		\
+		--enable-dvd		\
+		--enable-joystick-menu	\
+		--enable-x11		\
+		--enable-xrandr		\
+		--enable-xv		\
+		--disable-audio-oss	\
+		--disable-audio-arts	\
+		--disable-audio-jack	\
+		--disable-directfb	\
+		--disable-dbox2		\
+		--disable-mmx		\
+		--disable-xvmc		\
+		--disable-altivec	\
+		--disable-distcc	\
+		--disable-ccache	\
+		--compile-type=release
 	qmake mythplugins.pro
 	make || return 1
 	make INSTALL_ROOT=$startdir/pkg install || return 1
 
 	cp -r mythweb $startdir/pkg/usr/doc/$pkgname-$pkgver
 
-	cd $startdir/src/myththemes-$THEMEVER
+}
 
-	patch -p0 < $startdir/src/myththemes.diff
+build_myththemes() {
 
+	cd $startdir/src/myththemes
+
+	./configure --prefix=/usr
 	qmake myththemes.pro
 	make INSTALL_ROOT=$startdir/pkg install
-
-	mkdir -p $startdir/pkg/etc/rc.d
-	cp $startdir/src/mythbackend	$startdir/pkg/etc/rc.d
-	cp $startdir/src/mtd		$startdir/pkg/etc/rc.d
-
-	mkdir -p			$startdir/pkg/etc/X11/xinit
-	cp $startdir/src/xinitrc.mythtv	$startdir/pkg/etc/X11/xinit
-
-	mkdir -p				$startdir/pkg/home/mythtv
-	chown mythtv.users			$startdir/pkg/home/mythtv
-	chmod 711				$startdir/pkg/home/mythtv
-	ln -s /etc/X11/xinit/xinitrc.mythtv	$startdir/pkg/home/mythtv/.xinitrc
-
-	chown -R root.bin $startdir/pkg/usr/bin
 
 }

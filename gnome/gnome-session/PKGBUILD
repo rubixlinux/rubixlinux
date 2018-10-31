@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-session
+pkgver=2.14.0
+pkgrel=3
+pkgdesc="gnome-session - gnome-session-manager"
+depends=('glibc' 'libXi' 'libgnomeui' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'libbonoboui' 'startup-notification' 'libpng' 'libXinerama' 'libSM' 'orbit2' 'libXext' 'gtk+2' 'atk' 'gconf' 'libICE' 'libart_lgpl' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libbonobo' 'gnome-desktop' 'glib2' 'gnome-keyring' 'gnome-vfs' 'libXrandr' 'popt' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('def891553bda47cd660be80cf09fe0ee')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel2: added install script 2006.03.23
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc --disable-scrollkeeper
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

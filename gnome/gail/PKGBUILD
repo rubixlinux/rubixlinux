@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gail
+pkgver=1.8.11
+pkgrel=1
+pkgdesc="gail - accessibility support for gtk+ and libgnomecanvas"
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libgnomecanvas' 'libXrender' 'zlib' 'libart_lgpl' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'libpng' 'libXinerama' 'libXrandr')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.8/$pkgname-$pkgver.tar.bz2)
+md5sums=('ff79df7dd0cf7a5109c089b9b5fbe17f')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

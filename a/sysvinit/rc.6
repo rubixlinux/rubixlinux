@@ -136,12 +136,12 @@ sync
 stat_done
 
 stat_busy "unmounting filesystems"
-umount -a -t nonfs,noproc,nosysfs
+umount -a -t nonfs,noproc,nosysfs,nofuse
 stat_done
 
 deactivate_lvm
 
-umount -a -r -t nonfs,noproc,nosysfs
+umount -a -r -t nonfs,noproc,nosysfs,nofuse
 
 stat_busy "remounting root filesystem"
 mount -n -o remount,ro /

@@ -1,26 +1,28 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=fluxbox
-pkgver=0.9.14
+pkgver=0.9.15.1
 pkgrel=1
 pkgdesc="fluxbox (Fluxbox window manager) Fluxbox is yet another windowmanager for X that is based on the Blackbox 0.61.1 code but with many new features."
 url="http://www.fluxbox.org"
-depends=('glibc' 'fontconfig' 'x11' 'expat' 'freetype2' 'gcc' 'zlib')
+depends=('glibc' 'libXext' 'libSM' 'fontconfig' 'libICE' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libX11' 'libXpm' 'libXdmcp' 'gcc' 'libXft' 'libXrandr' 'libXinerama')
 source=(http://dl.sourceforge.net/$pkgname/$pkgname-$pkgver.tar.bz2	\
-	xinitrc.fluxbox.gz						)
-md5sums=('7641aaea532841e103e9705bb5b98f62' \
-	 '4be8f4d869fd5c30f17a31474d610bbd' )
+	xinitrc.fluxbox							)
+md5sums=('098eb36a09338aabb63b938a5eab9ef6' \
+	 'abdbb6ffb7f64337e4c057ee1aebadc5' )
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#Nont
+## Notes:
+##   Nont
 
-#Changelog:
-#rel1: upgraded to 0.9.14 2005.09.22
-#rel2: removed some conflicting files from blackbox 2005.06.25
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: upgraded to 0.9.16.1 2006.04.21
+##   rel2: rebuilt for X11R7 2006.03.15
+##   rel1: upgraded to 0.9.14 2005.09.22
+##   rel2: removed some conflicting files from blackbox 2005.06.25
+##   rel1: Initial Rubix release
 
 build() {
 
@@ -38,7 +40,7 @@ build() {
 	find . -perm 555 -exec chmod 755 {} \;
 
 	./configure			\
-		--prefix=/usr/X11R6	\
+		--prefix=/usr/X11R7	\
 		--enable-xinerama	\
 		--enable-shape		\
 		--enable-slit		\
@@ -48,7 +50,7 @@ build() {
 		$CHOST
 	make || return 1
 	make install DESTDIR=$startdir/pkg
-	chown -R root:bin $startdir/pkg/usr/X11R6/bin
+	chown -R root:bin $startdir/pkg/usr/X11R7/bin
 
 	mkdir -p $startdir/pkg/etc/X11/xinit
 	cp $startdir/src/xinitrc.fluxbox $startdir/pkg/etc/X11/xinit/xinitrc.fluxbox

@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-algorithm-dependency
+pkgver=1.101
+pkgrel=1
+pkgdesc="Algorithm::Dependency - Base class for implementing various dependency trees"
+url="http://search.cpan.org/~adamk/Algorithm-Dependency-$pkgver/lib/Algorithm/Dependency.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/A/AD/ADAMK/Algorithm-Dependency-$pkgver.tar.gz)
+md5sums=('d6187a17fa90cbf4d1c513ea2c500269')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Algorithm-Dependency-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Algorithm-Dependency-$pkgver
+	cp	-a		\
+		Changes		\
+		LICENSE		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Algorithm-Dependency-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,13 +1,13 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=libidn
-pkgver=0.5.17
+pkgver=0.6.3
 pkgrel=1
 pkgdesc="libidn (GNU Internationalized Domain Name library) GNU Libidn is an implementation of the Stringprep, Punycode and IDNA specifications defined by the IETF Internationalized Domain Names (IDN) working group, used for internationalized domain names."
 url="http://www.gnu.org/software/libidn"
 depends=('glibc')
 source=(ftp://alpha.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
-md5sums=('cd890b571f2a27222052eac9dccb7c80')
+md5sums=('d240631c93c7d3a0e93cdf66f536073f')
 
 ## Todo:
 ##   None
@@ -16,6 +16,7 @@ md5sums=('cd890b571f2a27222052eac9dccb7c80')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 0.6.3 2006.04.22
 ##   rel1: upgraded to 0.5.17 2005.06.13
 ##   rel1: Initial Rubix release
 
@@ -49,5 +50,7 @@ build() {
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
 	rm $startdir/pkg/usr/info/dir
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

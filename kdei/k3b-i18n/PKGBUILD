@@ -1,13 +1,13 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=k3b-i18n
-pkgver=0.12.12
+pkgver=0.12.15
 pkgrel=1
 pkgdesc="k3b-i18n (internationalization files for the CD Creator)"
 depends=('k3b')
 source=(http://dl.sourceforge.net/sourceforge/k3b/$pkgname-$pkgver.tar.bz2)
-md5sums=('32029e9a4fdf599a18591d8ac980c299')
-url="http://k3b.sourceforge.net"
+md5sums=('6cbfd080b3684efae0ed4b4797b5cecb')
+url="http://www.k3b.org"
 
 ## Todo:
 ##   None
@@ -16,6 +16,7 @@ url="http://k3b.sourceforge.net"
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 0.12.15 2006.04.17
 ##   rel1: upgraded to 0.12.12 2006.02.16
 ##   rel2: rebuilt after finding some bad memory in build computer 2006.02.15
 ##   rel1: upgraded to 0.12.11 2006.02.14

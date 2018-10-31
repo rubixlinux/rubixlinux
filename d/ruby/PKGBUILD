@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+# Contributer: Jordan Neumeyer <jnengland77@gmail.com>
+
+pkgname=ruby
+pkgver=1.8.4
+pkgrel=4
+pkgdesc="ruby - an object-oriented language for quick and easy programming"
+url="http://www.ruby-lang.org/en"
+depends=('glibc' 'db' 'gdbm' 'ncurses' 'openssl' 'zlib' 'readline' 'libtermcap')
+source=(ftp://ftp.ruby-lang.org/pub/ruby/$pkgname-$pkgver.tar.gz)
+md5sums=('bd8c2e593e1fa4b01fd98eaf016329bb')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: rebuilt without tcl/tk library 2006.03.30
+##   rel3: moved to d/ 2006.03.29
+##   rel2: internal version bump 2006.03.23
+##   rel1: Initial Release to the /community
+
+build() {
+
+  	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --enable-shared $CHOST
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg install
+	make DESTDIR=$startdir/pkg install-doc
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		ChangeLog		\
+		README			\
+		README.EXT		\
+		ToDo			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/lib/ruby/1.8/$CARCH-linux/tcltklib.so
+
+}

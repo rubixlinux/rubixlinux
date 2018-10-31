@@ -1,13 +1,13 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=glib2
-pkgver=2.8.6
+pkgver=2.10.2
 pkgrel=1
 pkgdesc="glib2 (library of C routines) GLib is a library which includes support routines for C such as lists, trees, hashes, memory allocation, and many other things."
 depends=('glibc')
-source=(ftp://ftp.gtk.org/pub/gtk/v2.8/glib-$pkgver.tar.bz2)
+source=(ftp://ftp.gtk.org/pub/gtk/v2.10/glib-$pkgver.tar.bz2)
 url="http://www.gtk.org"
-md5sums=('fce6835fd8c99ab4c3e5213bc5bcd0ed')
+md5sums=('718961161ee1692c216a2d542196a04a')
 
 ## Todo:
 ##   None
@@ -16,6 +16,8 @@ md5sums=('fce6835fd8c99ab4c3e5213bc5bcd0ed')
 ##   Builds with PIE, but causes segmentation faults
 
 ## Changelog:
+##   rel1: upgraded to 2.10.2 2006.05.25
+##   rel1: upgraded to 2.10.1 2006.03.21
 ##   rel1: upgraded to 2.8.6 2006.02.15
 ##   rel1: upgraded to 2.8.5 2006.01.13
 ##   rel2: bumped the pkgver so it is not confused with the old 2.8.4 2005.12.31
@@ -53,5 +55,7 @@ build() {
 		NEWS	\
 		README	\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

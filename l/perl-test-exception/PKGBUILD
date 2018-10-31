@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-test-exception
+pkgver=0.21
+pkgrel=1
+pkgdesc="Test::Exception - Test exception based code"
+url="http://search.cpan.org/~adie/Test-Exception-$pkgver/lib/Test/Exception.pm"
+depends=('perl' 'perl-sub-uplevel')
+source=(http://search.cpan.org/CPAN/authors/id/A/AD/ADIE/Test-Exception-$pkgver.tar.gz)
+md5sums=('fc1aab12ca0867dd46328e169c06a21c')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Test-Exception-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Test-Exception-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/Test-Exception-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/Test-Exception-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

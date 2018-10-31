@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-html-format
+pkgver=2.04
+pkgrel=1
+pkgdesc="HTML::FormatText - Format HTML as plaintext"
+url="http://search.cpan.org/~sburke/HTML-Format-$pkgver/lib/HTML/FormatText.pm"
+depends=('perl' 'perl-font-afm')
+source=(http://search.cpan.org/CPAN/authors/id/S/SB/SBURKE/HTML-Format-$pkgver.tar.gz)
+md5sums=('2d287392b77c959f06397371116c2d7e')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/HTML-Format-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/HTML-Format-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/HTML-Format-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

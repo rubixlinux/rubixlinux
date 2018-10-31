@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-dbix-searchbuilder
+pkgver=1.40
+pkgrel=1
+pkgdesc="DBIx::SearchBuilder - Encapsulate SQL queries and rows in simple perl objects"
+url="http://search.cpan.org/~jesse/DBIx-SearchBuilder-$pkgver/SearchBuilder.pm"
+depends=('perl' 'perl-dbd-sqlite' 'perl-dbi' 'perl-want' 'perl-class-returnvalue' 'perl-cache-simple-timedexpiry' 'perl-clone')
+source=(http://search.cpan.org/CPAN/authors/id/J/JE/JESSE/DBIx-SearchBuilder-$pkgver.tar.gz)
+md5sums=('65c8f49c843a54b94946ac31b90573d8')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/DBIx-SearchBuilder-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/DBIx-SearchBuilder-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+		ROADMAP		\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/DBIx-SearchBuilder-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/DBIx-SearchBuilder-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+#	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+#	chown -R root.bin $startdir/pkg/usr/bin
+
+}

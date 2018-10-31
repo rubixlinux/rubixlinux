@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=videoproto
+pkgver=2.2.2
+pkgrel=1
+pkgdesc="X.Org Video protocol headers"
+url="http://www.x.org"
+source=(ftp://ftp.x.org/pub/$X11/src/proto/$pkgname-$X11-$pkgver.tar.bz2)
+md5sums=('de9e16a8a464531a54a36211d2f983bd')
+groups=('x11-dev')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7 --libdir=/usr/lib
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+}

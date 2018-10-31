@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-term-ui
+pkgver=0.12
+pkgrel=1
+pkgdesc="Term::UI - Term::ReadLine UI made easy"
+url="http://search.cpan.org/~kane/Term-UI-$pkgver/lib/Term/UI.pm"
+depends=('perl' 'perl-log-message-simple')
+source=(http://search.cpan.org/CPAN/authors/id/K/KA/KANE/Term-UI-$pkgver.tar.gz)
+md5sums=('b34442df078685f3e8b1197e1e98d1e6')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Term-UI-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Term-UI-$pkgver
+	cp	-a		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Term-UI-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

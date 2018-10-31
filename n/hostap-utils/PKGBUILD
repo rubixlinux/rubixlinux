@@ -2,10 +2,10 @@
 
 pkgname=hostap-utils
 pkgver=0.4.7
-pkgrel=1
+pkgrel=2
 pkgdesc="hostap-utils (utilities for prism based wifi cards) hostap-utils contains various programs for configuring prism based wireless cards."
 url="http://hostap.epitest.fi"
-depends=('glibc' 'hostap-driver')
+depends=('glibc')
 source=(http://hostap.epitest.fi/releases/$pkgname-$pkgver.tar.gz)
 md5sums=('afe041581b8f01666e353bec20917c85')
 
@@ -16,6 +16,7 @@ md5sums=('afe041581b8f01666e353bec20917c85')
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt without hostap-driver dependence 2006.04.21
 ##   rel1: Upgraded to 0.4.7 2005.12.19
 ##   rel1: Upgraded to development release 0.4.0 2005.09.02
 ##   rel1: Initial rubix release

@@ -2,7 +2,7 @@
 
 pkgname=snort
 pkgver=2.4.3
-pkgrel=2
+pkgrel=3
 pkgdesc="Snort is an open source network intrusion prevention system, capable of performing real-time traffic analysis and packet logging on IP networks. It can perform protocol analysis, content searching/matching and can be used to detect a variety of attacks and probes, such as buffer overflows, stealth port scans, CGI attacks, SMB probes, OS fingerprinting attempts, and much more."
 depends=('glibc' 'mysql' 'openssl' 'zlib' 'pcre')
 backup=('etc/snort/snort.conf'	\
@@ -11,7 +11,7 @@ source=(http://www.snort.org/dl/current/$pkgname-$pkgver.tar.gz						\
 	http://www.snort.org/pub-bin/downloads.cgi/Download/comm_rules/Community-Rules-2.4.tar.gz	\
 	snort												)
 md5sums=('5c3c8c69f2459bbe0c1f2057966c88a7' \
-	 '7e7fc36a2c7f86102e50055c5572b9c9' \
+	 '649eb53eb742f83d84040990006b3026' \
 	 'b7b3c687166f366fccb849850fe58234' )
 url="http://www.snort.org"
 
@@ -22,6 +22,7 @@ url="http://www.snort.org"
 ##   None
 
 ## Changelog:
+##   rel3: rebuilt against mysql 5.0 2006.03.06
 ##   rel2: updated rc script to new format 2006.01.16
 ##   rel1: upgraded to 2.4.3 2005.11.09
 ##   rel1: upgraded to 2.4.2 2005.09.30

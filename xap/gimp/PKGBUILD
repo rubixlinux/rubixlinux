@@ -1,16 +1,13 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=gimp
-pkgver=2.2.10
+pkgver=2.2.11
 pkgrel=1
 pkgdesc="gimp (The GNU Image Manipulation Program) The GIMP is a powerful tool for the preparation and manipulation of digital images.  The GIMP provides the user with a wide variety of image manipulation, painting, processing, and rendering tools.  The GIMP's open design and extensible architecture make for a very powerful end product for photo and image retouching, web graphics design, or digital illustration."
 url="http://www.gimp.org"
-depends=('glibc' 'gimp-print' 'libtiff' 'gtk+2' 'libcroco' 'atk' 'ncurses' 'libgsf'	\
-	 'librsvg' 'x11' 'fontconfig' 'expat' 'lcms' 'zlib' 'libart_lgpl' 'alsa-lib'	\
-	 'freetype2' 'gpm' 'libjpeg' 'pango' 'cairo' 'libxml2' 'bzip2' 'libmng' 'glib2'	\
-	 'libwmf' 'libexif' 'aalib' 'libgtkhtml' 'libpng'				)
+depends=('glibc' 'gimp-print' 'libXi' 'libtiff' 'fontconfig' 'libgnomecanvas' 'openssl' 'expat' 'gail' 'libXrender' 'lcms' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libXpm' 'libxml2' 'libXdmcp' 'libXmu' 'libmng' 'libwmf' 'libXt' 'aalib' 'libpng' 'libXinerama' 'orbit2' 'libSM' 'libXext' 'gtk+2' 'libcroco' 'atk' 'ncurses' 'libgsf' 'gconf' 'librsvg' 'libICE' 'libart_lgpl' 'freetype2' 'cairo' 'pango' 'libXfixes' 'gpm' 'libXcursor' 'libbonobo' 'libX11' 'bzip2' 'glib2' 'libexif' 'libgtkhtml' 'gnome-vfs' 'popt' 'libXrandr')
 source=(ftp://ftp.gimp.org/pub/$pkgname/v2.2/$pkgname-$pkgver.tar.bz2)
-md5sums=('aa29506ed2272af02941a7a601a7a097')
+md5sums=('0403e9b4e0415c99cd27b137b9839212')
 
 ## Todo:
 ##   None
@@ -19,6 +16,8 @@ md5sums=('aa29506ed2272af02941a7a601a7a097')
 ##   Does not like pie
 
 ## Changelog:
+##   rel1: upgraded to 2.2.11 2006.04.21
+##   rel2: rebuilt 2006.03.27
 ##   rel1: Upgraded to 2.2.10 2005.12.29
 ##   rel1: Upgraded to 2.2.9 2005.10.31
 ##   rel1: Upgraded to 2.2.8 2005.08.16
@@ -64,5 +63,7 @@ build() {
 	ln -s gimptool-2.0.1	gimptool.1
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

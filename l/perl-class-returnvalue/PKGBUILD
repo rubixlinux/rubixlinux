@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-class-returnvalue
+pkgver=0.53
+pkgrel=1
+pkgdesc="Class::ReturnValue - A return-value object that lets you treat it as as a boolean, array or object"
+url="http://search.cpan.org/~jesse/Class-ReturnValue-$pkgver/lib/Class/ReturnValue.pm"
+source=(http://search.cpan.org/CPAN/authors/id/J/JE/JESSE/Class-ReturnValue-$pkgver.tar.gz)
+md5sums=('6db549139d16eb042f0128ff5aefe2f0')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Class-ReturnValue-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Class-ReturnValue-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/Class-ReturnValue-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

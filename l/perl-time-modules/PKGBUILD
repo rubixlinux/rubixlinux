@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-time-modules
 pkgver=2003.1126
-pkgrel=3
+pkgrel=4
 pkgdesc="This package contains the following perl modules: Time::CTime.pm ctime, strftime, and asctime ; Time::JulianDay.pm Julian Day conversions ; Time::ParseDate.pm Reverses strftime and also understands relative times ; Time::Timezone.pm ; Time::DaysInMonth.pm"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/M/MU/MUIR/modules/Time-modules-$pkgver.tar.gz)
 md5sums=('b3bda3a2935c2d7d099c8001f583c4cb')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel3: fixed man page location 2005.08.29
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release 2005.05.20
+## Changelog:
+##   rel4: rebuilt for perl 5.8.8 2006.03.06
+##   rel3: fixed man page location 2005.08.29
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release 2005.05.20
 
 build() {
 

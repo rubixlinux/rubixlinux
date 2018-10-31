@@ -1,18 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdeartwork
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdeartwork Additional themes, screensavers, sounds, wallpapers, and window styles."
 url="http://www.kde.org"
 groups=('kde')
-depends=('qt' 'glibc' 'esound' 'fontconfig' 'xfsprogs' 'x11' 'kdebase' 'expat' 'libogg' 'zlib'	\
-	 'libart_lgpl' 'alsa-lib' 'freetype2' 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'arts'	\
-	 'libmad' 'glib2' 'libmng' 'gcc' 'kdelibs' 'libpng'					)
+depends=('glibc' 'mesa3d' 'esound' 'fontconfig' 'expat' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'acl' 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'libXdmcp' 'libXmu' 'libmad' 'libmng' 'libXt' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'attr' 'kdebase' 'libICE' 'libogg' 'libart_lgpl' 'qt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'arts' 'glib2' 'gcc' 'kdelibs' 'libXrandr')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('8053bb1a1b2a5844b29f5f96328b1d96')
+md5sums=('e0fc78bee18d81b4595c98964227a06c')
 
 ## Todo:
 ##   None
@@ -21,6 +19,9 @@ md5sums=('8053bb1a1b2a5844b29f5f96328b1d96')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.07
+##   rel1: upgraded to 3.5.2 2006.03.29
 ##   rel1: Upgraded to 3.5.1 2006.01.31
 ##   rel1: Upgraded to 3.5.0 2005.12.18
 ##   rel1: Upgraded to 3.4.3 2005.10.15

@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-http-cache-transparent
 pkgver=0.6
-pkgrel=1
+pkgrel=2
 pkgdesc="HTTP::Cache::Transparent - Cache the result of http get-requests persistently."
 url="http://search.cpan.org/~mattiash/HTTP-Cache-Transparent-$pkgver/lib/HTTP/Cache/Transparent.pm"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/M/MA/MATTIASH/HTTP-Cache-Transparent-$pkgver.tar.gz)
 md5sums=('49208c9cd61f8f687c5f5031845c5de2')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: Upgraded to 0.6 and rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel2: rebuilt for perl 5.8.8 2006.03.06
+##   rel1: Upgraded to 0.6 and rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 

@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-sub-uplevel
+pkgver=0.09
+pkgrel=1
+pkgdesc="Sub::Uplevel - apparently run a function in a higher stack frame"
+url="http://search.cpan.org/~mschwern/Sub-Uplevel-0.09/lib/Sub/Uplevel.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/M/MS/MSCHWERN/Sub-Uplevel-$pkgver.tar.gz)
+md5sums=('eb09cb38cd7a9b7bc9d3e85e61fe09dd')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Sub-Uplevel-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Sub-Uplevel-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/Sub-Uplevel-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

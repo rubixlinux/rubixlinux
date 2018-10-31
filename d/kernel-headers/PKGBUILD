@@ -1,34 +1,24 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=kernel-headers
-pkgver=2.6.15.5
+pkgver=2.6.16.20
 pkgrel=1
 url="http://www.kernel.org"
 conflicts=kernel-headers
 pkgdesc="kernel26-headers (Linux kernel include files) These are the include files from the Linux kernel. You'll need these to compile most system software for Linux."
 provides=(kernel26-headers)
 source=(http://www.kernel.org/pub/linux/kernel/v2.6/linux-$pkgver.tar.bz2	\
-	reiser4.diff								\
-	squashfs.diff								\
-	suspend2.diff								\
-	bootsplash.diff								\
-	ibm_acpi.diff								\
-	quiet_suspend.diff							\
-	bluetooth.diff								\
-	nfs.diff								\
-	system.diff								\
+	rubix.diff								\
+	input.h.diff								\
+	system.h.diff								\
+	bitops.h.diff								\
 	config									)
-md5sums=('1b9d99238a2f8516101462b37f4679c3' \
-	 '496a124efe9206d4ecaab6abea71f33e' \
-	 'a2be7e4e201846e2a25088bf916d7a5e' \
-	 '275e08f727986c610a5c8019eb973b9f' \
-	 'bf176bd018bb5b28265191a5e1a5cce5' \
-	 'bdee870f19d819a16690100f47bacfc2' \
-	 'f70aab1cb8546f01f742fe1ede7e38d3' \
-	 '75ad6c384b51f5445355e58dc1f454b7' \
-	 'd3f3f5eb2e415a26c9c0d5bf2a51eab4' \
-	 '2217b1e412d9dbc2f7798517a66dbeb9' \
-	 '0a564ec897843c3772d0f504be0e28ea' )
+md5sums=('382aa4178ff79d58925622a8a97561eb' \
+	 '2be65f36f61948f5c46f09e62d405551' \
+	 '87606c069210361947ccaf2cf1d3ee8e' \
+	 '596ea85dfb4fa9d6a26718e18fd99fa4' \
+	 '080a5a7af8a01afb6f0cd335ed4fac35' \
+	 '46410e3bfc4a5dd45e923925cc18d34e' )
 
 ## Todo:
 ##   None
@@ -41,6 +31,14 @@ md5sums=('1b9d99238a2f8516101462b37f4679c3' \
 ##     will never see.
 
 ## Changelog:
+##   rel1: upgraded to 2.6.16.20 2006.06.07
+##   rel1: upgraded to 2.6.16.19 2006.06.01
+##   rel1: upgraded to 2.6.16.18 2006.05.22
+##   rel1: upgraded to 2.6.16.16 2006.05.11
+##   rel1: upgraded to 2.6.16.11 2006.04.27
+##   rel2: added system.h and bitops.h diffs 2006.04.21
+##   rel1: upgraded to 2.6.16.9 2006.04.20
+##   rel2: added fix to allow mysql to compile 2006.03.07
 ##   rel1: upgraded to 2.6.15.5 2006.03.03
 ##   rel1: upgraded to 2.6.15.4 2006.02.12
 ##   rel1: upgraded to 2.6.15.3 2006.02.07
@@ -64,19 +62,15 @@ build() {
 
 	cd linux-$pkgver
 
-	patch -p1 < $startdir/src/reiser4.diff		|| return 1
-	patch -p1 < $startdir/src/squashfs.diff		|| return 1
-	patch -p1 < $startdir/src/suspend2.diff		|| return 1
-	patch -p1 < $startdir/src/system.diff		|| return 1
-	patch -p1 < $startdir/src/bootsplash.diff	|| return 1
-	patch -p1 < $startdir/src/ibm_acpi.diff		|| return 1
-	patch -p1 < $startdir/src/quiet_suspend.diff	|| return 1
-	patch -p1 < $startdir/src/bluetooth.diff	|| return 1
-	patch -p1 < $startdir/src/nfs.diff		|| return 1
+	patch -p1 < $startdir/src/rubix.diff	|| return 1
+	patch -p1 < $startdir/src/system.h.diff	|| return 1
+	patch -p1 < $startdir/src/bitops.h.diff	|| return 1
 
 	make silentoldconfig	|| return 1
 	make bzImage		|| return 1
 	make clean
+
+	patch -p1 < $startdir/src/input.h.diff  || return 1
 
 	find . -name ".depend" -exec rm {} \;
 

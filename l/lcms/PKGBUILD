@@ -1,13 +1,23 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=lcms
-pkgver=1.14
+pkgver=1.15
 pkgrel=1
 pkgdesc="lcms (little cms engine) Little cms is a small, speed optimized color management engine. lcms was written by Marti Maria <marti@littlecms.com>."
-depends=('libjpeg' 'libtiff')
+depends=('glibc' 'libtiff' 'libjpeg' 'zlib')
 url="http://www.littlecms.com"
 source=(http://littlecms.com/$pkgname-$pkgver.tar.gz)
-md5sums=('5a803460aeb10e762d97e11a37462a69')
+md5sums=('76c921973fdea4f880944a024197f924')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.15 2006.04.11
+##   rel1: initial rubix release
 
 build() {
 
@@ -18,7 +28,7 @@ build() {
 	find . -perm 664 -exec chmod 644 {} \;
 
 	./configure --prefix=/usr
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	chown -R root.bin $startdir/pkg/usr/bin
@@ -33,6 +43,7 @@ build() {
 		doc	\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
+	find $startdir/pkg -name *.la -exec rm {} \;
 	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
 
 }

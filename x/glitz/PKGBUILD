@@ -1,0 +1,35 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=glitz
+pkgver=20060319
+pkgrel=1
+depends=('libXext' 'libXau' 'glibc' 'mesa3d' 'libX11' 'libXdmcp')
+pkgdesc="glitz"
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src
+
+	cvs -d:pserver:anonymous@cvs.freedesktop.org:/cvs/cairo co glitz
+
+	cd glitz
+
+	./autogen.sh --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/lib
+	mv $startdir/pkg/usr/X11R7/lib/pkgconfig $startdir/pkg/usr/lib
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

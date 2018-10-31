@@ -1,18 +1,19 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=ndiswrapper
-pkgver=1.10
-pkgrel=1
+pkgver=1.16
+pkgrel=4
 pkgdesc="ndiswrapper provides a linux kernel module that loads and runs NDIS (Windows network driver API) drivers supplied by the vendors"
 url="http://ndiswrapper.sourceforge.net"
 depends=('glibc' 'libusb' 'wireless_tools')
 source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
-md5sums=('db2edffb082bda09b27358b6528e5e56')
+md5sums=('478d62def83d722fc0635afc44202e7c')
 install=$pkgname.install
 
 vver24=2.4.32
 gver24=2.4.32-grsec
-vver26=2.6.15.5-Rubix
+vver26=2.6.16.20-Rubix
+xver26=2.6.16.20-XenRubix
 
 ## Todo:
 ##   None
@@ -21,6 +22,13 @@ vver26=2.6.15.5-Rubix
 ##   Will not build with PIE, and depmod complains about unresolved symbols with SSP
 
 ## Changelog:
+##   rel4: rebuilt for 2.6.16.20 kernels 2006.06.07
+##   rel3: rebuilt for 2.6.16.19 kernels 2006.06.01
+##   rel2: rebuilt for 2.6.16.18 kernels 2006.05.22
+##   rel1: upgraded to 1.16, built for 2.6.16.16 kernels 2006.05.11
+##   rel3: rebuilt 2006.04.27
+##   rel2: built xen modules 2006.04.27
+##   rel1: upgraded to 1.14, built for 2.6.16.9 2006.04.20
 ##   rel1: upgraded to 1.10, built for 2.6.15.4 2006.03.03
 ##   rel4: rebuilt for 2.6.15.4 2006.02.12
 ##   rel3: upgraded to 1.9, built for 2.6.15.3 2006.02.07
@@ -49,6 +57,7 @@ vver26=2.6.15.5-Rubix
 
 build() {
 
+	export MAKEFLAGS=""
 	export CFLAGS="-march=i486 -mtune=i686 -O2 -pipe"
 	export CXXFLAGS="-march=i486 -mtune=i686 -O2 -pipe"
 
@@ -87,6 +96,11 @@ build() {
 		make clean
 		make KVERS=$vver26 || return 1
 		make KVERS=$vver26 DESTDIR=$startdir/pkg install
+
+	# Make 2.6 xen module:
+		make clean
+		make KVERS=$xver26 || return 1
+		make KVERS=$xver26 DESTDIR=$startdir/pkg install
 
 	cd $startdir/pkg
 	find lib/modules -type f -name *.o -exec gzip {} \;

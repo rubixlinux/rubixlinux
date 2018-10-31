@@ -1,7 +1,7 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=clamav
-pkgver=0.88
+pkgver=0.88.2
 pkgrel=1
 pkgdesc="Clam AntiVirus is a GPL anti-virus toolkit for UNIX. The package provides a flexible and scalable multi-threaded daemon, a command line scanner, and a tool for automatic updating via Internet."
 depends=('glibc' 'gmp' 'bzip2' 'zlib')
@@ -11,7 +11,7 @@ backup=('etc/clamd.conf'	\
 	'etc/rc.d/clamav'	)
 source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz	\
 	$pkgname								)
-md5sums=('5d23205673c32e2b1b6db95000e6da74' \
+md5sums=('f0a1c610a1fb70bd748a08bea69c736c' \
 	 '068554b65426f3422b51bde8968a05e8' )
 
 ## Notes:
@@ -21,6 +21,7 @@ md5sums=('5d23205673c32e2b1b6db95000e6da74' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 0.88.2 2006.04.30
 ##   rel1: upgraded to 0.88 2006.01.10
 ##   rel1: upgraded to 0.87.1 2005.11.07
 ##   rel1: upgraded to 0.87 2005.09.18
@@ -64,5 +65,7 @@ build() {
 
 	mkdir -p $startdir/pkg/var/run/$pkgname
 	chown clamav.clamav $startdir/pkg/var/run/$pkgname
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

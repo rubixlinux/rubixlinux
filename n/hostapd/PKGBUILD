@@ -1,8 +1,8 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=hostapd
-pkgver=0.4.7
-pkgrel=2
+pkgver=0.4.8
+pkgrel=1
 pkgdesc="hostapd is a user space daemon for access points, including, e.g., IEEE 802.1X/WPA/EAP Authenticator for number of Linux and BSD drivers, RADIUS client, integrated EAP server, and RADIUS authentication server"
 url="http://hostap.epitest.fi"
 depends=('glibc' 'openssl')
@@ -17,8 +17,8 @@ backup=('etc/hostapd/hostapd.accept'		\
 source=(http://hostap.epitest.fi/releases/$pkgname-$pkgver.tar.gz	\
 	config								\
 	$pkgname							)
-md5sums=('b299211691fe8a6840e7adafda351d2b' \
-	 '0727144e5368b13cd0fac0fc74a8eac6' \
+md5sums=('b8f30f23c04b74f18b2e4e6d8e0ee014' \
+	 '93ce31bfcc66df3b409bbfdb36d9ebb4' \
 	 'ffa3799b8a3ff1ae8f1d1f52cf70b2c4' )
 
 ## Todo:
@@ -28,6 +28,7 @@ md5sums=('b299211691fe8a6840e7adafda351d2b' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 0.4.8 206.04.21
 ##   rel2: added rc script in new format 2006.01.16
 ##   rel1: upgraded to 0.4.7 2005.12.18
 ##   rel1: upgraded to 0.4.6 2005.10.27

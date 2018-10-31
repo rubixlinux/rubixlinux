@@ -1,10 +1,10 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-authen-sasl
 pkgver=2.09
-pkgrel=1
+pkgrel=2
 pkgdesc="Authen::SASL - SASL Authentication framework"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/Authen-SASL-$pkgver.tar.gz)
@@ -17,6 +17,7 @@ md5sums=('e11b60f58850ff6e71e6e1813c1f5e31')
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt for perl 5.8.8 2006.03.06
 ##   rel1: initial rubix release 2005.11.22
 
 build() {

@@ -1,0 +1,56 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=xf86-video-savage
+pkgver=2.0.2.3
+pkgrel=1
+pkgdesc="X.Org savage video driver"
+url="http://www.x.org"
+depends=('glibc')
+source=(ftp://ftp.x.org/pub/$X11/src/driver/$pkgname-$X11-$pkgver.tar.bz2	\
+	s3ssrc.zip								)
+md5sums=('6b638dd500d10dba1822d3ea5061fc65' \
+	 '1328b070343ac79c5ed4c613a1113754' )
+groups=('x11-driver' 'x11-video')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7 --with-xorg-module-dir=/usr/X11R7/lib/modules
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	cd $startdir/src
+	mkdir s3switch
+        cd s3switch
+        unzip $startdir/src/s3ssrc.zip
+        make || return 1
+	mkdir -p	$startdir/pkg/usr/X11R7/bin
+        cp s3switch     $startdir/pkg/usr/X11R7/bin
+        chmod 755       $startdir/pkg/usr/X11R7/bin/s3switch
+        chown root.bin  $startdir/pkg/usr/X11R7/bin/s3switch
+        cp s3switch.1x  $startdir/pkg/usr/X11R7/man/man1
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

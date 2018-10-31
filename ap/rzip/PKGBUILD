@@ -1,13 +1,23 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=rzip
-pkgver=2.0
+pkgver=2.1
 pkgrel=1
 pkgdesc="rzip (a large-file compression program) rzip is a file compression program designed to do particularly well on very large files containing long distance redundancy. rzip was written by Andrew Tridgell."
 url="http://rzip.samba.org"
 source=(http://rzip.samba.org/ftp/$pkgname/$pkgname-$pkgver.tar.gz)
-md5sums=('8a88b445afba919b122a3899d6d26b2a')
+md5sums=('0a3ba55085661647c12f2b014c51c406')
 depends=('glibc' 'bzip2')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.1 2006.04.23
+##   rel1: initial rubix release
 
 build() {
 

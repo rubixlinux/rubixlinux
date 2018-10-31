@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=zenity
+pkgver=2.14.0
+pkgrel=1
+pkgdesc="zenity - tool to display dialogs from the commandline and shell scripts"
+depends=('libXext' 'libSM' 'glibc' 'libXi' 'libglade' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libICE' 'libgnomecanvas' 'libXrender' 'zlib' 'libart_lgpl' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'libxml2' 'glib2' 'libpng' 'libXrandr' 'libXinerama')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('872f0f25a3c41b9a4e89cb3be9518e11')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --disable-scrollkeeper
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

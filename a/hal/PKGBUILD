@@ -1,19 +1,15 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=hal
-pkgver=0.5.5.1
+pkgver=0.5.7
 pkgrel=2
 pkgdesc="HAL is a hardware abstraction layer"
 url="http://freedesktop.org/wiki/Software_2fhal"
 depends=('glibc' 'expat' 'glib2' 'libusb' 'dbus')
 source=(http://freedesktop.org/~david/dist/$pkgname-$pkgver.tar.gz	\
-	blockdev.diff							\
-	storage-policy.diff						\
 	20-hal.rules							\
 	hal								)
-md5sums=('2abd81ed3f5a37789f4fbda2f6a61270' \
-	 '989874bc7c82d9ca39e4934c96a28d57' \
-	 '17f1fa2e4afbfa08f765490c918eb9f0' \
+md5sums=('4163afb8285db64e00e7b1392b401d92' \
 	 '61b99a90400aa3ad848211b0ab477829' \
 	 '6bdff8f3835c4f99c67c8a22aaf8248b' )
 
@@ -24,6 +20,8 @@ md5sums=('2abd81ed3f5a37789f4fbda2f6a61270' \
 ##   This package REQUIRES kernel26-headers to be built
 
 ## Changelog:
+##   rel2: removed extra udev rules 2006.04.21
+##   rel1: upgraded to 0.5.7 2006.03.22
 ##   rel2: updated rc script to new format 2006.01.15
 ##   rel1: upgraded to 0.5.5.1 2005.12.18
 ##   rel1: upgraded to 0.4.8 2005.09.30
@@ -33,9 +31,6 @@ md5sums=('2abd81ed3f5a37789f4fbda2f6a61270' \
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
-
-	patch -p1 < $startdir/src/blockdev.diff		|| return 1
-	patch -p1 < $startdir/src/storage-policy.diff	|| return 1
 
 	./configure						\
 		--prefix=/usr					\
@@ -68,11 +63,13 @@ build() {
 	rm -r	$startdir/pkg/usr/share/doc
 	rm -r	$startdir/pkg/usr/share/hal/device-manager
 	rm	$startdir/pkg/usr/bin/hal-device-manager
-	rm -r	$startdir/pkg/etc/hotplug.d
-	rm -r	$startdir/pkg/usr/man
 
 	mkdir -p $startdir/pkg/etc/udev/rules.d
 	cp $startdir/src/20-hal.rules $startdir/pkg/etc/udev/rules.d
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	rm $startdir/pkg/etc/udev/rules.d/90-hal.rules
 
 	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
 

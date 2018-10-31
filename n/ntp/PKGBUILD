@@ -1,17 +1,17 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=ntp
-pkgver=4.2.0
-pkgrel=2
+pkgver=4.2.0a
+pkgrel=1
 pkgdesc="ntp (Network Time Protocol daemon) The Network Time Protocol (NTP) is used to synchronize the time of a computer client or server to another server or reference time source, such as a radio or satellite receiver or modem. It provides client accuracies typically within a millisecond on LANs and up to a few tens of milliseconds on WANs relative to a primary server synchronized to Coordinated Universal Time (UTC) via a Global Positioning Service (GPS) receiver, for example."
 url="http://www.ntp.org"
-depends=('openssl' 'readline')
+depends=('glibc' 'openssl' 'ncurses' 'readline')
 conflicts=('openntpd')
-source=(http://www.eecis.udel.edu/~ntp/ntp_spool/${pkgname}4/$pkgname-$pkgver.tar.gz	\
-	ntp.conf									\
-	ntp.keys									\
-	$pkgname									)
-md5sums=('0f8fabe87cf54f409b57c6283f0c0c3d' \
+source=(http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/snapshots/ntp-stable/2006/02/$pkgname-stable-$pkgver-20060224.tar.gz	\
+	ntp.conf														\
+	ntp.keys														\
+	$pkgname														)
+md5sums=('49d4a704b49dc1ef2a7ec0b7938c3ae1' \
 	 '2dd21920ef5513af033fced8d9270dc8' \
 	 '32e69b89c80eeeb12516766bdc03a5f4' \
 	 '14b7830b340458c569fd7266df6480d8' )
@@ -25,12 +25,13 @@ backup=('etc/ntp.conf'		\
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 4.2.0a 2006.04.23
 ##   rel2: updated rc script to new format 2006.01.17
 ##   rel1: initial rubix release
 
 build() {
 
-	cd $startdir/src/$pkgname-$pkgver
+	cd $startdir/src/$pkgname-stable-$pkgver-20060224
 
 	find . -perm 664 -exec chmod 644 {} \;
 	find . -perm 777 -exec chmod 755 {} \;
@@ -47,7 +48,7 @@ build() {
 		--program-prefix=	\
 		--program-suffix=	\
 		$CHOST
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	mkdir -p			$startdir/pkg/etc/ntp

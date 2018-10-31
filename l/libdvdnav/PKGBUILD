@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libdvdnav
+pkgver=0.1.10
+pkgrel=1
+url="http://dvd.sourceforge.net"
+pkgdesc="libdvdnav is a library for developers of multimedia applications. It allows easy use of sophisticated DVD navigation features such as DVD menus, multiangle playback and even interactive DVD games. All this functionality is provided through a simple API which provides the DVD playback as a single logical stream of blocks, intermitted by special dvdnav events to report certain conditions. The main usage of libdvdnav is a loop regularly calling a function to get the next block, surrounded by additional calls to tell the library of user interaction. The whole DVD virtual machine and internal playback states are completely encapsulated."
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/dvd/$pkgname-$pkgver.tar.gz	\
+	autogen.diff								)
+md5sums=('c8ddee96ba1182d73447eaf0bb6fde81' \
+	 '31c80033c04b009444bacf532460002e' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/autogen.diff || return 1
+
+	./autogen.sh
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

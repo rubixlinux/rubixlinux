@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-http-server-simple-mason
+pkgver=0.09
+pkgrel=1
+pkgdesc="HTTP::Server::Simple::Mason - An abstract baseclass for a standalone mason server"
+depends=('perl' 'perl-hook-lexwrap')
+url="http://search.cpan.org/~jesse/HTTP-Server-Simple-Mason-$pkgver/lib/HTTP/Server/Simple/Mason.pm"
+source=(http://search.cpan.org/CPAN/authors/id/J/JE/JESSE/HTTP-Server-Simple-Mason-$pkgver.tar.gz)
+md5sums=('89801442d5ed9b39a80605546461712e')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/HTTP-Server-Simple-Mason-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/HTTP-Server-Simple-Mason-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/HTTP-Server-Simple-Mason-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

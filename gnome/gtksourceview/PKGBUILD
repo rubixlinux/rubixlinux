@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gtksourceview
+pkgver=1.6.0
+pkgrel=1
+pkgdesc="gtksourceview - a text widget implementing syntax highlighting and other features"
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libart_lgpl' 'libXau' 'freetype2' 'libgnomeprint' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'libxml2' 'glib2' 'libpng' 'libXinerama' 'libXrandr')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.6/$pkgname-$pkgver.tar.bz2)
+md5sums=('f3403c0f8c5f924b022534b0d93d8e0f')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

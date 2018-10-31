@@ -1,13 +1,23 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=most
-pkgver=4.10.1
+pkgver=4.10.2
 pkgrel=1
 pkgdesc="most (another pager, like 'more' and 'less') most is a paging program that displays, one windowful at a time,  the contents of a file on a terminal.  Unlike other well-known paging programs, most supports multiple windows and can scroll left and right.  Why settle for less? 'most' was written by John E. Davis."
-depends=('slang')
+depends=('glibc' 'slang')
 source=(ftp://space.mit.edu/pub/davis/$pkgname/$pkgname-$pkgver.tar.gz)
 url="ftp://space.mit.edu/pub/davis/most"
-md5sums=('3feeb1855e0e902b5a4decde68f9159e')
+md5sums=('16f7a67a969e0ce9a941c0e6c1ff0470')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 4.10.2 2006.04.22
+##   rel1: initial rubix release
 
 build() {
 

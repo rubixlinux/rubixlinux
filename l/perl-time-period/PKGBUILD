@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-time-period
 pkgver=1.20
-pkgrel=3
+pkgrel=4
 pkgdesc="Time::Period - A Perl module to deal with time periods."
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/P/PR/PRYAN/Period-$pkgver.tar.gz)
 md5sums=('63b073af8ec96e7fa48801cd6fcccdd1')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel3: fixed man page location 2005.08.29
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release 2005.05.20
+## Changelog:
+##   rel4: rebuilt for perl 5.8.8 2006.03.06
+##   rel3: fixed man page location 2005.08.29
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release 2005.05.20
 
 build() {
 

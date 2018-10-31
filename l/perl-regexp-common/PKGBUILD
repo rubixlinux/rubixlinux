@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-regexp-common
+pkgver=2.120
+pkgrel=1
+pkgdesc="Regexp::Common - Provide commonly requested regular expressions"
+url="http://search.cpan.org/~abigail/Regexp-Common-$pkgver/lib/Regexp/Common.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/A/AB/ABIGAIL/Regexp-Common-$pkgver.tar.gz)
+md5sums=('a14f2a3c3f2718a567ec26f57a2bae13')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Regexp-Common-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Regexp-Common-$pkgver
+	cp	-a		\
+		MANIFEST	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/Regexp-Common-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

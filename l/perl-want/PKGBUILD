@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-want
+pkgver=0.10
+pkgrel=1
+pkgdesc="Want - A generalisation of wantarray"
+url="http://search.cpan.org/~robin/Want-$pkgver/Want.pm"
+depends=('glibc' 'perl')
+source=(http://search.cpan.org/CPAN/authors/id/R/RO/ROBIN/Want-$pkgver.tar.gz)
+md5sums=('bc2836bd8fe4bcb6044334d54a08c686')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Want-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Want-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/Want-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

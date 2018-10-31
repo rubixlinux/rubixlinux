@@ -1,20 +1,23 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
+ADDONS=1.2.2
+SOUNDS=1.2.1
+
 pkgname=asterisk
-pkgver=1.2.1
+pkgver=1.2.7.1
 pkgrel=1
 pkgdesc="Asterisk is a complete PBX in software. It runs on Linux and provides all of the features you would expect from a PBX and more. Asterisk does voice over IP in many protocols, and can interoperate with almost all standards-based telephony equipment using relatively inexpensive hardware."
 url="http://www.asterisk.org"
-depends=('glibc' 'ncurses' 'libvorbis' 'mysql' 'openssl' 'libogg' 'zlib' 'popt' 'alsa-lib')
+depends=('postgresql' 'glibc' 'db' 'heimdal' 'libidn' 'ncurses' 'libvorbis' 'e2fsprogs' 'mysql' 'openssl' 'curl' 'libogg' 'zlib' 'popt' 'alsa-lib')
 install=$pkgname.install
 source=(http://ftp.digium.com/pub/$pkgname/$pkgname-$pkgver.tar.gz		\
-	http://ftp.digium.com/pub/$pkgname/$pkgname-addons-$pkgver.tar.gz	\
-	http://ftp.digium.com/pub/$pkgname/$pkgname-sounds-$pkgver.tar.gz	\
+	http://ftp.digium.com/pub/$pkgname/$pkgname-addons-$ADDONS.tar.gz	\
+	http://ftp.digium.com/pub/$pkgname/$pkgname-sounds-$SOUNDS.tar.gz	\
 	iaxyprov.tar.gz								\
 	nonroot.diff								\
 	$pkgname.rc								)
-md5sums=('04657086791e80f319c0d728af705001' \
-	 '28bdfb79835e223cdff8bfa8365d1720' \
+md5sums=('5c4b473eee2fbc2cb9e346f0564ef970' \
+	 'a22b05117a2f8c8b25d504d0d01f8823' \
 	 'bed4259905a7d7bc070c6319142b2075' \
 	 '308aa0638f2eb9c474f0b6127061c136' \
 	 '3ce178fe9779a9903f8d01e10dc41e9f' \
@@ -27,6 +30,8 @@ md5sums=('04657086791e80f319c0d728af705001' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 1.2.7.1, addons 1.2.2 2006.04.23
+##   rel1: upgraded to 1.2.5, built for mysql 5.0 2006.03.06
 ##   rel1: upgraded to 1.2.1, converted rc script to new format 2006.01.11
 ##   rel1: upgraded to 1.2.0 2005.11.21
 ##   rel4: fixed man page location 2005.08.29
@@ -59,7 +64,7 @@ build() {
 		doc/		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
-	cd $startdir/src/$pkgname-addons-$pkgver
+	cd $startdir/src/$pkgname-addons-$ADDONS
 	make || return 1
 	make INSTALL_PREFIX=$startdir/pkg install
 
@@ -68,7 +73,7 @@ build() {
 	cp -a iaxydebug iaxyprov $startdir/pkg/usr/sbin
 	cp -a iaxy.conf.sample $startdir/pkg/usr/doc/$pkgname-$pkgver
 
-	cd $startdir/src/$pkgname-sounds-$pkgver
+	cd $startdir/src/$pkgname-sounds-$SOUNDS
 	make DESTDIR=$startdir/pkg install
 
 	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin

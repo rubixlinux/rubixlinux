@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-cache-cache
+pkgver=1.04
+pkgrel=1
+pkgdesc="Cache::Cache -- the Cache interface"
+url="http://search.cpan.org/~dclinton/Cache-Cache-$pkgver/lib/Cache/Cache.pm"
+depends=('perl' 'perl-error' 'perl-ipc-sharelite')
+source=(http://search.cpan.org/CPAN/authors/id/D/DC/DCLINTON/Cache-Cache-$pkgver.tar.gz)
+md5sums=('60f79f31e74830dba1e0acda4d232d31')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Cache-Cache-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+#	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Cache-Cache-$pkgver
+	cp	-a		\
+		CHANGES		\
+		COPYING		\
+		CREDITS		\
+		DISCLAIMER	\
+		MANIFEST	\
+		README		\
+		STYLE		\
+	$startdir/pkg/usr/doc/perl-$PERL/Cache-Cache-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

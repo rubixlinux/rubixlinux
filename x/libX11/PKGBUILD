@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=libX11
+pkgver=1.0.0
+pkgrel=2
+pkgdesc="X.Org libX11 library"
+url="http://www.x.org"
+depends=('libXau' 'glibc' 'libXdmcp')
+source=(ftp://ftp.x.org/pub/$X11/src/lib/$pkgname-$X11-$pkgver.tar.bz2	\
+	Xlib.h.diff							)
+md5sums=('dcf59f148c978816ebbe3fbc5c9ef0e1' \
+	 '56465dcc4d9fe965dead8ee14b958e76' )
+groups=('x11-lib')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt without --enable-loadable-i18n 2006.03.16
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	patch -p1 < $startdir/src/Xlib.h.diff || return 1
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	mkdir -p $startdir/pkg/usr/lib
+	mv $startdir/pkg/usr/X11R7/lib/pkgconfig $startdir/pkg/usr/lib
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-ipc-cmd
+pkgver=0.24
+pkgrel=1
+pkgdesc="IPC::Cmd - finding and running system commands made easy"
+url="http://search.cpan.org/~kane/IPC-Cmd-$pkgver/lib/IPC/Cmd.pm"
+depends=('perl' 'perl-locale-maketext-simple' 'perl-module-load-conditional' 'perl-params-check' 'perl-ipc-run')
+source=(http://search.cpan.org/CPAN/authors/id/K/KA/KANE/IPC-Cmd-$pkgver.tar.gz)
+md5sums=('9061bd187defad873432f91fa6de9f9b')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/IPC-Cmd-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/IPC-Cmd-$pkgver
+	cp	-a		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/IPC-Cmd-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

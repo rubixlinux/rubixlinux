@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=scrollkeeper
+pkgver=0.3.14
+pkgrel=1
+pkgdesc="scrollkeeper - cataloging system for documentation on open systems"
+depends=('glibc' 'libxslt' 'zlib' 'libxml2')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/0.3/$pkgname-$pkgver.tar.bz2)
+md5sums=('b175e582a6cec3e50a9de73a5bb7455a')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

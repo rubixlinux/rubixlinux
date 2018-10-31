@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-archive-extract
+pkgver=0.08
+pkgrel=1
+pkgdesc="Archive::Extract -- A generic archive extracting mechanism"
+url="http://search.cpan.org/~kane/Archive-Extract-$pkgver/lib/Archive/Extract.pm"
+depends=('perl' 'perl-ipc-cmd' 'perl-locale-maketext-simple' 'perl-module-load-conditional' 'perl-params-check')
+source=(http://search.cpan.org/CPAN/authors/id/K/KA/KANE/Archive-Extract-$pkgver.tar.gz)
+md5sums=('1e5d21e4dcd52e168eb2d660e44a48a6')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Archive-Extract-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Archive-Extract-$pkgver
+	cp	-a		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Archive-Extract-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

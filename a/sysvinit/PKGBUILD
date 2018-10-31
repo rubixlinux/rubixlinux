@@ -2,7 +2,7 @@
 
 pkgname=sysvinit
 pkgver=2.86
-pkgrel=30
+pkgrel=38
 url="ftp://ftp.cistron.nl/pub/people/miquels/$pkgname"
 pkgdesc="sysvinit (init, the parent of all processes) System V style init programs by Miquel van Smoorenburg that control the booting and shutdown of your system.  These support a number of system runlevels, each with a specific set of utilities spawned. For example, the normal system runlevel is 3, which starts agetty on virtual consoles tty1 - tty6.  Runlevel 4 starts xdm. Runlevel 0 shuts the system down."
 depends=('glibc')
@@ -31,18 +31,18 @@ source=(ftp://ftp.cistron.nl/pub/people/miquels/$pkgname/$pkgname-$pkgver.tar.gz
 	rubixlib									\
 	rc.mythtv									)
 md5sums=('7d5d61c026122ab791ac04c8a84db967' \
-	 'cec5aac051616283fd2b6cf2ec6c90a4' \
-	 '1086ab27e8433ff065ddc39893eb0415' \
-	 '3d44ddbca893ee5bc83c33f3d1de7a9c' \
+	 '290084bd939a403d817dab3292488d00' \
+	 '4fa49e3c6d9192c8c4092f766b766870' \
+	 'b554baa7973c4136474a9ab5f01e325a' \
 	 '945b04c5a0f594c1837c57d70021229d' \
 	 'c0f76dfb07262de4db2db873790984db' \
-	 'd5299ff6bace5bdfa9e5de24876f9223' \
-	 'f2b81d5ba31542b945b5b0ac0c6bfb05' \
+	 '25b3548fa186cea8142f4a7a3e84e3cb' \
+	 'b4bd307063ccccb8690357730b815e14' \
 	 '10d015f35686314cd37f24683dfd1f79' \
 	 'e16cf8c97f212f0ead36099d9d9513eb' \
 	 '49684189c0ba1540d30af208af772093' \
-	 '8b7f353566092c719673993736482da4' \
-	 '1417ff0934c2230587e3a21e7298da0a' )
+	 'd4349470a957daf503b38d6921bec8b9' \
+	 '5a220c3b06798fc41b37c69ad96fbc81' )
 
 ## Todo:
 ##   None
@@ -52,6 +52,15 @@ md5sums=('7d5d61c026122ab791ac04c8a84db967' \
 ##     it also changes the default location initscript
 
 ## Changelog:
+##   rel38: added the nofuse option to mounting filesystems at boot 2006.05.07
+##   rel37: removed xen /lib/tls code, this issue will be fixed with a new glibc
+##          until then, just move /lib/tls to /lib/tls.disabled by hand 2006.04.28
+##   rel36: better move /lib/tls after root has been remounted read only 2006.04.27
+##   rel35: disable /lib/tls for xen kernels 2006.04.27
+##   rel34: fixed some issues with rubixlib command execution 2006.04.09
+##   rel33: added gdm support to rc.4 2006.03.27
+##   rel32: updated all X11R6 refs to X11R7 2006.03.15
+##   rel31: fixed typo in inittab 2006.03.09
 ##   rel30: fixed myth runlevel id that was too long 2006.02.07
 ##   rel29: added rc.mythtv, updated inittab for mythtv at runlevel 5 2006.02.06
 ##   rel28: added banged out alsa to default DAEMONS array in rc.conf 2006.02.06

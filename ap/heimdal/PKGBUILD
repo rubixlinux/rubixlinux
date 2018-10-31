@@ -2,7 +2,7 @@
 
 pkgname=heimdal
 pkgver=0.7.2
-pkgrel=1
+pkgrel=2
 pkgdesc="Heimdal is an implementation of Kerberos 5, largely written in Sweden (which was important when we started writing it, less so now). It is freely available under a three clause BSD style license."
 url="http://www.pdc.kth.se/heimdal"
 depends=('glibc' 'db' 'e2fsprogs' 'cracklib' 'openssl' 'openldap' 'libtermcap' 'cyrus-sasl')
@@ -32,6 +32,7 @@ md5sums=('c937580d6f8b11bf7f0e540530e1dc18' \
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt against openldap 2.3 2006.03.10
 ##   rel1: upgraded to 0.7.2, security issue 2006.02.12
 ##   rel5: updated rc script to new format 2006.01.16
 ##   rel4: fixed permissions of setuid programs 2005.11.05
@@ -140,5 +141,7 @@ build() {
 
 	chmod 4755 $startdir/pkg/usr/bin/ksu
 	chmod 4755 $startdir/pkg/usr/bin/otp
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

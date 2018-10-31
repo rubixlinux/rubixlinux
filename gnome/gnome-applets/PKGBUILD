@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-applets
+pkgver=2.14.0
+pkgrel=3
+pkgdesc="gnome-applets - applets for the gnome desktop and panel"
+depends=('libxklavier' 'glibc' 'libXi' 'libgnomeui' 'esound' 'libwnck' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'gail' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'gst-plugins-base' 'libjpeg' 'libgnome' 'dbus' 'audiofile' 'libXdmcp' 'libxml2' 'gstreamer' 'gnome-panel' 'libbonoboui' 'startup-notification' 'libpng' 'libXinerama' 'libxkbfile' 'libSM' 'orbit2' 'libXext' 'libglade' 'gtk+2' 'atk' 'hal' 'gconf' 'libICE' 'libart_lgpl' 'freetype2' 'libXres' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libbonobo' 'libgtop' 'gnome-desktop' 'glib2' 'gnome-keyring' 'gucharmap' 'gnome-vfs' 'libXrandr' 'popt' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('0c7789d642003f38c86d02a3384d3350')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel2: added install script 2006.03.23
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc --disable-scrollkeeper
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

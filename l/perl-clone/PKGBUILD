@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-clone
+pkgver=0.20
+pkgrel=1
+pkgdesc="Clone - recursively copy Perl datatypes"
+url="http://search.cpan.org/~rdf/Clone-0.20/Clone.pm"
+depends=('glibc' 'perl')
+source=(http://search.cpan.org/CPAN/authors/id/R/RD/RDF/Clone-$pkgver.tar.gz)
+md5sums=('f369cb742a92733688a9a7b8514a2538')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Clone-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Clone-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+	$startdir/pkg/usr/doc/perl-$PERL/Clone-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/Clone-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

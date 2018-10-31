@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libsoup
+pkgver=2.2.91
+pkgrel=1
+pkgdesc="libsoup - an http library implementation in c"
+depends=('glibc' 'libtasn1' 'libxml2' 'libgcrypt' 'gnutls' 'glib2' 'libgpg-error' 'zlib')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.2/$pkgname-$pkgver.tar.bz2)
+md5sums=('61541fd6df42b718e84eab8c654a6c25')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

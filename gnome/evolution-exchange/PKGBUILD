@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=evolution-exchange
+pkgver=2.6.0
+pkgrel=1
+pkgdesc="evolution-exchange - evolution module for connecting to microsoft exchange"
+depends=('glibc' 'libXi' 'db' 'heimdal' 'libgnomeui' 'esound' 'fontconfig' 'gnutls' 'libsoup' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libgnomeprint' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'libbonoboui' 'openldap' 'libpng' 'libXinerama' 'libXext' 'libSM' 'orbit2' 'libglade' 'gtk+2' 'atk' 'e2fsprogs' 'gconf' 'libICE' 'libart_lgpl' 'cyrus-sasl' 'freetype2' 'libtasn1' 'libXfixes' 'cairo' 'pango' 'libXcursor' 'libX11' 'libbonobo' 'libgcrypt' 'evolution-data-server' 'firefox' 'glib2' 'libgpg-error' 'gnome-keyring' 'gnome-vfs' 'libXrandr' 'popt' 'evolution')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.6/$pkgname-$pkgver.tar.bz2)
+md5sums=('f83177e571fdac31e6d32904a46a2029')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

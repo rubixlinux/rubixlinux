@@ -1,18 +1,18 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdesdk
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdesdk KDE Software Development Kit.  This is a collection of applications and tools used by KDE developers.  It also has example code for use in learning KDE programming or starting a new KDE application."
 url="http://www.kde.org"
 groups=('kde')
-depends=('kdepim' 'qt' 'glibc' 'heimdal' 'db' 'gdbm' 'subversion' 'e2fsprogs' 'xfsprogs' 'x11' 'fontconfig'	\
-	 'openssl' 'expat' 'zlib' 'libart_lgpl' 'freetype2' 'libjpeg' 'libidn' 'pcre' 'libxml2' 'libmng' 'gcc'	\
-	 'kdelibs' 'libpng'											)
-source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('93199b8bf5793681fdb2e5cbcfcfbd93')
+depends=('kdepim' 'glibc' 'mesa3d' 'heimdal' 'db' 'gdbm' 'fontconfig' 'openssl' 'expat' 'libXrender' 'zlib' 'libXau' 'acl' 'libjpeg' 'libidn' 'libXdmcp' 'libXmu' 'libmng' 'libXt' 'libXft' 'libpng' 'libXinerama' 'libXext' 'libSM' 'attr' 'subversion' 'e2fsprogs' 'libICE' 'libart_lgpl' 'qt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'gcc' 'libXrandr' 'kdelibs')
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2	\
+	svnlibs.diff								)
+md5sums=('75450d8905a2cc612df00927c7f81af9' \
+	 'cdd8a2af96d360250769edfddb505bb4' )
 
 ## Todo:
 ##   None
@@ -21,6 +21,9 @@ md5sums=('93199b8bf5793681fdb2e5cbcfcfbd93')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 3.5.2 2006.03.29
 ##   rel1: Upgraded to 3.5.1 2006.01.31
 ##   rel2: rebuilt against the new subversion 2006.01.13
 ##   rel1: Upgraded to 3.5.0 2005.12.18
@@ -39,6 +42,8 @@ build() {
 	export QTDIR=/usr/lib/qt
 
 	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/svnlibs.diff || return 1
 
 	./configure			\
 		--prefix=/opt/kde	\

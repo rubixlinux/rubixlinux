@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-mp3-tag
-pkgver=0.97
+pkgver=0.9706
 pkgrel=1
 pkgdesc="MP3::Tag - Module for reading tags of MP3 audio files"
 depends=('perl-compress-zlib')
 url="http://search.cpan.org/~ilyaz/MP3-Tag-$pkgver/Tag.pm"
 source=(http://search.cpan.org/CPAN/authors/id/I/IL/ILYAZ/modules/MP3-Tag-$pkgver.tar.gz)
-md5sums=('c6f7b92e6bc76f0a5c78148573196dec')
+md5sums=('9310d6a7d82d99c868e25bc116545d99')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: initial rubix release
+## Changelog:
+##   rel1: upgraded to 0.9706, built for perl 5.8.8 2006.03.06
+##   rel1: initial rubix release
 
 build() {
 
@@ -47,5 +48,7 @@ build() {
 
 	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
 	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
 
 }

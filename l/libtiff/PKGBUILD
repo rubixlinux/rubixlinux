@@ -1,13 +1,13 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=libtiff
-pkgver=3.7.4
+pkgver=3.8.2
 pkgrel=1
 pkgdesc="libtiff (a library for reading and writing TIFF files) This package provides support for the Tag Image File Format (TIFF), a widely used format for storing image data.  Included is the libtiff library (for reading and writing TIFF files), and a collection of tools for working with TIFF images."
 depends=('glibc' 'gcc' 'zlib')
 url="http://www.remotesensing.org/libtiff"
 source=(ftp://ftp.remotesensing.org/pub/libtiff/tiff-$pkgver.tar.gz)
-md5sums=('f37a7907bca4e235da85eb0126caa2b0')
+md5sums=('fbb6f446ea4ed18955e2714934e5b698')
 
 ## Todo:
 ##   None
@@ -16,6 +16,7 @@ md5sums=('f37a7907bca4e235da85eb0126caa2b0')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.8.2 2006.04.22
 ##   rel1: upgraded to 3.7.4, and built --without-x 2005.12.21
 ##   rel1: upgraded to 3.7.3 2005.08.16
 ##   rel1: upgraded to 3.7.2 2005.06.13
@@ -43,5 +44,7 @@ build() {
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
 	mv $startdir/pkg/usr/share/doc/*/* $startdir/pkg/usr/doc/$pkgname-$pkgver
 	rm -r $startdir/pkg/usr/share
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

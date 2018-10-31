@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libgpod
+pkgver=0.3.2
+pkgrel=1
+pkgdesc="libgpod is a shared library to access the contents of an iPod"
+url="http://www.gtkpod.org/libgpod.html"
+depends=('glibc' 'glib2' 'gtk+2' 'hal' 'dbus')
+source=(http://dl.sourceforge.net/sourceforge/gtkpod/$pkgname-$pkgver.tar.gz)
+md5sums=('c9c41625347a33efd9441c4e71fdd04e')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

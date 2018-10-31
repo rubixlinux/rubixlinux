@@ -1,8 +1,8 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=esound
 pkgver=0.2.36
-pkgrel=3
+pkgrel=4
 pkgdesc="esound (Enlightened Sound Daemon) EsounD, the Enlightened Sound Daemon, is a server process that mixes several audio streams for playback by a single audio device. For example, if you're listening to music on a CD and you receive a sound-related event from ICQ, the two applications won't have to jockey for the use of your sound card.  Install esound if you'd like to let sound applications share your audio device."
 depends=('glibc' 'alsa-lib' 'audiofile')
 url="http://www.tux.org/~ricdude/EsounD.html"
@@ -16,11 +16,14 @@ md5sums=('f2ba3597ef584f4eed7a8aa0ce875c2d')
 ##   None
 
 ## Changelog:
+##   rel4: removed .la files 2006.05.07
 ##   rel3: deleted empty directories from /usr/share/doc 2005.10.18
 ##   rel2: changed configure options 2005.09.30
 ##   rel1: initial rubis release
 
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/$pkgname-$pkgver
 
@@ -47,5 +50,7 @@ build() {
 	rm -r $startdir/pkg/usr/share/doc
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name '*.la' -exec rm {} \;
 
 }

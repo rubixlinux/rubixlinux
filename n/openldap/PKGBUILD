@@ -1,11 +1,11 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-NSS=244
-MT=46
+NSS=249
+MT=47
 
 pkgname=openldap
-pkgver=2.2.30
-pkgrel=2
+pkgver=2.3.21
+pkgrel=1
 pkgdesc="OpenLDAP Software is an open source implementation of the Lightweight Directory Access Protocol. The suite includes: slapd - stand-alone LDAP daemon (server), slurpd - stand-alone LDAP update replication daemon, libraries implementing the LDAP protocol, and utilities, tools, and sample clients. This package also includes nss_ldap for ldap system authentication."
 url="http://www.openldap.org"
 backup=('etc/openldap/ldap.conf'	\
@@ -16,11 +16,13 @@ depends=('e2fsprogs' 'glibc' 'db' 'openssl' 'heimdal' 'cyrus-sasl')
 source=(ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/$pkgname-$pkgver.tgz	\
 	http://www.padl.com/download/nss_ldap-$NSS.tar.gz				\
 	http://www.padl.com/download/MigrationTools-$MT.tar.gz				\
-	$pkgname									)
-md5sums=('8c8af8070a8e404f61ec9169948cb326' \
-	 '25c237675cdd0f78e0773aff2c877a51' \
-	 'dc80548f76d6aeba2b51b15751e08b21' \
-	 'cd999455688a5aa6901ac70848f82524' )
+	$pkgname									\
+	openldap-ntlm.diff								)
+md5sums=('37ef142fc05abd088a4bb2d30dc4c679' \
+	 '1ce2d14601f94013c8ab15cb0eebc9e7' \
+	 '3faf83eb8482e55979bda47f1d1e6501' \
+	 'cd999455688a5aa6901ac70848f82524' \
+	 '7d80c3708d5940a3b7a428740af863d0' )
 
 ## Todo:
 ##   None
@@ -29,6 +31,9 @@ md5sums=('8c8af8070a8e404f61ec9169948cb326' \
 ##   This package contains nss_ldap, but openldap must be installed for nss_ldap to build
 
 ## Changelog:
+##   rel3: upgraded to 2.3.21, built with kernel24 compatability 2006.04.09
+##   rel2: added ntlm patch for exchange support in evolution-date-server 2006.03.26
+##   rel1: upgraded to 2.3.20 2006.03.10
 ##   rel2: updated rc script to new format 2006.01.16
 ##   rel1: upgraded to 2.2.30 and nss_lap 244 2005.12.06
 ##   rel3: fixed one more small bug in the rc script, rebuilt with sasl password support 2005.11.04
@@ -48,7 +53,12 @@ md5sums=('8c8af8070a8e404f61ec9169948cb326' \
 
 build() {
 
+	export MAKEFLAGS=""
+	export ac_cv_header_sys_epoll_h="no"
+
 	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/openldap-ntlm.diff || return 1
 
 	./configure					\
 		--prefix=/usr				\
@@ -111,5 +121,7 @@ build() {
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/migrate
 	cp -a $startdir/src/MigrationTools-$MT/migrate_* $startdir/pkg/usr/doc/$pkgname-$pkgver/migrate
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

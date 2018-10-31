@@ -4,7 +4,7 @@ pkgname=firefox
 pkgver=1.5.0.4
 pkgrel=1
 pkgdesc="mozilla-firefox (Mozilla Firefox Web browser) This project is a redesign of the Mozilla browser component written using the XUL user interface language.  Firefox empowers you to browse faster, more safely and more efficiently than with any other browser. Visit the Mozilla Firefox project online: http://www.mozilla.org/projects/firefox/"
-depends=('glibc' 'freetype2' 'gtk+2' 'libjpeg' 'cairo' 'pango' 'atk' 'x11' 'fontconfig' 'expat' 'glib2' 'zlib' 'gcc' 'libidl' 'libpng')
+depends=('libSM' 'libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'libICE' 'expat' 'libXrender' 'zlib' 'libidl' 'libXau' 'freetype2' 'libjpeg' 'pango' 'cairo' 'libXfixes' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'libXt' 'gcc' 'libXft' 'libpng' 'libXinerama' 'libXrandr')
 url="http://www.mozilla.org/projects/firefox"
 source=(ftp://ftp.mozilla.org/pub/mozilla.org/$pkgname/releases/$pkgver/source/$pkgname-$pkgver-source.tar.bz2	\
 	firefox.png												\
@@ -33,8 +33,8 @@ md5sums=('4cb3d7c1b5345585750766c589308b5e' \
 ##   Cannot be built with either PIE or SSP
 
 ## Changelog:
-##   rel1: upgraded to 1.5.0.4 2006.06.04 *security*
-##   rel1: upgraded to 1.5.0.3 2006.05.03 *security*
+##   rel1: upgraded to 1.5.0.4 2006.06.01
+##   rel1: upgraded to 1.5.0.3 2006.05.03
 ##   rel1: upgraded to 1.5.0.2 2006.04.15 *security*
 ##   rel1: upgraded to 1.5.0.1 2006.02.02
 ##   rel2: made thunderbird the default mailto and news handler 2006.01.16

@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=xinit
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="X.Org xinit app"
+url="http://www.x.org"
+depends=('libXau' 'glibc' 'libX11' 'libXdmcp')
+source=(ftp://ftp.x.org/pub/$X11/src/app/$pkgname-$X11-$pkgver.tar.bz2	\
+	README.Xmodmap							)
+md5sums=('6d2df59fa328cbc99c0de98bc2e14597' \
+	 '4e5de863ef37e1db897a3878ac17f09a' )
+groups=('x11-app')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+	mkdir -p $startdir/pkg/etc/X11/xinit
+	cp $startdir/pkg/usr/X11R7/lib/X11/xinit/xinitrc $startdir/pkg/etc/X11/xinit/xinitrc.twm
+	chmod 755 $startdir/pkg/etc/X11/xinit/xinitrc.twm
+	cp $startdir/src/README.Xmodmap $startdir/pkg/etc/X11/xinit/README.Xmodmap
+
+}

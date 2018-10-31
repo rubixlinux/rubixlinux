@@ -1,40 +1,44 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=abiword
-pkgver=2.2.10
-pkgrel=1
+pkgver=2.4.2
+pkgrel=2
 pkgdesc="abiword (AbiWord Personal) AbiWord Personal is a lean and fast full-featured word processor. It can import many formats including Word97/2000 and RTF, Palm, Psion, DocBook and XHTML documents, and can export to RTF, Palm, Psion, XHTML, Text, and LaTeX formats. Linux Journal calls it \"an elegant, open source word processor that delivers the Word functionality most people use.\""
 url="http://www.abisource.com"
-depends=('glibc' 'libglade' 'gtk+2' 'libcroco' 'atk' 'libwpd' 'librsvg' 'libgsf' 'fontconfig'	\
-	 'x11' 'expat' 'zlib' 'libart_lgpl' 'readline' 'python' 'freetype2' 'libjpeg' 'pango'	\
-	 'cairo' 'libxml2' 'bzip2' 'glib2' 'libwmf' 'gucharmap' 'gcc' 'libpng' 'popt'		\
-	 'libtermcap'										)
+depends=('glibc' 'libXi' 'libgnomeui' 'poppler' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'libgnomeprintui' 'zlib' 'alsa-lib' 'libXau' 'libgnomeprint' 'libjpeg' 'libgnome' 'audiofile' 'libXdmcp' 'libxml2' 'libbonoboui' 'libwmf' 'libXinerama' 'libXft' 'libpng' 'libXext' 'libSM' 'orbit2' 'link-grammar' 'libglade' 'gtk+2' 'libcroco' 'atk' 'libwpd' 'librsvg' 'libgsf' 'gconf' 'libICE' 'readline' 'libart_lgpl' 'freetype2' 'libXfixes' 'cairo' 'pango' 'libXcursor' 'libX11' 'libbonobo' 'fribidi' 'bzip2' 'glib2' 'gnome-keyring' 'gucharmap' 'gnome-vfs' 'gcc' 'libXrandr' 'popt' 'libtermcap')
 source=(http://www.abisource.com/downloads/$pkgname/$pkgver/source/$pkgname-$pkgver.tar.gz	\
-	abiword.desktop.gz									\
-	python.diff.gz										)
-md5sums=('6085d11314b447c0101d2bb26d27aa4c' \
-	 '072c206f5e2e41819b0f744936101128' \
-	 '5993dce2ebb5150bc8de57e4e3f5afbb' )
+	abiword.desktop										\
+	poppler.diff										\
+	spell_crash.diff									)
+md5sums=('726089550cbfe809f12115cc75019885' \
+	 '89119fae981815d333df7ea2ba8b80cf' \
+	 '42e891bf245c1e9041e1b66a65dfc770' \
+	 '3f5495cba96d13462e62bf5d41d85afb' )
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#The python patch simply changes the python version from 2.3 to 2.4
+## Notes:
+##   The python patch simply changes the python version from 2.3 to 2.4
 
-#Changelog:
-#rel1: upgraded to 2.2.10 2005.09.30
-#rel1: upgraded to 2.2.9, fribidi is now packaged separately 2005.08.05
-#rel2: Rebuilt because libwpd is now packaged separately 2005.06.24
-#rel1: Upgraded to 2.2.8, fribidi 0.10.5, libwpd 0.8.1
-#rel1: Upgraded to abiword 2.2.4 2005.02.23
-#rel1: Initial Rubix release
+## Changelog:
+##   rel2: fixed crash in spellcheck 2006.03.28
+##   rel1: upgraded to 2.4.2 2006.03.27
+##   rel1: upgraded to 2.2.10 2005.09.30
+##   rel1: upgraded to 2.2.9, fribidi is now packaged separately 2005.08.05
+##   rel2: Rebuilt because libwpd is now packaged separately 2005.06.24
+##   rel1: Upgraded to 2.2.8, fribidi 0.10.5, libwpd 0.8.1
+##   rel1: Upgraded to abiword 2.2.4 2005.02.23
+##   rel1: Initial Rubix release
 
 build() {
 
+	export MAKEFLAGS=""
+
 	cd $startdir/src/$pkgname-$pkgver
 
-	patch -p1 < $startdir/src/python.diff || return 1
+	patch -p0 < $startdir/src/poppler.diff		|| return 1
+	patch -p1 < $startdir/src/spell_crash.diff	|| return 1
 
 	chown -R root.root .
 
@@ -51,10 +55,9 @@ build() {
 	make || return 1
 
 	cd ../abi
-	./configure \
-		--prefix=/usr \
-		--disable-debug \
-		--disable-gnome \
+	./configure		\
+		--prefix=/usr	\
+		--disable-debug	\
 		$CHOST
 	make || return 1
 	make install DESTDIR=$startdir/pkg
@@ -86,16 +89,14 @@ build() {
 	./configure		\
 		--prefix=/usr	\
 		--disable-debug	\
-		--disable-gnome	\
 		$CHOST
 	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	cp $startdir/src/abiword.desktop $startdir/pkg/usr/share/applications
 
-	rm -r $startdir/pkg/usr/lib/bonobo
-	rm $startdir/pkg/usr/lib/AbiWord-2.2/plugins/libAbiDash.*
-
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

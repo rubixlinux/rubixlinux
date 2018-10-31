@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-audio-flac-header
 pkgver=1.4
-pkgrel=1
+pkgrel=2
 pkgdesc="Audio::FLAC::Header - interface to FLAC header metadata."
 depends=('glibc' 'flac' 'perl')
 url="http://search.cpan.org/~daniel/Audio-FLAC-Header-$pkgver/Header.pm"
 source=(http://search.cpan.org/CPAN/authors/id/D/DA/DANIEL/Audio-FLAC-Header-$pkgver.tar.gz)
 md5sums=('55f896f35555840b225c24836a663f70')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: initial rubix release
+## Changelog:
+##   rel2: rebuilt for perl 5.8.8 2006.03.06
+##   rel1: initial rubix release
 
 build() {
 

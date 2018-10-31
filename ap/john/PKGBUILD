@@ -1,0 +1,61 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=john
+pkgver=1.7.0.2
+pkgrel=1
+pkgdesc="John the Ripper is a fast password cracker"
+url="http://www.openwall.com/john"
+depends=('glibc')
+source=(http://www.openwall.com/$pkgname/f/$pkgname-$pkgver.tar.gz)
+md5sums=('084fa03f265491ef7e32c05e9fb027db')
+backup=('etc/john/john.conf')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+	CFLAGS="$CFLAGS -c -fomit-frame-pointer -DJOHN_SYSTEMWIDE=1 -DJOHN_SYSTEMWIDE_EXEC='\"/usr/sbin\"' -DCPU_FALLBACK=1 -DJOHN_SYSTEMWIDE_HOME='\"/etc/john\"'"
+
+	cd $startdir/src/$pkgname-$pkgver/src
+
+	make CFLAGS="$CFLAGS" linux-x86-mmx || return 1
+
+	cd ../run
+
+	mkdir -p $startdir/pkg/etc/$pkgname
+	cp $pkgname.conf $startdir/pkg/etc/$pkgname
+
+	mkdir -p $startdir/pkg/usr/sbin
+	cp $pkgname $startdir/pkg/usr/sbin
+	cp mailer $startdir/pkg/usr/sbin/$pkgname-mailer
+	ln -s $pkgname $startdir/pkg/usr/sbin/unafs
+	ln -s $pkgname $startdir/pkg/usr/sbin/unique
+	ln -s $pkgname $startdir/pkg/usr/sbin/unshadow
+
+	cp *.chr *.lst $startdir/pkg/etc/john
+
+	cd ../src
+	make clean
+	make CFLAGS="$CFLAGS" linux-x86-any || return 1
+
+	cd ../run
+	cp $pkgname $startdir/pkg/usr/sbin/john-non-mmx
+
+	cd ../doc
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a * $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 600 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 700 -exec chmod 755 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

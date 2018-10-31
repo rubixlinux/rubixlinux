@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-menus
+pkgver=2.13.5
+pkgrel=1
+pkgdesc="gnome-menus - the gnome menu system, implementing the freedesktop.org cross-desktop spec"
+depends=('glibc' 'glib2' 'python' 'pygtk')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.13/$pkgname-$pkgver.tar.bz2)
+md5sums=('07083058ce27a2132bc3f578c055fff6')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

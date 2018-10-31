@@ -1,0 +1,12 @@
+--- libX11-X11R7.0-1.0.0/include/X11/Xlib.h.orig	2006-03-15 00:06:01.000000000 -0700
++++ libX11-X11R7.0-1.0.0/include/X11/Xlib.h	2006-03-15 00:06:15.000000000 -0700
+@@ -78,7 +78,8 @@
+ #include <stdlib.h>
+ #else
+ /* replace this with #include or typedef appropriate for your system */
+-typedef unsigned long wchar_t;
++/* typedef unsigned long wchar_t; */
++#include <stddef.h>
+ #endif
+ #endif
+ 

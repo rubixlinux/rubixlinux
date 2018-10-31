@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-lingua-en-numbers-ordinate
 pkgver=1.02
-pkgrel=2
+pkgrel=3
 pkgdesc="Lingua::EN::Numbers::Ordinate -- go from cardinal number (3) to ordinal ("3rd")"
 url="http://search.cpan.org/~sburke/Lingua-EN-Numbers-Ordinate-$pkgver/lib/Lingua/EN/Numbers/Ordinate.pm"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/S/SB/SBURKE/Lingua-EN-Numbers-Ordinate-$pkgver.tar.gz)
 md5sums=('e92078fafd9108a137972c4e9bae9e99')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel3: rebuilt for perl 5.8.8 2006.03.06
+##   rel2: rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 

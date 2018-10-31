@@ -3,7 +3,7 @@
 pkgname=pacman
 if [ "$CARCH" == "i486" ]; then
 	pkgver=2.9.8
-	pkgrel=1
+	pkgrel=4
 fi
 pkgdesc="A .tar.gz based package manager with dependency support"
 url="http://www.archlinux.org/pacman"
@@ -23,9 +23,9 @@ if [ "$CARCH" == "i486" ]; then
 	md5sums=('5d5e19c159d1fba7c7a6bb93b5bc14bd' \
 		 '005d82a4832b5273450e556f30010414' \
 		 '1498dadd61eb0e916e4a71a70ed49a10' \
-		 'aba0a4ee8dad37c373f44f96a0788046' \
-		 '32ef7e7725d310cb37c7f440b3b92122' \
-		 '520987d70ad12d401ca439eb13490f1d' \
+		 'ad4cdd4f066bd775016f4bebad2d69a1' \
+		 '0b91f23e54fba25c994b7e93fd978c5f' \
+		 'f348ff04d07cf0a7f17321dbf0eabd84' \
 		 '8cfe9dab8fd9ae169389350c320f580e' \
 		 '126b7772a7e418331a10114a996883fa' )
 
@@ -57,6 +57,9 @@ fi
 ##   Also, the sortmirrors.pl script depends on perl and netselect
 
 ## Changelog:
+##   rel4:  switched repos to -current, added gnome 2006.03.23
+##   rel3:  updated makepkg to compress man pages in X11R7 2006.03.13
+##   rel2:  remove libtool section in makepkg 2006.03.05
 ##   rel1:  upgraded to 2.9.8 2006.02.02
 ##   rel11: removed references to fakeroot and sudosync in makepkg 2006.01.31
 ##   rel10: updated the community repo to not be in a release directory 2006.01.24

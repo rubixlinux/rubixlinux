@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=eel
+pkgver=2.14.0
+pkgrel=1
+pkgdesc="eel - the eazel extentions library"
+depends=('glibc' 'libXi' 'libgnomeui' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'gail' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'libbonoboui' 'startup-notification' 'libpng' 'libXinerama' 'orbit2' 'libXext' 'libSM' 'libglade' 'gtk+2' 'atk' 'gconf' 'libICE' 'libart_lgpl' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'gnome-menus' 'libbonobo' 'libX11' 'gnome-desktop' 'glib2' 'gnome-keyring' 'gnome-vfs' 'libXrandr' 'popt')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('e819471388655e7c73b2f8096d7e135f')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

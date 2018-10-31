@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-test-www-mechanize
+pkgver=1.08
+pkgrel=1
+pkgdesc="Test::WWW::Mechanize - Testing-specific WWW::Mechanize subclass"
+url="http://search.cpan.org/~petdance/Test-WWW-Mechanize-$pkgver/Mechanize.pm"
+depends=('perl' 'perl-carp-assert-more' 'perl-test-longstring')
+source=(http://search.cpan.org/CPAN/authors/id/P/PE/PETDANCE/Test-WWW-Mechanize-$pkgver.tar.gz)
+md5sums=('701dc06acd44bba9da542be8a52ca5fd')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Test-WWW-Mechanize-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Test-WWW-Mechanize-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Test-WWW-Mechanize-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

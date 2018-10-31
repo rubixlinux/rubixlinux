@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-screensaver
+pkgver=2.14.0
+pkgrel=4
+pkgdesc="gnome-screensaver - replaces xscreensaver, integrating with the desktop"
+depends=('glibc' 'libXi' 'libgnomeui' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'zlib' 'libXScrnSaver' 'alsa-lib' 'libXau' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'dbus' 'libbonoboui' 'libpng' 'libXinerama' 'libSM' 'orbit2' 'libXext' 'libXxf86vm' 'libglade' 'gtk+2' 'atk' 'libXxf86misc' 'gconf' 'libICE' 'libart_lgpl' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'gnome-menus' 'libbonobo' 'libX11' 'glib2' 'libexif' 'gnome-keyring' 'gnome-vfs' 'libXrandr' 'popt' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('290883980efaecd1b3ec275339672932')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel3: rebuilt with user switching enabled 2006.03.27
+##   rel2: made dialog setuid root 2006.03.27
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chmod 4755 $startdir/pkg/usr/libexec/gnome-screensaver-dialog
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

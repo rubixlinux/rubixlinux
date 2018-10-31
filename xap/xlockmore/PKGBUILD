@@ -2,22 +2,32 @@
 
 pkgname=xlockmore
 pkgver=5.19
-pkgrel=1
-pkgdesc="xlockmore (screen locker for X) Patrick J. Naughton's xlock screensaver/locker for X, with many more modes added by David A. Bagley. The 'Bob' bitmap has been included especially for Slackware, as well as a Linux penguin logo.  (NOTE: the image of J. R. "Bob" Dobbs is a registered trademark of The Subgenius Foundation, used by permission)"
+pkgrel=2
+pkgdesc="xlockmore (screen locker for X) Patrick J. Naughton's xlock screensaver/locker for X, with many more modes added by David A. Bagley. The 'Bob' bitmap has been included especially for Slackware, as well as a Linux penguin logo.  (NOTE: the image of J. R. \"Bob\" Dobbs is a registered trademark of The Subgenius Foundation, used by permission)"
 url="http://www.tux.org/~bagleyd/xlockmore.html"
-depends=('glibc' 'x11' 'freetype2' 'zlib' 'gcc')
+depends=('libXau' 'libXext' 'glibc' 'libSM' 'mesa3d' 'freetype2' 'libX11' 'libXpm' 'libXdmcp' 'libXmu' 'libICE' 'libXt' 'zlib' 'gcc')
 source=(ftp://ftp.tux.org/pub/tux/bagleyd/$pkgname/$pkgname-$pkgver.tar.bz2	\
-	$pkgname.bitmap.diff.gz							\
-	l-bob.README.gz								\
-	l-bob.xbm.gz								\
-	l-linux.xbm.gz								\
-	s-bob.xbm.gz								)
+	$pkgname.bitmap.diff							\
+	l-bob.README								\
+	l-bob.xbm								\
+	l-linux.xbm								\
+	s-bob.xbm								)
 md5sums=('c80ae7689bf8683033ec08b652e24d83' \
-	 '8f9fa3c2705361c93fd8b59b4d9e6c96' \
-	 'ffe7ce7d951313546a6a5f8f4d05519e' \
-	 '9b2715dd26acfd9635f37e478172eb4b' \
-	 '866373ee26e339db838863546c1c0ce2' \
-	 '7c78f44e462c3934575cfea2a8919f42' )
+	 '52c258d03b6b4e711ade938ff16434c8' \
+	 '4579cc5d2eb5b1eb03f656138fa4dfac' \
+	 '3eb41cd9dfb3d2e7dd1a1551c7e41507' \
+	 '91d1cc6241f590f1c6b080ead66c9d50' \
+	 '58ac71e31acc8f5a5ceb94ef11e5b7ee' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt for X11R7 2006.03.15
+##   rel1: initial rubix release
 
 build() {
 
@@ -25,11 +35,11 @@ build() {
 
 	patch -p1 < $startdir/src/$pkgname.bitmap.diff || return 1
 
-	mkdir -p $startdir/pkg/usr/X11R6/include/X11/bitmaps
+	mkdir -p $startdir/pkg/usr/X11R7/include/X11/bitmaps
 
-	cp $startdir/src/l-bob.xbm	$startdir/pkg/usr/X11R6/include/X11/bitmaps
-	cp $startdir/src/s-bob.xbm	$startdir/pkg/usr/X11R6/include/X11/bitmaps
-	cp $startdir/src/l-linux.xbm	$startdir/pkg/usr/X11R6/include/X11/bitmaps
+	cp $startdir/src/l-bob.xbm	$startdir/pkg/usr/X11R7/include/X11/bitmaps
+	cp $startdir/src/s-bob.xbm	$startdir/pkg/usr/X11R7/include/X11/bitmaps
+	cp $startdir/src/l-linux.xbm	$startdir/pkg/usr/X11R7/include/X11/bitmaps
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
 
@@ -38,7 +48,7 @@ build() {
 	cp -a $startdir/src/l-bob.README	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
 	./configure			\
-		--prefix=/usr/X11R6	\
+		--prefix=/usr/X11R7	\
 		--without-dtsaver	\
 		--without-ttf		\
 		--without-gtk		\
@@ -56,13 +66,13 @@ build() {
 	mkdir -p	$startdir/pkg/etc/X11/app-defaults
 	cp XLock.ad	$startdir/pkg/etc/X11/app-defaults/XLock
 
-	mkdir -p		$startdir/pkg/usr/X11R6/bin
-	cp xlock		$startdir/pkg/usr/X11R6/bin
-	chown -R root.bin	$startdir/pkg/usr/X11R6/bin
-	chown root.shadow	$startdir/pkg/usr/X11R6/bin/xlock
-	chmod 2755		$startdir/pkg/usr/X11R6/bin/xlock
+	mkdir -p		$startdir/pkg/usr/X11R7/bin
+	cp xlock		$startdir/pkg/usr/X11R7/bin
+	chown -R root.bin	$startdir/pkg/usr/X11R7/bin
+	chown root.shadow	$startdir/pkg/usr/X11R7/bin/xlock
+	chmod 2755		$startdir/pkg/usr/X11R7/bin/xlock
 
-	mkdir -p	$startdir/pkg/usr/X11R6/man/man1
-	cp xlock.man	$startdir/pkg/usr/X11R6/man/man1/xlock.1
+	mkdir -p	$startdir/pkg/usr/X11R7/man/man1
+	cp xlock.man	$startdir/pkg/usr/X11R7/man/man1/xlock.1
 
 }

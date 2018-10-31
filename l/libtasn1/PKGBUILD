@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libtasn1
+pkgver=0.2.18
+pkgrel=1
+url="http://josefsson.org/libtasn1"
+pkgdesc="libtasn1 is an asn.1 library"
+depends=('glibc')
+source=(http://josefsson.org/gnutls/releases/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('e44a58746803de101c55ae8683d677a1')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		THANKS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+	rm $startdir/pkg/usr/info/dir
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

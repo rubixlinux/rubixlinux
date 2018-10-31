@@ -1,7 +1,7 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=stunnel
-pkgver=4.14
+pkgver=4.15
 pkgrel=1
 pkgdesc="stunnel (Universal SSL tunnel) The stunnel program is designed to work as an SSL encryption wrapper between remote client and local (inetd-startable) or remote servers. The goal is to facilitate SSL encryption and authentication for non-SSL-aware programs. stunnel can be used to add SSL functionality to commonly used inetd daemons like POP-2, POP-3 and IMAP servers without any changes in the programs' code."
 url="http://www.stunnel.org"
@@ -9,7 +9,7 @@ depends=('glibc' 'openssl' 'zlib')
 backup=('etc/stunnel/stunnel.cnf')
 source=(http://www.stunnel.org/download/$pkgname/src/$pkgname-$pkgver.tar.gz	\
 	generate-stunnel-key.sh							)
-md5sums=('0969cc4868dfd75f22792ecccc9ec555' \
+md5sums=('2c00153ad099a5f9c5609e8d1dbbe470' \
 	 'ce25901fdfc86bdb7a74e8a0df8acd7d' )
 
 ## Todo:
@@ -19,6 +19,7 @@ md5sums=('0969cc4868dfd75f22792ecccc9ec555' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 4.15 2006.04.22
 ##   rel1: upgraded to 4.14 2006.02.15
 ##   rel1: initial rubix release
 
@@ -52,5 +53,7 @@ build() {
 	rm -r $startdir/pkg/usr/var
 
 	chown -R root.bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

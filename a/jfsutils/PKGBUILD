@@ -1,23 +1,24 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=jfsutils
-pkgver=1.1.8
+pkgver=1.1.10
 pkgrel=1
 pkgdesc="jfsutils (IBM JFS utilities) Utilities for managing IBM's Journaled File System (JFS) under Linux: jfs_debugfs - shell-type JFS file system editor. jfs_fsck - check and repair a JFS formatted device. jfs_fscklog - extract a JFS fsck service log into a file. jfs_logdump - dump a JFS formatted device's journal log. jfs_mkfs - create a JFS formatted partition. jfs_tune - adjust tunable file system parameters on JFS."
 url="http://jfs.sourceforge.net"
 depends=('glibc' 'e2fsprogs')
 source=(http://jfs.sourceforge.net/project/pub/$pkgname-$pkgver.tar.gz)
-md5sums=('eead36ed2ef2bc2a31ebb82fdd0506c4')
+md5sums=('8a88beadc30f81f39060c5df85dc7e4e')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: Upgraded to 1.1.8 2005.09.16
-#rel1: Initial rubix release
+## Changelog:
+##   rel1: upgraded to 1.1.10 2006.04.22
+##   rel1: Upgraded to 1.1.8 2005.09.16
+##   rel1: Initial rubix release
 
 build() {
 

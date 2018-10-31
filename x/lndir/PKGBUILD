@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=lndir
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="X.Org lndir util"
+url="http://www.x.org"
+depends=('glibc')
+source=(ftp://ftp.x.org/pub/$X11/src/util/$pkgname-$X11-$pkgver.tar.bz2)
+md5sums=('aa3616b9795e2445c85b2c79b0f94f7b')
+groups=('x11-util')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+}

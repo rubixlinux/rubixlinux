@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gst-plugins-good
+pkgver=0.10.3
+pkgrel=1
+pkgdesc="gst-plugins-good - basepack of plugins for gstreamer"
+url="http://gstreamer.freedesktop.org"
+depends=('glibc' 'libXi' 'esound' 'fontconfig' 'expat' 'libXrender' 'zlib' 'alsa-lib' 'libdv' 'libXau' 'libXdamage' 'libjpeg' 'gst-plugins-base' 'dbus' 'libxml2' 'audiofile' 'libXdmcp' 'slang' 'gstreamer' 'aalib' 'libXinerama' 'libpng' 'libSM' 'libXext' 'orbit2' 'gtk+2' 'flac' 'atk' 'hal' 'ncurses' 'gconf' 'libICE' 'taglib' 'freetype2' 'gpm' 'pango' 'cairo' 'libXfixes' 'liboil' 'libXcursor' 'libX11' 'glib2' 'gcc' 'popt' 'libXrandr')
+source=(http://gstreamer.freedesktop.org/src/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('bfac20228cf6e9317a371a5f36feb8ae')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.10.3 2006.05.25
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc		\
+		--localstatedir=/var/lib	\
+		--program-prefix=""		\
+		--program-suffix=""		\
+		--disable-static		\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		NEWS		\
+		README		\
+		RELEASE		\
+		REQUIREMENTS	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-cpanplus
+pkgver=0.061
+pkgrel=1
+pkgdesc="CPANPLUS - Command-line access to the CPAN interface"
+url="http://search.cpan.org/~kane/CPANPLUS-$pkgver/lib/CPANPLUS.pm"
+depends=('perl' 'perl-archive-extract' 'perl-archive-tar' 'perl-file-fetch' 'perl-io-zlib' 'perl-ipc-cmd' 'perl-ipc-run' 'perl-locale-maketext-simple' 'perl-log-message' 'perl-module-corelist' 'perl-module-load' 'perl-module-loaded' 'perl-module-pluggable' 'perl-object-accessor' 'perl-params-check' 'perl-term-ui')
+source=(http://search.cpan.org/CPAN/authors/id/K/KA/KANE/CPANPLUS-$pkgver.tar.gz)
+md5sums=('c9e9831d24d69b1f690d8b4967436899')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/CPANPLUS-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/CPANPLUS-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/CPANPLUS-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

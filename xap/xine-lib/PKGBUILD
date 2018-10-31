@@ -2,11 +2,9 @@
 
 pkgname=xine-lib
 pkgver=1.1.1
-pkgrel=4
+pkgrel=6
 pkgdesc="xine-lib (xine multimedia playback engine libraries) xine-lib is a free (GPL licensed) high-performance multimedia playback engine.  The xine shared libraries are used by xine-ui (and other media players and multimedia applications) for smooth video processing and playback of multimedia streams such as movies, radio and TV network streams, DVDs, and VCDs."
-depends=('sdl' 'ncurses' 'glibc' 'libtiff' 'db' 'heimdal' 'flac' 'esound' 'e2fsprogs' 'x11' 'openssl' 'libogg' 'lcms'	\
-	 'zlib' 'cyrus-sasl' 'alsa-lib' 'freetype2' 'imagemagick' 'libjpeg' 'gpm' 'libxml2' 'libvorbis' 'audiofile'	\
-	 'arts' 'bzip2' 'libmng' 'glib2' 'openldap' 'gcc' 'aalib' 'libpng' 'samba'					)
+depends=('glibc' 'libtiff' 'db' 'heimdal' 'esound' 'libXvMC' 'fontconfig' 'expat' 'openssl' 'lcms' 'zlib' 'alsa-lib' 'libXau' 'imagemagick' 'libjpeg' 'audiofile' 'libvorbis' 'libXdmcp' 'libxml2' 'slang' 'libmng' 'libXt' 'openldap' 'aalib' 'graphviz' 'libtool' 'libpng' 'samba' 'libXinerama' 'sdl' 'libSM' 'libXext' 'orbit2' 'flac' 'ncurses' 'gconf' 'e2fsprogs' 'libICE' 'libogg' 'cyrus-sasl' 'libXv' 'freetype2' 'gpm' 'libbonobo' 'libX11' 'bzip2' 'glib2' 'gcc' 'gnome-vfs' 'popt')
 source=(http://dl.sourceforge.net/sourceforge/xine/$pkgname-$pkgver.tar.gz)
 url="http://www.xinehq.de"
 md5sums=('b1f42602c776bb93e3cbf127e220cbfd')
@@ -19,6 +17,8 @@ md5sums=('b1f42602c776bb93e3cbf127e220cbfd')
 ##   this is built for i686 only
 
 ## Changelog:
+##   rel6: rebuilt without dependance on arts 2006.04.12
+##   rel5: rebuilt against openldap 2.3 2006.03.10
 ##   rel4: rebuilt against new imagemagick 2006.03.03
 ##   rel3: rebuilt against xorg 6.9.0 2005.12.23
 ##   rel2: rebuilt without SSP, and only for i686, oops! CFLAGS="" is _CORRECT_ 2005.12.09
@@ -43,7 +43,7 @@ build() {
 	find . -perm 664 -exec chmod 644 {} \;
 	find . -perm 777 -exec chmod 755 {} \;
 
-	XINE_BUILD=i686-pc-linux-gnu ./configure --prefix=/usr
+	XINE_BUILD=i686-pc-linux-gnu ./configure --prefix=/usr --disable-arts
 	make || return 1
 	make install DESTDIR=$startdir/pkg
 
@@ -62,5 +62,7 @@ build() {
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
 	rm -r $startdir/pkg/usr/share/doc
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

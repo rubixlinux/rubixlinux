@@ -1,16 +1,16 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 LIBSIGSEGV=2.2
 
 pkgname=clisp
-pkgver=2.35
+pkgver=2.38
 pkgrel=1
 pkgdesc="lisp (a Common Lisp implementation) Common Lisp is a high-level, general-purpose programming language. GNU CLISP is a Common Lisp implementation by Bruno Haible of Karlsruhe University and Michael Stoll of Munich University, both in Germany. It mostly supports the Lisp described in the ANSI Common Lisp standard. The user interface comes in German, English, French, Spanish, Dutch and Russian.  GNU CLISP includes an interpreter, a compiler, a debugger, a large subset of CLOS, a foreign language interface and a socket interface.  An X11 interface is available through CLX and Garnet."
 url="http://clisp.cons.org"
-depends=('glibc' 'gpm' 'ncurses' 'readline')
+depends=('glibc' 'ncurses' 'readline')
 source=(http://dl.sourceforge.net/sourceforge/clisp/clisp-$pkgver.tar.bz2	\
 	ftp://ftp.gnu.org/pub/gnu/libsigsegv/libsigsegv-$LIBSIGSEGV.tar.gz	)
-md5sums=('a8e3136c4ecfb5deb65fe53e22ca2c07' \
+md5sums=('960e1f6e232415c59b6978f92e62f30b' \
 	 'd914c40c4bf2bff9ba60b37bbc5fc226' )
 
 ## Todo:
@@ -20,11 +20,14 @@ md5sums=('a8e3136c4ecfb5deb65fe53e22ca2c07' \
 ##   Does not build if CFLAGS is set...
 
 ## Changelog:
+##   rel1: upgraded to 2.38 2006.04.23
 ##   rel1: upgraded to 2.35 2005.09.06
 ##   rel1: upgraded to 2.34 2005.08.16
 ##   rel1: initial rubix release
 
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/libsigsegv-$LIBSIGSEGV
 
@@ -46,11 +49,26 @@ build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
-	./configure --prefix=/usr with-gcc-wall
+	./configure				\
+		--prefix=/usr			\
+		--with-module=clx/new-clx	\
+		--with-module=pcre		\
+		--with-module=rawsock		\
+		--with-module=wildcard		\
+		--with-module=zlib		\
+		with-gcc-wall
 
 	cd with-gcc-wall
 
-	./makemake --with-dynamic-ffi --prefix=/usr > Makefile
+	./makemake				\
+		--with-dynamic-ffi		\
+		--prefix=/usr			\
+		-with-module=clx/new-clx	\
+		--with-module=pcre		\
+		--with-module=rawsock		\
+		--with-module=wildcard		\
+		--with-module=zlib		\
+		--srcdir=../src > Makefile
 	make config.lisp	|| return 1
 	make			|| return 1
 	make check		|| return 1
@@ -62,5 +80,7 @@ build() {
 	rm $startdir/pkg/usr/doc/$pkgname-$pkgver/clisp.{dvi,html,ps}
 	rm -r $startdir/pkg/usr/share/doc
 	mv $startdir/pkg/usr/share/man $startdir/pkg/usr/man
+
+	find $startdir/pkg -name '*.la' -exec rm {} \;
 
 }

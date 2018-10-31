@@ -1,17 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdeutils
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdeutils (various utilities for KDE) Includes: ark (tar/gzip archive  manager), kab (address book), karm (personal time tracker), kcalc (scientific calculator), kedit (simple text editor), kfloppy (floppy formatting tool), khexedit (hex editor), kjots (note taker), klipper (clipboard tool), kljettool(HP printer configuration tool), klpq (print queue manager), knotes (sticky notes for the desktop), kpm (process manager similar to 'top', but more advanced), kwrite (improved text editor)."
 url="http://www.kde.org"
 groups=('kde')
-depends=('qt' 'glibc' 'xfsprogs' 'x11' 'fontconfig' 'expat' 'zlib' 'libart_lgpl' 'python' 'freetype2'	\
-	 'glib' 'libjpeg' 'libidn' 'gmp' 'libmng' 'xmms' 'gcc' 'gtk+' 'kdelibs' 'libpng'		)
+depends=('glibc' 'mesa3d' 'libXtst' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'acl' 'glib' 'libjpeg' 'libidn' 'libXdmcp' 'gmp' 'libXmu' 'libmng' 'libXt' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'attr' 'libICE' 'libart_lgpl' 'python' 'qt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'xmms' 'gtk+' 'gcc' 'kdelibs' 'libXrandr')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('1286c6a09b04452adfe492de2fad79bd')
+md5sums=('b3d792c21e9a72bf8a82c5756fcd742d')
 
 ## Todo:
 ##   None
@@ -20,6 +19,9 @@ md5sums=('1286c6a09b04452adfe492de2fad79bd')
 ##   None                     
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 3.5.2 2006.03.29
 ##   rel1: Upgraded to 3.5.1 2006.01.31
 ##   rel1: Upgraded to 3.5.0 2005.12.18
 ##   rel1: Upgraded to 3.4.3 2005.10.16
@@ -37,7 +39,7 @@ build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
-        ./configure			\
+	./configure			\
 		--prefix=/opt/kde	\
 		--disable-debug		\
 		--enable-final

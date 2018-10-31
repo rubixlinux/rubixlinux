@@ -1,0 +1,32 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=transset
+pkgver=20060315
+pkgrel=1
+pkgdesc="X.Org transset app"
+url="http://www.x.org"
+depends=('libXau' 'libXext' 'glibc' 'libXdamage' 'libXfixes' 'libX11' 'libXdmcp' 'libXrender' 'libXcomposite')
+source=(transset.tar.gz)
+md5sums=('08bead086c7b60a28ad08961dd109c04')
+groups=('x11-app')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/X11R7/bin
+	cp $pkgname $startdir/pkg/usr/X11R7/bin
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+}

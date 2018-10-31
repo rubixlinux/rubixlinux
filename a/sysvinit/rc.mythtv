@@ -7,4 +7,4 @@
 printh1 "starting mythtv"
 printsep
 
-/bin/su - mythtv -c "PATH=$PATH:/usr/X11R6/bin && startx"
+/bin/su - mythtv -c "PATH=$PATH:/usr/X11R7/bin && startx"

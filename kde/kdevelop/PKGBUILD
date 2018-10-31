@@ -1,16 +1,15 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdevelop
-pkgver=3.3.1
+pkgver=3.3.3
 pkgrel=1
 pkgdesc="kdevelop The KDevelop integrated C/C++ application development environment."
-depends=('qt' 'glibc' 'db' 'kdesdk' 'fontconfig' 'xfsprogs' 'x11' 'expat' 'zlib' 'libart_lgpl'	\
-	 'freetype2' 'libjpeg' 'libidn' 'pcre' 'libmng' 'gcc' 'kdelibs' 'libpng'		)
+depends=('glibc' 'mesa3d' 'db' 'kdesdk' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'acl' 'libjpeg' 'libidn' 'libXdmcp' 'libXmu' 'libmng' 'libXt' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'attr' 'libICE' 'libart_lgpl' 'qt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'gcc' 'kdelibs' 'libXrandr')
 url="http://www.kdevelop.org"
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('e5e3d3ce60a0dcafb99721f6304f87ef')
+md5sums=('89f3ad2b3e97e92bd9421f0d9ae8e427')
 
 ## Todo:
 ##   None
@@ -19,6 +18,9 @@ md5sums=('e5e3d3ce60a0dcafb99721f6304f87ef')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.3.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 3.3.2 2006.03.29
 ##   rel1: Upgraded to 3.3.1 2006.01.31
 ##   rel1: Upgraded to 3.3.0 2005.12.18
 ##   rel1: Upgraded to 3.2.3 2005.10.16

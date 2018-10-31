@@ -1,20 +1,20 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=nessus
-pkgver=2.2.6
-pkgrel=2
+pkgver=2.2.7
+pkgrel=1
 pkgdesc="nessus is the world's most popular vulnerability scanner used in over 75,000 organizations world-wide. many of the world's largest organizations are realizing significant cost savings by using nessus to audit business-critical enterprise devices and applications."
 url="http://www.nessus.org"
-depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'x11' 'fontconfig' 'expat' 'openssl' 'glib2' 'zlib' 'libpng')
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'openssl' 'libXrender' 'zlib' 'libXau' 'freetype2' 'pango' 'cairo' 'libXfixes' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'libpng' 'libXinerama' 'libXrandr')
 source=(ftp://ftp.nessus.org/pub/$pkgname/$pkgname-$pkgver/src/$pkgname-core-$pkgver.tar.gz		\
 	ftp://ftp.nessus.org/pub/$pkgname/$pkgname-$pkgver/src/libnasl-$pkgver.tar.gz			\
 	ftp://ftp.nessus.org/pub/$pkgname/$pkgname-$pkgver/src/$pkgname-libraries-$pkgver.tar.gz	\
 	ftp://ftp.nessus.org/pub/$pkgname/$pkgname-$pkgver/src/$pkgname-plugins-GPL-$pkgver.tar.gz	\
 	${pkgname}d											)
-md5sums=('616dd7727b90df1ac978b5e736c0a960' \
-	 '06f90680d20953fb9806b8c54e021683' \
-	 'ac027cd2dfa149a44a6dbb748eb93ce9' \
-	 '7d4f1fed76105a1e4e0522573e36cba5' \
+md5sums=('2dd8c116b435d3ec698d3caed0b48859' \
+	 '37f6f0db022dad1e218371909de3e8af' \
+	 '740d9f2d97c495a52663a15a0fe5e6cd' \
+	 '2e51f5ad96dd55888e835382a61de585' \
 	 'c3b6c1f55ffd17f7ec5eb6081ba46619' )
 
 ## Todo:
@@ -26,12 +26,13 @@ md5sums=('616dd7727b90df1ac978b5e736c0a960' \
 ##   Once a new open source version is mature, Rubix will switch to that.
 
 ## Changelog:
+##   rel1: upgraded to 2.2.7, fixed FHS issues 2006.04.22
 ##   rel2: updated rc script to new format 2006.01.16
 ##   rel1: initial rubix release 2005.12.07
 
 build() {
 
-	export MAKEFLAGS="-j2"
+	export MAKEFLAGS=""
 
 	build-libraries	|| return 1
 	build-libnasl	|| return 1
@@ -45,6 +46,8 @@ build() {
 	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
 
 	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }
 
@@ -71,7 +74,7 @@ build-libnasl() {
 
 	cd $startdir/src/libnasl
 
-	./configure --prefix=/usr
+	./configure --prefix=/usr --localstatedir=/var
 	make || return 1
 	make DESTDIR=$startdir/pkg install
 
@@ -88,7 +91,7 @@ build-core() {
 
 	cd $startdir/src/$pkgname-core
 
-	./configure --prefix=/usr
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
 	make || return 1
 	make DESTDIR=$startdir/pkg install
 
@@ -108,7 +111,7 @@ build-plugins() {
 
 	cd $startdir/src/$pkgname-plugins
 
-	./configure --prefix=/usr
+	./configure --prefix=/usr --localstatedir=/var
 	make || return 1
 	make DESTDIR=$startdir/pkg install
 

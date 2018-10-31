@@ -1,8 +1,8 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=udev
-pkgver=081
-pkgrel=1
+pkgver=090
+pkgrel=2
 pkgdesc="udev (dynamic device directory system) udev provides a dynamic device directory containing only the files for the devices which are actually present.  It creates or removes device node files usually located in the /dev directory. udev requires a 2.6 or newer kernel. Greg Kroah-Hartman is the primary udev developer."
 url="http://www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html"
 depends=('glibc')
@@ -14,12 +14,12 @@ source=(ftp://ftp.kernel.org/pub/linux/utils/kernel/hotplug/$pkgname-$pkgver.tar
 	start_udev									\
 	udev.conf									\
 	10-udev.rules									)
-md5sums=('09ea8b37e76741c731cbf2b8b36d0696' \
+md5sums=('44acf418a23b0be826aa55828ada07db' \
 	 '822852fe6ab0a9ca4f9d74e7b13fe59d' \
 	 'aec3e7069ef14fb1d0f6ee82203fc5ea' \
 	 'ebbdb98e366efdd4e4428700ca2e6796' \
 	 '02d249975f1c7de6e9dc4d0ddb023c24' \
-	 '05a49d64a13bef5c646fd2ed6db3cc77' )
+	 '81f9d8ab772deab0a1c5d021cc1bc152' )
 
 ## Todo:
 ##   None
@@ -28,6 +28,8 @@ md5sums=('09ea8b37e76741c731cbf2b8b36d0696' \
 ##   None
 
 ## Changelog:
+##   rel2: removed deprecated hal rule, added fuse rule 2006.04.22
+##   rel1: upgraded to 090 2006.04.21
 ##   rel1: upgraded to 081 2006.01.18
 ##   rel1: upgraded to 080 2006.01.13
 ##   rel1: upgraded to 079 2005.12.31
@@ -90,9 +92,6 @@ build() {
 		RELEASE-NOTES		\
 		TODO			\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
-
-	rm $startdir/pkg/usr/man/man8/udevsend.8
-	ln -s udevd.8 $startdir/pkg/usr/man/man8/udevsend.8
 
 	rmdir $startdir/pkg/dev
 

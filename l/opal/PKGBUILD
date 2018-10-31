@@ -1,0 +1,37 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=opal
+pkgver=2.2.1
+pkgrel=1
+pkgdesc="opal - opal library, used by ekiga"
+url="http://www.ekiga.org"
+depends=('libXau' 'libXext' 'sdl' 'glibc' 'libX11' 'libXdmcp' 'openssl' 'expat' 'openldap' 'gcc' 'cyrus-sasl')
+source=(http://www.ekiga.org/admin/downloads/latest/sources/sources/$pkgname-$pkgver.tar.gz)
+md5sums=('bc6079100e831cf117597bb99b266a0c')
+
+## Todo:
+##   None
+
+## Notes:
+##   Does not build with ssp and does not like pie either
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		mpl-1.0.htm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

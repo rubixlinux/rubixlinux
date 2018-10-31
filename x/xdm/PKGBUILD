@@ -1,0 +1,67 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=xdm
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="X.Org xdm app"
+url="http://www.x.org"
+depends=('libXext' 'glibc' 'libXau' 'libSM' 'libXp' 'libX11' 'libXpm' 'libXdmcp' 'libXaw' 'libXmu' 'libICE' 'libXt' 'libXinerama')
+source=(ftp://ftp.x.org/pub/$X11/src/app/$pkgname-$X11-$pkgver.tar.bz2	\
+	Xsession							\
+	Xsetup_0							\
+	xdm								)
+md5sums=('9ac363721dbb8cd39aa1064b260624a6' \
+	 '1bfdbe9a55cac407d2e6f7d900435704' \
+	 'b094146488544efb51ef61b4ccf43209' \
+	 '4bcf5bfd413b8d4b4bfd49965ecb76a5' )
+groups=('x11-app')
+backup=('usr/X11R7/lib/X11/xdm/Xsession'	\
+	'usr/X11R7/lib/X11/xdm/xdm-config'	\
+	'usr/X11R7/lib/X11/xdm/Xservers'	)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	cp -a $startdir/pkg/usr/X11R7/lib/X11/xdm/Xsession $startdir/pkg/usr/X11R7/lib/X11/xdm/Xsession.orig
+        cp -a $startdir/pkg/usr/X11R7/lib/X11/xdm/Xsetup_0 $startdir/pkg/usr/X11R7/lib/X11/xdm/Xsetup_0.orig
+
+        cp $startdir/src/Xsession $startdir/pkg/usr/X11R7/lib/X11/xdm/Xsession
+        cp $startdir/src/Xsetup_0 $startdir/pkg/usr/X11R7/lib/X11/xdm/Xsetup_0
+
+	mkdir -p $startdir/pkg/etc/rc.d
+        cp $startdir/src/xdm $startdir/pkg/etc/rc.d
+
+}

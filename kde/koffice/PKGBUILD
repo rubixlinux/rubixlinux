@@ -1,20 +1,15 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-SHORTVER=1.4.2
+SHORTVER=1.5.1
 
 pkgname=koffice
-pkgver=1.4.2
-pkgrel=4
+pkgver=1.5.1
+pkgrel=1
 pkgdesc="koffice (KDE office productivity suite) KOffice office productivity applications, including: KWord (Professional text editing) KSpread (Professional number cruncher/spreadsheet) KPresenter (Professional presentation program) KChart (Graphing of your abstract data) Karbon (Vector graphics tool) Kugar (Database report creation) Kivio (Flowcharting program) KOffice Workspace (A combination of all of the above)"
 url="http://www.koffice.org"
-depends=('qt' 'glibc' 'libtiff' 'esound' 'fontconfig' 'openssl' 'expat' 'wv2' 'lcms' 'zlib' 'alsa-lib' 'imagemagick'	\
-	 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'libxml2' 'libmad' 'libmng' 'libpng' 'libwpd' 'libgsf' 'x11'	\
-	 'libogg' 'libart_lgpl' 'readline' 'python' 'libxslt' 'freetype2' 'pcre' 'arts' 'mysql' 'bzip2' 'glib2' 'gcc'	\
-	 'kdelibs' 'libtermcap'												)
-source=(ftp://ftp.kde.org/pub/kde/stable/$pkgname-$SHORTVER/src/$pkgname-$pkgver.tar.bz2	\
-	ftp://ftp.kde.org/pub/kde/security_patches/post-1.3-koffice-CAN-2005-3193.diff		)
-md5sums=('6b456fb7d54c84b11396b27a96ae0cf8' \
-	 '939b41e59cfb5f738e9b6fcfff4faf48' )
+depends=('glibc' 'libXi' 'mesa3d' 'libtiff' 'esound' 'fontconfig' 'openssl' 'expat' 'libXrender' 'wv2' 'lcms' 'zlib' 'alsa-lib' 'libXau' 'imagemagick' 'acl' 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'libxml2' 'libXdmcp' 'libXmu' 'libmad' 'libmng' 'libXt' 'graphviz' 'libtool' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'attr' 'libwpd' 'libgsf' 'libICE' 'libogg' 'libart_lgpl' 'readline' 'python' 'qt' 'libxslt' 'freetype2' 'libXfixes' 'ruby' 'libXcursor' 'libX11' 'pcre' 'arts' 'mysql' 'bzip2' 'glib2' 'libexif' 'gcc' 'kdelibs' 'libXrandr' 'libtermcap')
+source=(ftp://ftp.kde.org/pub/kde/stable/$pkgname-$SHORTVER/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('50897bd5dfd4eba8a0d78a02003a6ec9')
 
 ## Todo:
 ##   None
@@ -23,6 +18,11 @@ md5sums=('6b456fb7d54c84b11396b27a96ae0cf8' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 1.5.1 2006.05.23
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 1.5.0 2006.04.11
+##   rel6: rebuilt with new libgsf 2006.03.27
+##   rel5: rebuilt against mysql 5.0 2006.03.05
 ##   rel4: rebuilt against new imagemagick 2006.03.03
 ##   rel3: rebuilt against xorg 6.9.0 2005.12.23
 ##   rel2: rebuilt with security patch for CAN-2005-3193 205.12.08 ## security fix
@@ -44,7 +44,7 @@ build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
-	patch -p0 < $startdir/src/post-1.3-koffice-CAN-2005-3193.diff || return 1
+	ln -s ../sqlite kexi/kexidb/drivers/sqlite2
 
 	find . -perm 664 -exec chmod 644 {} \;
 

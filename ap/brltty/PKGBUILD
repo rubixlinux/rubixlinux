@@ -1,13 +1,23 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=brltty
-pkgver=3.7
+pkgver=3.7.2
 pkgrel=1
 pkgdesc="brltty (Braille display daemon) BRLTTY is a daemon which provides access to the Linux console (text mode) for a blind person using a soft braille display.  It drives the braille terminal and provides complete screen review functionality."
 url="http://www.mielke.cc/brltty"
-depends=('glibc' 'x11' 'gpm' 'ncurses')
+depends=('glibc' 'ncurses')
 source=(http://www.mielke.cc/brltty/releases/$pkgname-$pkgver.tar.gz)
-md5sums=('73019ff2101fe2cc56c4ebad0cd746a9')
+md5sums=('0ae3da8252783a4d20e1ed4e55cede5b')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 3.7.2 2006.04.22
+##   rel1: initial rubix release
 
 build() {
 

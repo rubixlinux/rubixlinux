@@ -1,15 +1,15 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=openoffice
-pkgver=2.0.1
+pkgver=2.0.2
 pkgrel=1
 url="http://www.openoffice.org"
 pkgdesc="OpenOffice.org is both a multi-platform and multi-lingual office suite and an open-source project. Compatible with all other major office suites, the product is free to download, use, and distribute."
 depends=('glibc' 'x11' 'freetype2' 'gcc' 'zlib')
 source=(http://mirrors.isc.org/pub/$pkgname/stable/$pkgver/OOo_${pkgver}_LinuxIntel_install.tar.gz	\
-	disable_locking.diff.gz										)
-md5sums=('e0d123e5f316bef78bfdf5a008837577' \
-	 'a80abc0a9d374e3999e48f34d18ef32c' )
+	disable_locking.diff										)
+md5sums=('fe31fda77c5a5d3ba40f5b5709b81533' \
+	 'db51ae3887cb472a6307e0fcba6c015f' )
 
 ## Todo:
 ##   None
@@ -18,6 +18,7 @@ md5sums=('e0d123e5f316bef78bfdf5a008837577' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 2.0.2 2006.03.09
 ##   rel1: upgraded to 2.0.1 2005.12.20
 ##   rel2: disabled file locking that was causing problems with accessing files on nfs dirs 2005.10.23
 ##   rel1: upgraded to 2.0.0 2005.10.20
@@ -74,6 +75,8 @@ build() {
 
 	cd $startdir/pkg/opt/openoffice.org2.0
 	patch -p1 < $startdir/src/disable_locking.diff || return 1
+
+	find $startdir/pkg -name *~ -exec rm {} \;
 
 	chown -R root.root $startdir/pkg
 	chown -R root.bin $startdir/pkg/usr/bin

@@ -1,4 +1,4 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=gawk
 pkgver=3.1.5
@@ -7,23 +7,27 @@ pkgdesc="gawk (pattern scanning and processing language) Gawk is the GNU Project
 depends=('glibc')
 provides=('awk')
 url="http://www.gnu.org/software/$pkgname/$pkgname.html"
-source=(http://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.bz2)
-md5sums=('5703f72d0eea1d463f735aad8222655f')
+source=(http://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	gawk.glibc.free.diff						)
+md5sums=('5703f72d0eea1d463f735aad8222655f' \
+	 '7f69abad305769be51c12144aede9bd5' )
 
-#Todo:
-#depends
-#makedepends
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: Upgraded to 3.1.5 2005.09.16
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: patched bug with glibc 2006.04.22
+##   rel1: Upgraded to 3.1.5 2005.09.16
+##   rel1: Initial Rubix release
 
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/gawk.glibc.free.diff || return 1
 
 	./configure --prefix=/usr $CHOST
 	make || return 1

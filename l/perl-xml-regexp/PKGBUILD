@@ -1,23 +1,24 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-xml-regexp
 pkgver=0.03
-pkgrel=1
+pkgrel=2
 pkgdesc="XML::RegExp - Regular expressions for XML tokens"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/T/TJ/TJMATHER/XML-RegExp-$pkgver.tar.gz)
 md5sums=('5826b24e0d05714e25c2bb04e1f1c09b')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: Initial Rubix release
+## Changelog:
+##   rel2: rebuilt for perl 5.8.8 2006.03.07
+##   rel1: Initial Rubix release
 
 build() {
 

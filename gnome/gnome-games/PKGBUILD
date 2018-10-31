@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-games
+pkgver=2.14.0
+pkgrel=2
+pkgdesc="gnome-games - collection of games for the gnome desktop"
+depends=('glibc' 'libXi' 'libgnomeui' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'guile' 'libbonoboui' 'libpng' 'libXinerama' 'libXext' 'libSM' 'orbit2' 'libglade' 'gtk+2' 'libcroco' 'atk' 'gconf' 'librsvg' 'libgsf' 'libICE' 'libart_lgpl' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libbonobo' 'libX11' 'bzip2' 'glib2' 'gnome-keyring' 'gcc' 'gnome-vfs' 'libXrandr' 'popt' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('8d5508722b621c8a4f3a397a2709b7a0')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chmod 755 $startdir/pkg/usr/bin/*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

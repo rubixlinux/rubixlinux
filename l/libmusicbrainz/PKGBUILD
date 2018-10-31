@@ -1,20 +1,30 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=libmusicbrainz
-pkgver=2.1.1
+pkgver=2.1.2
 pkgrel=1
 pkgdesc="MusicBrainz is a user maintained community music metadatabase. Music metadata is information such as the name of an artist, the name of an album and list of tracks that appear on an album."
-depends=('gcc' 'expat')
-source=(ftp://ftp.musicbrainz.org/pub/musicbrainz/$pkgname-$pkgver.tar.gz)
+depends=('glibc' 'expat' 'gcc')
+source=(http://ftp.musicbrainz.org/pub/musicbrainz/$pkgname-$pkgver.tar.gz)
 url="http://www.musicbrainz.org/index.html"
-md5sums=('4f753d93a85cf413e00f1394b8cbd269')
+md5sums=('88d35af903665fecbdee77eb6d5e6cdd')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.1.2 2006.03.23
+##   rel1: initial rubix release
 
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
 	./configure --prefix=/usr
-	make
+	make || return 1
 	make DESTDIR=$startdir/pkg install
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
@@ -28,5 +38,7 @@ build() {
 		TODO		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 	find $startdir/pkg/usr/doc/$pkgname-$pkgver -perm 777 -exec chmod 755 {} \;
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

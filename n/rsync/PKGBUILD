@@ -1,13 +1,13 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=rsync
-pkgver=2.6.6
+pkgver=2.6.8
 pkgrel=1
 pkgdesc="rsync is a replacement for rcp that has many more features.  It uses the \"rsync algorithm\" which provides a very fast method for bringing remote files into sync.  It does this by sending just the differences in the files across the link, without requiring that both sets of files are present at one of the ends of the link beforehand. rsync was written by Andrew Tridgell and Paul Mackerras."
 url="http://samba.anu.edu.au/rsync"
 depends=('glibc' 'popt')
 source=(http://rsync.samba.org/ftp/$pkgname/$pkgname-$pkgver.tar.gz)
-md5sums=('30c4e2849cbeae93f55548453865c2f2')
+md5sums=('082a9dba1f741e6591e5cd748a1233de')
 
 ## Todo:
 ##   None
@@ -16,6 +16,7 @@ md5sums=('30c4e2849cbeae93f55548453865c2f2')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 2.6.8 2006.04.22
 ##   rel1: upgraded to 2.6.6 2005.08.16
 ##   rel1: initial rubix release
 

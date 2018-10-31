@@ -2,7 +2,7 @@
 
 pkgname=libglade
 pkgver=2.5.1
-pkgrel=2
+pkgrel=3
 pkgdesc="libglade The GLADE library allows loading user interfaces which are stored externally into a program.  This allows the interface to be changed without recompiling the program.  The interfaces can also be edited with GLADE. libglade is used extensively by GNOME, and also by xscreensaver-demo."
 depends=('gtk+2' 'libxml2')
 source=(http://ftp.gnome.org/pub/gnome/sources/$pkgname/2.5/$pkgname-$pkgver.tar.bz2)
@@ -16,7 +16,8 @@ md5sums=('e4734a59f1f2308d7714dc0ebf8163f1')
 ##   None
 
 ## Changelog:
-##   rel1: Rebuilt 2006.02.01
+##   rel3: removed libtool files 2006.03.22
+##   rel2: Rebuilt 2006.02.01
 ##   rel1: Upgraded to 2.5.1 2005.05.12
 ##   rel1: Initial Rubix release
 
@@ -47,5 +48,7 @@ build() {
 	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

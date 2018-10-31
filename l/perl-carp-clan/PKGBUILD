@@ -1,23 +1,24 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-carp-clan
 pkgver=5.3
-pkgrel=1
-pkgdesc="Carp::Clan - Report errors from perspective of caller of a "clan" of modules"
+pkgrel=2
+pkgdesc="Carp::Clan - Report errors from perspective of caller of a \"clan\" of modules"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/S/ST/STBEY/Carp-Clan-$pkgver.tar.gz)
 md5sums=('d0a0431921b2c786aac234dfb6fe02ca')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: Initial Rubix release
+## Changelog:
+##   rel2: rebuilt for perl 5.8.8 2006.03.06
+##   rel1: Initial Rubix release
 
 build() {
 

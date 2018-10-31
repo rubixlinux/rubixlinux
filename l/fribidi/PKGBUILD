@@ -1,29 +1,29 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=fribidi
-pkgver=0.10.5
+pkgver=0.10.7
 pkgrel=1
 pkgdesc="fribidi (Unicode BiDirectional algorithm library) This library implements the Unicode BiDirectional algorithm which is needed in order to support for left-to-right languages such as Arabic and Hebrew.  It is used in word processing and display software like AbiWord and KDE's SVG module."
 url="http://www.fribidi.org"
 depends=('glibc')
 source=(http://fribidi.org/download/$pkgname-$pkgver.tar.gz)
-md5sums=('4f187c7e6bbb9d03bd1cd7ddc12d3069')
+md5sums=('0f602ed32869dbc551dc6bc83d8a3d28')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: Initial Rubix release 2005.08.05
+## Changelog:
+##   rel1: upgraded to 0.10.7 2006.03.27
+##   rel1: Initial Rubix release 2005.08.05
 
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 	./configure			\
 		--prefix=/usr		\
-		--enable-shared=no	\
 		--with-pic
 	make || return 1
 	make install DESTDIR=$startdir/pkg
@@ -42,5 +42,7 @@ build() {
 	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

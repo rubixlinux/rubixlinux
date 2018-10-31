@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-io-stringy
 pkgver=2.110
-pkgrel=2
+pkgrel=3
 pkgdesc="IO-stringy - I/O on in-core objects like strings and arrays"
 url="http://search.cpan.org/~dskoll/IO-stringy-2.110/lib/IO/Stringy.pm"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/D/DS/DSKOLL/IO-stringy-$pkgver.tar.gz)
 md5sums=('2e6a976cfa5521e815c1fdf4006982de')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel3: rebuilt for perl 5.8.8 2006.03.06
+##   rel2: rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 

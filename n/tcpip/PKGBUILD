@@ -7,13 +7,14 @@ NKIT=0.17
 TFTP=0.41
 BRCTL=1.0.6
 VLAN=1.9
+IPCALC=0.40
 
 pkgname=tcpip
 pkgver=1.0
-pkgrel=11
+pkgrel=13
 pkgdesc="tcpip (TCP/IP networking programs and support files) This is a set of standard TCP/IP utilities for Linux.  Some of these were written from scratch and some were ported from various sources such as BSD.  Some of the people who helped write and/or port this code include:  H. Peter Anvin,  Donald J. Becker,  Alan Cox, David A. Holland,  Fred N. van Kempen,  Olaf Kirch, H.J. Lu, David Miller,  Florian  La Roche,  Mark Shand,  Rick Sladkey, Johannes Stille,  Linus Torvalds,  Wietse Venema, and Orest Zborowski."
-url="http://www.rubix-os.org"
-depends=('glibc' 'sysfsutils' 'ncurses' 'readline' 'libtermcap')
+url="http://www.rubixlinux.org"
+depends=('glibc' 'sysfsutils' 'ncurses' 'readline' 'libtermcap' 'perl')
 backup=('etc/hosts'		\
 	'etc/hosts.deny'	\
 	'etc/hosts.equiv'	\
@@ -95,7 +96,10 @@ source=(ftp://ftp.porcupine.org/pub/security/tcp_wrappers_$TCPW.tar.gz				\
 	network											\
 	telnet-OpenBSD-014_telnet.diff								\
 	prism54.fw										\
-	net-tools_$NETT-17.diff									)
+	net-tools_$NETT-17.diff									\
+	http://jodies.de/ipcalc-archive/ipcalc-$IPCALC.tar.gz					\
+	ipw2100-fw-1.3.tgz									\
+	ipw2200-fw-2.4.tgz									)
 md5sums=('e6fa25f71226d090f34de3f6b122fb5a' \
 	 'e7ac7ae271703eacf175d597d329e11a' \
 	 '232f641b075a185ce2ff1562c4084c39' \
@@ -166,7 +170,10 @@ md5sums=('e6fa25f71226d090f34de3f6b122fb5a' \
 	 'f282e456d23304439b3330b26b68a001' \
 	 '95f8d11d22df75889d7d78f4165c0881' \
 	 '8bd4310971772a486b9784c77f8a6df9' \
-	 '9c8cdade672ff9414bf1035e0d4df35d' )
+	 '9c8cdade672ff9414bf1035e0d4df35d' \
+	 'ad22070e7a784d83361b6bcf18dec7c1' \
+	 '46aa75bcda1a00efa841f9707bbbd113' \
+	 'a5bc066d23900852a04711c5d33987d4' )
 
 ## Todo:
 ##   None
@@ -176,6 +183,8 @@ md5sums=('e6fa25f71226d090f34de3f6b122fb5a' \
 ##     commented out since they are included in util-linux
 
 ## Changelog:
+##   rel13: added ipw2100 and ipw2200 firmware 2006.04.21
+##   rel12: added ipcalc 2006.04.17
 ##   rel11: upgraded tftp-hpa to 0.41, applied debian's net-tool patch 2006.02.15
 ##   rel10: fixed a nasty problem with udev bringing up an interface before
 ##          / was remounted read-write. 2006.01.23
@@ -1014,6 +1023,21 @@ build() {
 #	ln -sf hostname nisdomainname
 #	ln -sf hostname ypdomainname
 
+	echo "+========+"
+	echo "| ipcalc |"
+	echo "+========+"
+
+	cd $startdir/src/ipcalc-$IPCALC
+
+	cp ipcalc $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/ipcalc-$IPCALC
+	cp	-a		\
+		changelog	\
+		contributors	\
+		license		\
+	$startdir/pkg/usr/doc/ipcalc-$IPCALC
+
 	chown -R root.bin $startdir/pkg/bin $startdir/pkg/sbin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
 
 	find $startdir/pkg/usr/doc -type f -exec chmod 644 {} \;
@@ -1028,7 +1052,8 @@ build() {
 	chmod 4755 usr/bin/rlogin
 
 	mkdir -p			$startdir/pkg/lib/firmware
-	cp $startdir/src/prism54.fw	$startdir/pkg/lib/firmware/isl3890
-	cp $startdir/src/prism54.fw	$startdir/pkg/lib/firmware/isl3877
+	mv $startdir/src/prism54.fw	$startdir/pkg/lib/firmware/isl3890
+	ln -s isl3890			$startdir/pkg/lib/firmware/isl3877
+	cp $startdir/src/*.fw		$startdir/pkg/lib/firmware
 
 }

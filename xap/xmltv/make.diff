@@ -1,0 +1,11 @@
+--- xmltv-0.5.42/Makefile.PL.orig	2006-03-07 14:23:26.000000000 -0700
++++ xmltv-0.5.42/Makefile.PL	2006-03-07 14:22:58.000000000 -0700
+@@ -1028,7 +1028,7 @@
+ 	}
+ 	else {
+ 	    chomp;
+-	    die "bad makefile line: '$_'";
++#	    die "bad makefile line: '$_'";
+ 	}
+     }
+     return \%r;

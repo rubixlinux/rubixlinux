@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-html-parser
-pkgver=3.45
-pkgrel=2
+pkgver=3.50
+pkgrel=1
 pkgdesc="HTML::Parser HTML parser class"
 depends=('perl-html-tagset' 'glibc')
 source=(http://www.cpan.org/authors/id/G/GA/GAAS/HTML-Parser-$pkgver.tar.gz)
-md5sums=('c2ac1379ac5848dd32e24347cd679391')
+md5sums=('4848c5eaac5576d1412578f480fdf22d')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: upgraded to 3.50, built for perl 5.8.8 2006.03.06
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 

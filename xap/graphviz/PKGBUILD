@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=graphviz
+pkgver=2.8
+pkgrel=2
+pkgdesc="graphviz is open source graph visualization software"
+url="http://www.graphviz.org"
+depends=('libXext' 'libSM' 'glibc' 'libXaw' 'fontconfig' 'libICE' 'expat' 'zlib' 'libXau' 'python' 'freetype2' 'libjpeg' 'ruby' 'libXpm' 'libX11' 'libXdmcp' 'libXmu' 'libXt' 'gcc' 'libtool' 'libpng' 'tk')
+source=(http://www.graphviz.org/pub/$pkgname/ARCHIVE/$pkgname-$pkgver.tar.gz)
+md5sums=('ca921b4a9bcd86da4a1092bb17a57d83')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: moved to xap/ 2006.04.11
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/graphviz/doc $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		INSTALL.old	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	cd $startdir/pkg/usr/lib
+
+	for lib in graphviz/*.{so*,a}
+	do
+		ln -s $lib
+	done
+
+}

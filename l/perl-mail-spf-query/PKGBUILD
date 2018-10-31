@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-mail-spf-query
-pkgver=1.997
-pkgrel=2
+pkgver=1.999.1
+pkgrel=1
 pkgdesc="Mail::SPF::Query query Sender Policy Framework for an IP,email,helo"
 depends=('perl-uri' 'perl-net-cidr-lite' 'perl-net-dns' 'perl-sys-hostname-long')
-source=(http://search.cpan.org/CPAN/authors/id/F/FR/FREESIDE/Mail-SPF-Query-$pkgver.tar.gz)
-md5sums=('9e110d00520e0fe174c25c0734a8baf6')
+source=(http://search.cpan.org/CPAN/authors/id/J/JM/JMEHNLE/mail-spf-query/Mail-SPF-Query-$pkgver.tar.gz)
+md5sums=('6d62d024d1614fa1fa4f43bd39ee7bf0')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: rebuilt for perl 5.8.7 2005.06.13
-#rel1: initial rubix release
+## Changelog:
+##   rel1: upgraded to 1.999.1, built for perl 5.8.8 2006.03.06
+##   rel2: rebuilt for perl 5.8.7 2005.06.13
+##   rel1: initial rubix release
 
 build() {
 
@@ -31,8 +32,6 @@ build() {
 
 	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Mail-SPF-Query-$pkgver
 	cp	-a		\
-		Changes		\
-		MANIFEST	\
 		README		\
 	$startdir/pkg/usr/doc/perl-$PERL/Mail-SPF-Query-$pkgver
 
@@ -45,6 +44,6 @@ build() {
 	rmdir $startdir/pkg/usr/share
 
 	chmod 755 $startdir/pkg/usr/bin/*
-	chown root.bin $startdir/pkg/usr/bin
+	chown -R root.bin $startdir/pkg/usr/bin
 
 }

@@ -1,16 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 VER=6.2.6
-SUBVER=2
+SUBVER=8
 
 pkgname=imagemagick
-pkgver=6.2.6_2
+pkgver=6.2.6_8
 pkgrel=1
 pkgdesc="imagemagick (a robust collection of image processing tools) ImageMagick is a collection of tools for manipulating and displaying digital images.  It can merge images, transform image dimensions, do screen captures, create animation sequences, and convert between many different image formats. ImageMagick was written by John Cristy of ImageMagick Studio. Home page:  http://www.imagemagick.org/"
-depends=('glibc' 'freetype2' 'libtiff' 'libjpeg' 'libxml2' 'x11' 'bzip2' 'gcc' 'zlib' 'lcms' 'libpng' 'perl')
+depends=('libSM' 'libXext' 'glibc' 'libtiff' 'fontconfig' 'libICE' 'expat' 'zlib' 'lcms' 'libXau' 'freetype2' 'libjpeg' 'libX11' 'libXdmcp' 'libxml2' 'bzip2' 'libXt' 'gcc' 'graphviz' 'libtool' 'libpng' 'perl')
 source=(ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-$VER-$SUBVER.tar.bz2)
 url="http://www.imagemagick.org"
-md5sums=('1805b3cf1f63e0f08ed62bd3a8164208')
+md5sums=('20728cfc1920843cc5758937f07fb562')
 
 ## Todo:
 ##   None
@@ -19,6 +19,8 @@ md5sums=('1805b3cf1f63e0f08ed62bd3a8164208')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 6.2.6-8 2006.04.11
+##   rel1: upgraded to 6.2.6-3, built for perl 5.8.8 2006.03.07
 ##   rel1: upgraded to 6.2.6-2 2006.03.03
 ##   rel1: upgraded to 6.2.6-1 for security reasons 2006.02.14
 ##   rel1: rebuilt against xorg without deps 2005.12.23
@@ -72,5 +74,6 @@ build() {
 	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
 	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
 	find $startdir/pkg -name .packlist -exec rm {} \;
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

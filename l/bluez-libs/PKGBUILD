@@ -1,13 +1,13 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=bluez-libs
-pkgver=2.24
+pkgver=2.25
 pkgrel=1
 pkgdesc="bluez-libs - Bluetooth protocol stack for Linux"
 url="http://www.bluez.org"
 depends=('glibc')
 source=(http://bluez.sourceforge.net/download/$pkgname-$pkgver.tar.gz)
-md5sums=('d0ba50e251ae1e7f2c09024facde8e40')
+md5sums=('ebc8408c9a74c785786a2ef7185fe628')
 
 ## Todo:
 ##   None
@@ -16,6 +16,7 @@ md5sums=('d0ba50e251ae1e7f2c09024facde8e40')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 2.25 2006.03.15
 ##   rel1: upgraded to 2.24 2006.01.13
 ##   rel1: upgraded to 2.22 2005.11.25
 ##   rel1: upgraded to 2.21 2005.10.30
@@ -39,5 +40,7 @@ build() {
 		NEWS		\
 		README		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

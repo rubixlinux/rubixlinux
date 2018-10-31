@@ -1,31 +1,33 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-tk
 pkgver=804.027
-pkgrel=2
+pkgrel=4
 pkgdesc="Tk is a Graphical User Interface ToolKit."
 url="http://search.cpan.org/~ni-s/Tk-804.027"
-depends=('libjpeg' 'perl' 'tk' 'zlib')
+depends=('glibc' 'freetype2' 'libjpeg' 'x11' 'fontconfig' 'expat' 'zlib' 'libpng' 'perl')
 source=(http://search.cpan.org/CPAN/authors/id/N/NI/NI-S/Tk-$pkgver.tar.gz)
 md5sums=('d1ca4a6bff6dae4d937fabde4e86256b')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel4: Rebuilt with freetype support 2006.03.08
+##   rel3: Rebuilt for perl 5.8.8 2006.03.07
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 
 	cd $startdir/src/Tk-$pkgver
 
-	perl Makefile.PL || return 1
+	perl Makefile.PL XFT=1 || return 1
 	make || return 1
 #	make test || return 1
 	make install DESTDIR=$startdir/pkg

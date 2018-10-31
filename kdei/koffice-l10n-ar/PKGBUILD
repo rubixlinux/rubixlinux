@@ -1,0 +1,19 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=koffice-l10n-ar
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="koffice-l10n-ar Arabic language support for KOffice."
+depends=('koffice')
+source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.5.0/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+md5sums=('922cdc3f2de8d350deaf54c32feab117')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/opt/kde --program-prefix="" --program-suffix=""
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+}

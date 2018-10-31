@@ -1,0 +1,30 @@
+#!/bin/bash
+
+SCRIPT=`basename $0`
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT /sbin/mount -a -t fuse
+		;;
+	stop)
+		stop_daemon $SCRIPT /sbin/umount -a -t fuse
+		sleep 1
+		FUSEMOUNTS=`/sbin/mount -t fuse`
+		if [ ! -z "$FUSEMOUNTS" ]; then
+			stat_err "error! a fuse filesystem is still mounted!"
+			exit 1
+		fi
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT
+		mount -t fuse
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

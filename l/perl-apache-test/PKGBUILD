@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-apache-test
+pkgver=1.28
+pkgrel=1
+pkgdesc="Apache::Test - Test.pm wrapper with helpers for testing Apache"
+url="http://search.cpan.org/~geoff/Apache-Test-$pkgver/lib/Apache/Test.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/G/GE/GEOFF/Apache-Test-$pkgver.tar.gz)
+md5sums=('76ca771bb9d36b6215e7f418a7fd5e9a')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Apache-Test-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Apache-Test-$pkgver
+	cp	-a		\
+		CONTRIBUTORS	\
+		Changes		\
+		INSTALL		\
+		LICENSE		\
+		MANIFEST	\
+		README		\
+		SUPPORT		\
+		ToDo		\
+	$startdir/pkg/usr/doc/perl-$PERL/Apache-Test-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi/auto
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -2,7 +2,7 @@
 
 pkgname=bind
 pkgver=9.3.2
-pkgrel=3
+pkgrel=4
 pkgdesc="bind (DNS server and utilities) The named daemon and support utilities such as dig, host, and nslookup.  Sample configuration files for running a simple caching nameserver are included.  Documentation for advanced name server setup can be found in /usr/doc/bind-9.x.x/."
 backup=(var/named/etc/named.conf	\
 	etc/rc.d/bind			)
@@ -12,13 +12,15 @@ source=(ftp://ftp.isc.org/isc/bind9/$pkgver/$pkgname-$pkgver.tar.gz	\
 	loopback							\
 	root.hint							\
 	named.conf							\
-	$pkgname							)
+	$pkgname							\
+	bind.so_bsdcompat.diff						)
 md5sums=('55e709501a7780233c36e25ccd15ece2' \
 	 '1f73d9fa8b4f1f42ec1ded9eda301599' \
 	 '3a0a4891bece81516fb75376b91935e5' \
 	 'cffd2baffb5af8411b011fac3ab5d670' \
 	 'ad03daa8ea74615c664a1c2c168586c9' \
-	 '5ebaf892127ee5261e21ae637b3cc873' )
+	 '5ebaf892127ee5261e21ae637b3cc873' \
+	 '447d58721cfee0e1e377b46f7d50b327' )
 
 ## Todo:
 ##   None
@@ -27,6 +29,7 @@ md5sums=('55e709501a7780233c36e25ccd15ece2' \
 ##   None
 
 ## Changelog:
+##   rel4: added patch to quiet bind under 2.6 kernels 2006.04.23
 ##   rel3: fixed typo in named.conf 2006.02.03
 ##   rel2: removed unnecessary line from rc script
 ##   rel1: upgraded to 9.3.2 2005.12.26
@@ -80,6 +83,8 @@ build() {
 	chmod 644	$startdir/pkg/var/named/dev/random
 
 	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/bind.so_bsdcompat.diff || return 1
 
 	find . -perm 775 -exec chmod 755 {} \;
 	find . -perm 664 -exec chmod 644 {} \;

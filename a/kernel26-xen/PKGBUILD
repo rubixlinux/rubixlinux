@@ -1,0 +1,78 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+## REMEMBER: Update kernel version in install script!
+
+pkgname=kernel26-xen
+pkgver=2.6.16.20
+pkgrel=1
+url="http://www.kernel.org"
+pkgdesc="kernel26-xen - the Rubix kernel26 patched with xen and capable of being used in both dom0 and as an unprivileged guest kernel"
+backup=('boot/config-$pkgver-XenRubix')
+install=$pkgname.install
+source=(http://kernel.org/pub/linux/kernel/v2.6/linux-$pkgver.tar.bz2	\
+	xenrubix.diff							\
+	config								)
+md5sums=('382aa4178ff79d58925622a8a97561eb' \
+	 '32c98aca607cc9fd2ceb939ddcd02e6e' \
+	 'afa08f63722c007512de84ab6b1b1c97' )
+
+## Todo:
+##   None
+
+## Notes:
+##   rubix.diff contains the following patches:
+##     1) reiser4
+##     2) squashfs
+##     3) bootsplash
+##     4) several annoying bootup messages are cleared
+##     5) the xen virtualization system
+
+## Changelog:
+##   rel1: upgraded to 2.6.16.20 2006.06.07
+##   rel1: upgraded to 2.6.16.19 2006.06.01
+##   rel1: upgraded to 2.6.16.18 2006.05.22
+##   rel2: added xen_nvidia patch again 2006.05.12
+##   rel1: upgraded to 2.6.16.16 2006.05.10
+##   rel2: reverted to stable xen patch, added fix for nvidia driver 2006.04.27
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/linux-$pkgver
+
+	patch -p1 < $startdir/src/xenrubix.diff || return 1
+
+	cp $startdir/src/config .config
+
+	make silentoldconfig	|| return 1
+	make vmlinux		|| return 1
+	make modules		|| return 1
+
+	make INSTALL_MOD_PATH=$startdir/pkg modules_install
+
+	mkdir -p $startdir/pkg/boot
+	chmod 644 vmlinux
+	cp vmlinux	$startdir/pkg/boot/vmlinuz-$pkgver-XenRubix
+	cp .config	$startdir/pkg/boot/config-$pkgver-XenRubix
+	cp System.map	$startdir/pkg/boot/System.map-$pkgver-XenRubix
+
+	cd $startdir/pkg/boot
+
+	rdev -R vmlinuz-$pkgver-XenRubix  0
+	rdev -v vmlinuz-$pkgver-XenRubix -1
+	rdev -r vmlinuz-$pkgver-XenRubix  0
+
+	cd $startdir/pkg/lib/modules/$pkgver-XenRubix
+	rm build source
+	ln -s /usr/src/linux-$pkgver-XenRubix build
+	ln -s /usr/src/linux-$pkgver-XenRubix source
+
+	## Remove modules that complain with Xen...
+	find $startdir/pkg/lib/modules -name microcode.ko     -exec rm {} \;
+	find $startdir/pkg/lib/modules -name powernow-k7.ko   -exec rm {} \;
+	find $startdir/pkg/lib/modules -name speedstep-ich.ko -exec rm {} \;
+	find $startdir/pkg/lib/modules -name p4-clockmod.ko   -exec rm {} \;
+
+	find $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
+
+}

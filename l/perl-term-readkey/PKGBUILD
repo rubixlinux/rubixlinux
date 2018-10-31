@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-term-readkey
 pkgver=2.30
-pkgrel=3
+pkgrel=4
 pkgdesc="Term::ReadKey - A perl module for simple terminal control"
-depends=('perl')
+depends=('perl' 'glibc')
 source=(http://cpan.uwinnipeg.ca/cpan/authors/id/J/JS/JSTOWE/TermReadKey-$pkgver.tar.gz)
 md5sums=('f0ef2cea8acfbcc58d865c05b0c7e1ff')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel3: Rebuilt with perl 5.8.7 2005.06.13
-#rel2: Initial Rubix release 2005.05.20
+## Changelog:
+##   rel4: rebuilt for perl 5.8.8 2006.03.06
+##   rel3: Rebuilt with perl 5.8.7 2005.06.13
+##   rel2: Initial Rubix release 2005.05.20
 
 build() {
 

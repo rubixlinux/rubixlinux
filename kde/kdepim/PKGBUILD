@@ -1,19 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdepim
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdepim This is a collection of Personal Information Management (PIM) tools."
 url="http://www.kde.org"
 groups=('kde')
-depends=('qt' 'glibc' 'esound' 'fontconfig' 'xfsprogs' 'gnokii' 'expat' 'zlib' 'alsa-lib' 'pilot-link'	\
-	 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'libmad' 'libmng' 'libpng' 'ncurses' 'x11' 'libogg'	\
-	 'gpgme' 'libart_lgpl' 'readline' 'cyrus-sasl' 'freetype2' 'bluez-libs' 'pcre' 'arts'		\
-	 'libgpg-error' 'glib2' 'gcc' 'kdelibs'								)
+depends=('glibc' 'mesa3d' 'esound' 'fontconfig' 'gnokii' 'expat' 'libXrender' 'zlib' 'alsa-lib' 'libXScrnSaver' 'libXau' 'pilot-link' 'acl' 'libjpeg' 'libidn' 'libXpm' 'libvorbis' 'audiofile' 'libXdmcp' 'libXmu' 'libmad' 'libmng' 'libXt' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'ncurses' 'attr' 'libICE' 'libogg' 'gpgme' 'readline' 'libart_lgpl' 'cyrus-sasl' 'qt' 'freetype2' 'bluez-libs' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'arts' 'glib2' 'libgpg-error' 'gcc' 'kdelibs' 'libXrandr')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('8e87c9cbe1f0c0f983f94d804a5bc8f9')
+md5sums=('2b83885854a5953bca59508d9a7cf5ef')
 
 ## Todo:
 ##   None
@@ -22,6 +19,9 @@ md5sums=('8e87c9cbe1f0c0f983f94d804a5bc8f9')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 3.5.2 2006.03.29
 ##   rel1: Upgraded to 3.5.1 2006.01.31
 ##   rel1: Upgraded to 3.5.0 2005.12.18
 ##   rel2: rebuilt with gpgme 2005.10.30

@@ -1,17 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdebase
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdebase (KDE base package) Core applications for the K Desktop Environment.  Included are: kdm (replacement for xdm), kwin (window manager), konqueror (filemanager, web browser, ftp client), konsole (xterm replacement), kicker (application starter and desktop pager), kaudio (audio server), kdehelp (viewer for kde help files, info and man pages), kthememgr (system for managing alternate theme packages) plus other KDE components like kcheckpass, kikbd, kscreensaver, kcontrol, kfind, kfontmanager, kmenuedit, and kappfinder."
 url="http://www.kde.org"
 groups=('kde')
-depends=('qt' 'glibc' 'db' 'heimdal' 'esound' 'xfsprogs' 'fontconfig' 'openssl' 'expat' 'zlib' 'alsa-lib'	\
-	 'libjpeg' 'libidn' 'dbus' 'libvorbis' 'audiofile' 'libmad' 'lm_sensors' 'libmng' 'openldap' 'samba'	\
-	 'libpng' 'hal' 'e2fsprogs' 'x11' 'libogg' 'libusb' 'libart_lgpl' 'cyrus-sasl' 'freetype2' 'pcre'	\
-	 'arts' 'glib2' 'gcc' 'kdelibs'										)
+depends=('glibc' 'mesa3d' 'db' 'heimdal' 'libXtst' 'esound' 'fontconfig' 'openssl' 'expat' 'libXrender' 'zlib' 'alsa-lib' 'libXScrnSaver' 'libXcomposite' 'libXau' 'libXdamage' 'acl' 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'dbus' 'libXdmcp' 'libXmu' 'libmad' 'lm_sensors' 'libmng' 'openldap' 'libXt' 'samba' 'libXft' 'libXinerama' 'libpng' 'libxkbfile' 'libXext' 'libSM' 'libXxf86misc' 'hal' 'attr' 'mdnsresponder' 'e2fsprogs' 'libICE' 'libogg' 'libusb' 'libart_lgpl' 'cyrus-sasl' 'qt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'arts' 'glib2' 'libfontenc' 'gcc' 'kdelibs' 'libXrandr')
 backup=('opt/kde/share/config/kdm/kdmrc'	\
 	'opt/kde/share/config/kdm/backgroundrc'	)
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2	\
@@ -23,7 +20,7 @@ source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2	\
 	konsolerc								\
 	konsole.desktop								\
 	kcmartsrc								)
-md5sums=('484c7b3895ce4f95173f4789571eb1cc' \
+md5sums=('9cb6b8291c4f3f986e16f72129e8fcd0' \
 	 '546280a2b78b0c0719f20a9c35324cf0' \
 	 'ae49d5b1404862fca964ffd41006e488' \
 	 '7b7330459463c5bb1387b56acbfdc64f' \
@@ -40,6 +37,9 @@ md5sums=('484c7b3895ce4f95173f4789571eb1cc' \
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt for acl 2006.05.07
+##   rel1: upgraded to 3.5.2 2006.03.28
+##   rel2: rebuilt against openldap 2.3 2006.03.10
 ##   rel1: upgraded to 3.5.1 2006.01.31
 ##   rel3: updated kdm rc script to new format 2006.01.16
 ##   rel2: fixed default kdmrc 2005.12.31

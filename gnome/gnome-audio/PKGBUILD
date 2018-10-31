@@ -1,0 +1,36 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-audio
+pkgver=2.0.0
+pkgrel=1
+pkgdesc="gnome-audio - gnome desktop sound effects package"
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.0/$pkgname-$pkgver.tar.bz2)
+md5sums=('cd14b84af59fb2ec673527d32f4e379f')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+}

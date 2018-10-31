@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=ekiga
+pkgver=2.0.1
+pkgrel=2
+pkgdesc="ekiga - h.323 and sip voip softphone"
+depends=('glibc' 'libXi' 'db' 'heimdal' 'libgnomeui' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libgnome' 'libXdmcp' 'dbus' 'libxml2' 'audiofile' 'pwlib' 'opal' 'libbonoboui' 'openldap' 'libpng' 'libXinerama' 'libXext' 'libSM' 'orbit2' 'sdl' 'gtk+2' 'atk' 'e2fsprogs' 'gconf' 'libICE' 'libart_lgpl' 'cyrus-sasl' 'freetype2' 'libXfixes' 'cairo' 'pango' 'libXcursor' 'libbonobo' 'libX11' 'evolution-data-server' 'firefox' 'glib2' 'gnome-keyring' 'gcc' 'gnome-vfs' 'libXrandr' 'popt' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.0/$pkgname-$pkgver.tar.bz2)
+md5sums=('abf6c3351a64a7ed9028929ad5a17729')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --enable-dbus --disable-avahi --sysconfdir=/etc --disable-scrollkeeper
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		FAQ		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

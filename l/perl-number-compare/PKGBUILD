@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-number-compare
+pkgver=0.01
+pkgrel=1
+pkgdesc="Number::Compare - numeric comparisons"
+url="http://search.cpan.org/~rclamp/Number-Compare-$pkgver/Compare.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/R/RC/RCLAMP/Number-Compare-$pkgver.tar.gz)
+md5sums=('519a4434e35033e9bd034d27cd2fd299')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Number-Compare-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Number-Compare-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+	$startdir/pkg/usr/doc/perl-$PERL/Number-Compare-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

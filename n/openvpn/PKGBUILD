@@ -1,7 +1,7 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=openvpn
-pkgver=2.0.6
+pkgver=2.0.7
 pkgrel=1
 pkgdesc="OpenVPN -- A Secure tunneling daemon"
 url="http://openvpn.sourceforge.net"
@@ -9,7 +9,7 @@ depends=('glibc' 'openssl' 'tcpip')
 backup=('etc/rc.d/openvpn')
 source=(http://openvpn.net/release/$pkgname-$pkgver.tar.gz	\
 	$pkgname						)
-md5sums=('8d2f95fa825e58363a676b25d4815aa7' \
+md5sums=('93528233f1f6d02fc18e2c00f82e0aca' \
 	 '7738158092d5b991e782e5a61eaaff3c' )
 
 ## Todo:
@@ -19,7 +19,7 @@ md5sums=('8d2f95fa825e58363a676b25d4815aa7' \
 ##    None
 
 ## Changelog:
-##   rel1: upgraded to 2.0.6 2006.04.11
+##   rel1: upgraded to 2.0.8 2006.04.12 *security*
 ##   rel2: added rc script in new format 2006.01.16
 ##   rel1: upgraded to 2.0.5 2005.11.11
 ##   rel2: fixed a bug to get redirect-gateway working again 2005.11.02

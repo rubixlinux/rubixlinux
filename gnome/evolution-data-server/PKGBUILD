@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=evolution-data-server
+pkgver=1.6.0
+pkgrel=2
+pkgdesc="evolution-data-server - evolution groupware backend"
+depends=('glibc' 'libXi' 'db' 'heimdal' 'esound' 'fontconfig' 'gnutls' 'libsoup' 'expat' 'openssl' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'openldap' 'libpng' 'libXinerama' 'orbit2' 'libXext' 'libglade' 'gtk+2' 'atk' 'e2fsprogs' 'gconf' 'cyrus-sasl' 'freetype2' 'libtasn1' 'libXfixes' 'cairo' 'pango' 'libXcursor' 'libbonobo' 'libX11' 'libgcrypt' 'glib2' 'firefox' 'libgpg-error' 'gnome-vfs' 'popt' 'libXrandr')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.6/$pkgname-$pkgver.tar.bz2)
+md5sums=('1d775148a4f88559cb375924b9f7b79f')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt with ldap, kerberos and exchange support 2006.03.26
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+	export CFLAGS="$CFLAGS -lnspr4 -I/usr/include/firefox/nspr -I/usr/include/firefox/nss -I/usr/include/libsoup-2.2"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --with-openldap=yes --with-krb5=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

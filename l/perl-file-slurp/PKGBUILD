@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-file-slurp
+pkgver=9999.12
+pkgrel=1
+pkgdesc="File::Slurp - Efficient Reading/Writing of Complete Files"
+url="http://search.cpan.org/~uri/File-Slurp-$pkgver/lib/File/Slurp.pm"
+source=(http://search.cpan.org/CPAN/authors/id/U/UR/URI/File-Slurp-$pkgver.tar.gz)
+md5sums=('6a162082834307bac95be3e3fc955ce9')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/File-Slurp-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/File-Slurp-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/File-Slurp-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

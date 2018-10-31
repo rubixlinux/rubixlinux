@@ -3,23 +3,25 @@
 pkgname=module-init-tools
 pkgver=3.2.2
 pkgver24=2.4.27
-pkgrel=1
+pkgrel=2
 pkgdesc="module-init-tools (kernel module utilities) Utilities to load and unload kernel modules.  These are used on Linux to load extra drivers or other features into the running kernel. This package includes both module-init-tools (the module utilities for for 2.6.x Linux kernels) and modutils (for 2.4.x kernels)."
 url="http://www.kernel.org"
 depends=('glibc')
 provides=('modutils')
-backup=('etc/modprobe.conf'	\
-	'etc/modules.conf'	)
+backup=('etc/modprobe.d/blacklist'	\
+	'etc/modules.conf'		)
 source=(ftp://www.kernel.org/pub/linux/utils/kernel/$pkgname/$pkgname-$pkgver.tar.bz2		\
 	ftp://www.kernel.org/pub/linux/utils/kernel/modutils/v2.4/modutils-${pkgver24}.tar.bz2	\
-	insmod-hint-use-stderr.diff.gz								\
-	kmod.gz											\
-	modprobe.conf.gz									)
+	insmod-hint-use-stderr.diff								\
+	kmod											\
+	blacklist										\
+	modprobe.favor.etc.modprobe.d.diff							)
 md5sums=('a1ad0a09d3231673f70d631f3f5040e9' \
 	 'bac989c74ed10f3bf86177fc5b4b89b6' \
-	 'ef7fdb78e0ad7f914cceb48baad901ee' \
-	 '20bf741d45733cb5ca4031076080a9ea' \
-	 'f8a59b5585296e73499b52b51337df7a' )
+	 '2f7b1bc650acdd8f73d3b225e67aa315' \
+	 '62116435038819a3641c0a9bfb829445' \
+	 '25eba9c3cd8f0d588383f88b969924d9' \
+	 '6e00da2b6b7be03bbbbef80982ed5305' )
 
 ## Todo:
 ##   None
@@ -29,6 +31,7 @@ md5sums=('a1ad0a09d3231673f70d631f3f5040e9' \
 ##   The insmod patch changes the behavior to use stderr for usage hints, not stdout
 
 ## Changelog:
+##   rel2: patched to ignore modprobe.conf for 2.6 kernels, use modprobe.d 2006.04.22
 ##   rel1: upgraded to 3.2.2, added blacklisted modules to default modprobe.conf 2005.12.16
 ##   rel1: upgraded to 3.2.1 2005.11.25
 ##   rel1: Initial Rubix release
@@ -105,6 +108,8 @@ build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
+	patch -p1 < $startdir/src/modprobe.favor.etc.modprobe.d.diff || return 1
+
 	./configure --prefix=/ --enable-zlib $CHOST
 	make || return 1
 
@@ -153,6 +158,7 @@ build() {
 
 	touch $startdir/pkg/etc/modules.conf
 
-	cp $startdir/src/modprobe.conf $startdir/pkg/etc
+	mkdir $startdir/pkg/etc/modprobe.d
+	cp $startdir/src/blacklist $startdir/pkg/etc/modprobe.d
 
 }

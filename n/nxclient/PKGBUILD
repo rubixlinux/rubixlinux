@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+CLIENT=141
+
+pkgname=nxclient
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="nxclient -- nomachine's nxclient (non-free)"
+url="http://www.nomachine.com"
+depends=('libXext' 'glibc' 'fontconfig' 'gnutls' 'expat' 'libXrender' 'zlib' 'libXau' 'libtasn1' 'freetype2' 'libX11' 'libXdmcp' 'libgcrypt' 'libgpg-error' 'cups' 'gcc' 'libpng' 'libXft' 'nx')
+source=(http://64.34.161.181/download/$pkgver/client/xft/$pkgname-$pkgver-$CLIENT.i386.rpm	\
+	nxclient.diff										)
+md5sums=('8169192dd74019fcd84da186358ba088' \
+	 '73f423e9b02fd877b4772e308caca1f9' )
+
+## Todo:
+##   None
+
+## Notes:
+##   Rubix Linux is allowed to distribute this software as expressed in section 4.1
+##   of the license-info file included in this package. The following is the pertanent exerpt:
+##
+##      Redistribution of NX Client software, including commercial Closed Source
+##      packages, is allowed, free of charge, for commercial and non-commercial
+##      use providing any copyright notices that pertain to the origins of the
+##      Software are not altered in any way or removed.
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src
+
+	rpmextract.sh $pkgname-$pkgver-$CLIENT.i386.rpm
+
+	patch -p1 < $startdir/src/nxclient.diff || return 1
+
+	mkdir -p $startdir/pkg/etc/profile.d
+	cp etc/profile.d/* $startdir/pkg/etc/profile.d
+
+	mkdir -p $startdir/pkg/usr/share/applications
+
+	cp usr/NX/share/applnk/network/nxclient-wizard.desktop	$startdir/pkg/usr/share/applications
+	cp usr/NX/share/applnk/network/nxclient.desktop		$startdir/pkg/usr/share/applications
+	cp usr/NX/share/applnk/network/nxclient-admin.desktop	$startdir/pkg/usr/share/applications
+
+	rm usr/NX/bin/nxssh
+	rm usr/NX/bin/nxesd
+	rm usr/NX/bin/nxprint
+	rm -r usr/NX/share/keys
+	rm -r usr/NX/lib
+	rm -r usr/NX/share/applnk
+
+	mkdir -p $startdir/pkg/opt
+	cp -a usr/NX $startdir/pkg/opt
+
+	chmod 644 $startdir/pkg/opt/NX/share/images/*
+	chmod 644 $startdir/pkg/usr/share/applications/*
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/opt/NX/share/documents/client $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rmdir $startdir/pkg/opt/NX/share/documents
+
+}

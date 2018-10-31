@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-gd
-pkgver=2.23
-pkgrel=2
+pkgver=2.31
+pkgrel=1
 pkgdesc="GD.pm - Interface to Gd Graphics Library"
 url="http://search.cpan.org/~lds/GD-$pkgver"
-depends=('gd' 'perl')
+depends=('glibc' 'freetype2' 'libjpeg' 'x11' 'fontconfig' 'gd' 'expat' 'zlib' 'libpng')
 source=(http://search.cpan.org/CPAN/authors/id/L/LD/LDS/GD-$pkgver.tar.gz)
-md5sums=('131a84d37921a18c87e7d994d72165b2')
+md5sums=('71e5050c45d2270984b271cbd9ec897b')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: upgraded to 2.31, built for perl 5.8.8 2006.03.06
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 

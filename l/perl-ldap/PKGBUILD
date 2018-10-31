@@ -1,10 +1,10 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-ldap
 pkgver=0.33
-pkgrel=1
+pkgrel=2
 pkgdesc="Net::LDAP - Lightweight Directory Access Protocol"
 depends=('perl' 'perl-convert-asn1' 'perl-authen-sasl' 'perl-io-socket-ssl' 'perl-xml-sax')
 source=(http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/$pkgname-$pkgver.tar.gz)
@@ -17,6 +17,7 @@ md5sums=('7002aedb8bcaa7169a8f0a8e22d34b72')
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt for perl 5.8.8 2006.03.06
 ##   rel1: initial rubix release 2005.11.22
 
 build() {

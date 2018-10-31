@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=libXevie
+pkgver=1.0.0
+pkgrel=2
+pkgdesc="X.Org libXevie library"
+url="http://www.x.org"
+depends=('libXau' 'glibc' 'libXext' 'libX11' 'libXdmcp')
+source=(ftp://ftp.x.org/pub/$X11/src/lib/$pkgname-$X11-$pkgver.tar.bz2)
+md5sums=('70b1787315d8d5f961edac05fef95fd6')
+groups=('x11-lib')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt without --enable-loadable-i18n 2006.03.16
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	mkdir -p $startdir/pkg/usr/lib
+	mv $startdir/pkg/usr/X11R7/lib/pkgconfig $startdir/pkg/usr/lib
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

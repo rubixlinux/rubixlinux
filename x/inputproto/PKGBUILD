@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=inputproto
+pkgver=1.3.2
+pkgrel=1
+pkgdesc="X.Org Input protocol headers"
+url="http://www.x.org"
+source=(ftp://ftp.x.org/pub/$X11/src/proto/$pkgname-$X11-$pkgver.tar.bz2)
+md5sums=('0da271f396bede5b8d09a61f6d1c4484')
+groups=('x11-dev')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7 --libdir=/usr/lib
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+}

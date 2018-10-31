@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-module-refresh
+pkgver=0.09
+pkgrel=1
+pkgdesc="Module::Refresh - Refresh %INC files when updated on disk"
+depends=('perl')
+url="http://search.cpan.org/~jesse/Module-Refresh-$pkgver/lib/Module/Refresh.pm"
+source=(http://search.cpan.org/CPAN/authors/id/J/JE/JESSE/Module-Refresh-$pkgver.tar.gz)
+md5sums=('f6168601b3be9cf59c0ed1698df954a6')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Module-Refresh-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Module-Refresh-$pkgver
+	cp	-a			\
+		Changes			\
+		MANIFEST		\
+		SIGNATURE		\
+	$startdir/pkg/usr/doc/perl-$PERL/Module-Refresh-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+#	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

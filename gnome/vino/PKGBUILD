@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=vino
+pkgver=2.13.5
+pkgrel=2
+pkgdesc="vino - an integrated vnc server for gnome"
+depends=('glibc' 'libXi' 'libgnomeui' 'libXtst' 'esound' 'gnutls' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libXdamage' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'libbonoboui' 'libpng' 'libXinerama' 'orbit2' 'libSM' 'libXext' 'libglade' 'gtk+2' 'atk' 'gconf' 'libICE' 'libart_lgpl' 'libtasn1' 'freetype2' 'libXfixes' 'cairo' 'pango' 'libXcursor' 'libbonobo' 'libX11' 'libgcrypt' 'libgpg-error' 'glib2' 'gnome-keyring' 'gnome-vfs' 'popt' 'libXrandr' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.13/$pkgname-$pkgver.tar.bz2)
+md5sums=('9bc8c3f0e639fdc7b9ed023501308359')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

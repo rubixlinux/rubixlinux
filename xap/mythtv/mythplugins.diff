@@ -1,60 +1,25 @@
---- ./mythbrowser/mythbookmarkmanager/mythbookmarkmanager.pro.orig	2005-05-29 02:39:31.000000000 -0600
-+++ ./mythbrowser/mythbookmarkmanager/mythbookmarkmanager.pro	2005-05-29 02:39:48.000000000 -0600
-@@ -2,6 +2,7 @@
- 
- INCLUDEPATH += /usr/include/kde
- INCLUDEPATH += /opt/kde3/include
-+INCLUDEPATH += /opt/kde/include
- 
- TEMPLATE = lib
- CONFIG += plugin thread warn_on debug
---- mythbrowser/mythbrowser/mythbrowser.pro.orig	2005-05-29 02:46:22.000000000 -0600
-+++ mythbrowser/mythbrowser/mythbrowser.pro	2005-05-29 02:46:47.000000000 -0600
-@@ -1,7 +1,6 @@
- include (../../settings.pro )
- 
--INCLUDEPATH += /usr/include/kde
--INCLUDEPATH += /opt/kde3/include
-+INCLUDEPATH += /opt/kde/include
- 
- LIBS += -L/usr/local/lib
- 
-@@ -17,7 +16,7 @@
- INSTALLS += installimages
- 
- LIBS += -lmyth-$$LIBVERSION $$EXTRA_LIBS
--LIBS += -L/opt/kde3/lib -lkhtml
-+LIBS += -L/opt/kde/lib -lkhtml
- 
- # Input
- HEADERS += webpage.h tabview.h
---- ./settings.pro.orig	2005-05-29 02:51:41.000000000 -0600
-+++ ./settings.pro	2005-05-29 02:51:27.000000000 -0600
-@@ -2,12 +2,13 @@
- CONFIG += release
- 
- isEmpty( PREFIX ) {
--    PREFIX = /usr/local
-+    PREFIX = /usr
- }
- 
- LIBVERSION = 0.18.1
- 
+--- mythplugins-0.19/configure.orig	2006-02-12 19:05:31.000000000 -0700
++++ mythplugins-0.19/configure	2006-02-12 19:06:04.000000000 -0700
+@@ -452,7 +452,7 @@
+     hasit="no"
+     if has_library libkhtml ; then
+         if has_header kde/khtml_part.h                  || \
+-           has_header /opt/kde3/include/khtml_part.h    || \
++           has_header /opt/kde/include/khtml_part.h     || \
+            has_header /usr/kde/3.3/include/khtml_part.h || \
+            has_header /usr/kde/3.4/include/khtml_part.h || \
+            has_header khtml_part.h ; then
+--- mythplugins-0.19/settings.pro.orig	2006-02-12 19:14:38.000000000 -0700
++++ mythplugins-0.19/settings.pro	2006-02-12 19:15:12.000000000 -0700
+@@ -5,9 +5,9 @@
  INCLUDEPATH += $${PREFIX}/include
-+INCLUDEPATH += /opt/kde/include
  #INCLUDEPATH += /usr/include/cdda
  #INCLUDEPATH += /usr/include/FLAC
+-INCLUDEPATH += /usr/kde/3.3/include
++INCLUDEPATH += /opt/kde/include
  
-@@ -17,10 +18,10 @@
- DEFINES += PREFIX=\"$${PREFIX}\"
+-LIBPATH += /usr/kde/3.3/lib
++LIBPATH += /opt/kde/lib
+ LIBS *= -L$${PREFIX}/lib
  
- # Remove for x86-64
--DEFINES += HAVE_MMX
-+#DEFINES += HAVE_MMX
- 
- release {
--    QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentiumpro -fomit-frame-pointer
-+    QMAKE_CXXFLAGS_RELEASE = -march=i486 -mtune=i686 -Os -pipe -fPIE -pie -fstack-protector-all -Wa,--noexecstack -fomit-frame-pointer
-     macx {
-         # Don't use -O3, it causes some Qt moc methods to go missing
-         QMAKE_CXXFLAGS_RELEASE = -O2
+ DEFINES += _GNU_SOURCE

@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libgnomeprint
+pkgver=2.12.1
+pkgrel=1
+pkgdesc="libgnomeprint - printer handling for gnome"
+depends=('glibc' 'freetype2' 'pango' 'libxml2' 'libgnomecups' 'fontconfig' 'openssl' 'expat' 'glib2' 'cups' 'zlib' 'popt' 'libart_lgpl')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.12/$pkgname-$pkgver.tar.bz2)
+md5sums=('ea729d4968fe2169c84efb12ace5f6cc')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		BUGS		\
+		COPYING*	\
+		ChangeLog*	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

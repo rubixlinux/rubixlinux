@@ -1,0 +1,60 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+VER=3.0.2-2
+
+pkgname=xen
+pkgver=3.0.2.2
+pkgrel=2
+pkgdesc="Xen is a virtual machine monitor for x86 that supports execution of multiple guest operating systems with unprecedented levels of performance and resource isolation"
+url="http://www.cl.cam.ac.uk/Research/SRG/netos/xen"
+backup=('etc/xen/xend-config.sxp')
+depends=('e2fsprogs' 'glibc' 'zlib' 'ncurses' 'python' 'tcpip' 'iproute2')
+source=(http://bits.xensource.com/Xen/latest/$pkgname-$VER-src.tgz	\
+	network-bridge.diff						\
+	xend								)
+md5sums=('ae26a3f51b2d94aca17fbe4df68fdc1d' \
+	 'db1cb844adec9e01dc5c684c6a336dba' \
+	 'ac4079353fcf07995303d722bf18619d' )
+
+## Todo:
+##   xendomains rc script
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+	export CFLAGS=""
+	export CXXFLAGS=""
+
+	cd $startdir/src/$pkgname-$VER
+
+	patch -p1 < $startdir/src/network-bridge.diff || return 1
+
+	make xen tools || return 1
+	make DESTDIR=$startdir/pkg install-xen install-tools
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rm -r $startdir/pkg/etc/init.d
+	rm -r $startdir/pkg/etc/sysconfig
+
+	rm $startdir/pkg/etc/udev/rules.d/*
+	mv $startdir/pkg/etc/udev/xen-backend.rules $startdir/pkg/etc/udev/rules.d/30-xen.rules
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/xend $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

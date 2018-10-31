@@ -1,7 +1,7 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=dnsmasq
-pkgver=2.26
+pkgver=2.27
 pkgrel=1
 pkgdesc="dnsmasq (small DNS and DHCP server) Dnsmasq is a lightweight, easy to configure DNS forwarder and DHCP server.  It is designed to provide DNS (and optionally DHCP) to a small network, and can serve the names of local machines which are not in the global DNS. Dnsmasq was written by Simon Kelley."
 url="http://www.thekelleys.org.uk/dnsmasq/doc.html"
@@ -11,7 +11,7 @@ backup=('etc/dnsmasq.conf'	\
 source=(http://www.thekelleys.org.uk/$pkgname/$pkgname-$pkgver.tar.gz	\
 	$pkgname.leasedir.diff						\
 	$pkgname							)
-md5sums=('ae04abb5db4a8cc43c24f432f0c44d5c' \
+md5sums=('489198ec87101087043adc98bbe062dc' \
 	 '521ca4116d7b1d66810ed5f9dfa44ee8' \
 	 'd2ea231f921c6244189af24f3e497322' )
 
@@ -22,6 +22,7 @@ md5sums=('ae04abb5db4a8cc43c24f432f0c44d5c' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 2.27 2006.04.22
 ##   rel1: upgraded to 2.26 2006.02.15
 ##   rel1: upgraded to 2.25, updated rc script to new format 2006.01.15
 ##   rel1: upgraded to 2.24 2005.12.07

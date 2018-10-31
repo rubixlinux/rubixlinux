@@ -1,11 +1,12 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=koffice-l10n-cy
-pkgver=1.4.2
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="koffice-l10n-cy Welsh language support for KOffice."
 depends=('koffice')
-source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.4.2/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.5.0/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+md5sums=('14c6069119fb491e6b430d6663e3a60f')
 
 build() {
 

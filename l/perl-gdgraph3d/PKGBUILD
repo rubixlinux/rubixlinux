@@ -1,41 +1,40 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-gdgraph3d
-pkgver=0.56
-pkgrel=2
+pkgver=0.63
+pkgrel=1
 pkgdesc="GD::Graph3D - Create 3D Graphs with GD and GD::Graph"
-url="http://search.cpan.org/~wadg/GDGraph3d-$pkgver/lib/GD/Graph3d.pm"
+url="http://search.cpan.org/~wadg/GD-Graph3d-$pkgver"
 depends=('perl-gdgraph')
-source=(http://search.cpan.org/CPAN/authors/id/W/WA/WADG/GDGraph3d-$pkgver.tar.gz)
-md5sums=('294dabc54c640ee62046932e7c4c6d1c')
+source=(http://search.cpan.org/CPAN/authors/id/W/WA/WADG/GD-Graph3d-$pkgver.tar.gz)
+md5sums=('f866dcdd1e7e2056bb946ab7ac3fe37b')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: upgrade to 0.63, built for perl 5.8.8 2006.03.06
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 
-	cd $startdir/src/GDGraph3d-$pkgver
+	cd $startdir/src/GD-Graph3d-$pkgver
 
 	perl Makefile.PL || return 1
 	make || return 1
 	make test || return 1
 	make install DESTDIR=$startdir/pkg
 
-	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/GDGraph3d-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/GD-Graph3d-$pkgver
 	cp	-a		\
 		Changes		\
-		MANIFEST	\
-		README		\
-	$startdir/pkg/usr/doc/perl-$PERL/GDGraph3d-$pkgver
+	$startdir/pkg/usr/doc/perl-$PERL/GD-Graph3d-$pkgver
 
 	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
 

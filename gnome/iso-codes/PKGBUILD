@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=iso-codes
+pkgver=0.50
+pkgrel=1
+pkgdesc="iso-codes - provides the list of country and language names"
+source=(http://ftp.debian.org/debian/pool/main/i/$pkgname/${pkgname}_${pkgver}.orig.tar.gz)
+md5sums=('77ef7d27a5d7a4c836a4be8cc009363b')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./autogen.sh --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		INSTALL		\
+		LGPL-2.1	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mkdir -p $startdir/pkg/usr/lib
+	mv $startdir/pkg/usr/share/pkgconfig $startdir/pkg/usr/lib
+
+}

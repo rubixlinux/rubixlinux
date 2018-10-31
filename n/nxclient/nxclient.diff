@@ -1,0 +1,70 @@
+diff -uNr nxclient-1.5.0-141.orig/etc/profile.d/nx.csh nxclient-1.5.0-141/etc/profile.d/nx.csh
+--- nxclient-1.5.0-141.orig/etc/profile.d/nx.csh	2006-02-06 04:28:19.000000000 -0700
++++ nxclient-1.5.0-141/etc/profile.d/nx.csh	2006-05-19 11:26:01.000000000 -0600
+@@ -6,10 +6,10 @@
+ #
+ #  Expanding PATH
+ #
+-setenv PATH ${PATH}:/usr/NX/bin
++setenv PATH ${PATH}:/opt/NX/bin
+ 
+ #
+ #  Setting NXDIR
+ #
+-setenv NXDIR /usr/NX
++setenv NXDIR /opt/NX
+ 
+diff -uNr nxclient-1.5.0-141.orig/etc/profile.d/nx.sh nxclient-1.5.0-141/etc/profile.d/nx.sh
+--- nxclient-1.5.0-141.orig/etc/profile.d/nx.sh	2006-02-06 04:28:19.000000000 -0700
++++ nxclient-1.5.0-141/etc/profile.d/nx.sh	2006-05-19 11:26:01.000000000 -0600
+@@ -6,7 +6,7 @@
+ #
+ #  Setting NXDIR
+ #
+-export NXDIR=/usr/NX
++export NXDIR=/opt/NX
+ 
+ #
+ #  Expanding PATH
+diff -uNr nxclient-1.5.0-141.orig/usr/NX/share/applnk/network/nxclient-admin.desktop nxclient-1.5.0-141/usr/NX/share/applnk/network/nxclient-admin.desktop
+--- nxclient-1.5.0-141.orig/usr/NX/share/applnk/network/nxclient-admin.desktop	2005-11-16 03:38:14.000000000 -0700
++++ nxclient-1.5.0-141/usr/NX/share/applnk/network/nxclient-admin.desktop	2006-05-19 11:26:22.000000000 -0600
+@@ -1,8 +1,8 @@
+ [Desktop Entry]
+ Encoding=UTF-8
+ Comment=Launch NX session Administrator
+-Exec=/usr/NX/bin/nxclient -admin
+-Icon=/usr/NX/share/icons/nxclient-admin.png
++Exec=/opt/NX/bin/nxclient -admin
++Icon=/opt/NX/share/icons/nxclient-admin.png
+ Name=NX Session Administrator
+ Type=Application
+ Categories=Application;Network
+diff -uNr nxclient-1.5.0-141.orig/usr/NX/share/applnk/network/nxclient-wizard.desktop nxclient-1.5.0-141/usr/NX/share/applnk/network/nxclient-wizard.desktop
+--- nxclient-1.5.0-141.orig/usr/NX/share/applnk/network/nxclient-wizard.desktop	2005-11-16 03:38:28.000000000 -0700
++++ nxclient-1.5.0-141/usr/NX/share/applnk/network/nxclient-wizard.desktop	2006-05-19 11:26:54.000000000 -0600
+@@ -1,8 +1,8 @@
+ [Desktop Entry]
+ Encoding=UTF-8
+ Comment=Launch connection wizard
+-Exec=/usr/NX/bin/nxclient -wizard
+-Icon=/usr/NX/share/icons/nxclient-wizard.png
++Exec=/opt/NX/bin/nxclient -wizard
++Icon=/opt/NX/share/icons/nxclient-wizard.png
+ Name=NX Connection Wizard
+ Type=Application
+ Categories=Application;Network
+diff -uNr nxclient-1.5.0-141.orig/usr/NX/share/applnk/network/nxclient.desktop nxclient-1.5.0-141/usr/NX/share/applnk/network/nxclient.desktop
+--- nxclient-1.5.0-141.orig/usr/NX/share/applnk/network/nxclient.desktop	2005-11-16 03:38:19.000000000 -0700
++++ nxclient-1.5.0-141/usr/NX/share/applnk/network/nxclient.desktop	2006-05-19 11:27:04.000000000 -0600
+@@ -1,8 +1,8 @@
+ [Desktop Entry]
+ Encoding=UTF-8
+ Comment=Client for connection to a remote NX server
+-Exec=/usr/NX/bin/nxclient
+-Icon=/usr/NX/share/icons/nx.png
++Exec=/opt/NX/bin/nxclient
++Icon=/opt/NX/share/icons/nx.png
+ Name=NX Client for Linux
+ Type=Application
+ MimeType=application/nx-session

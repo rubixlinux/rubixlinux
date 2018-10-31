@@ -1,30 +1,36 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
+CRYPTBF=1.0.1
+
 pkgname=glibc
 pkgver=2.3.6
-pkgrel=8
+pkgrel=10
 backup=(etc/nscd.conf)
 pkgdesc="glibc (GNU C libraries) This package contains the GNU C libraries and header files.  The GNU C library was written originally by Roland McGrath, and is currently maintained by Ulrich Drepper.  Some parts of the library were contributed or worked on by other people. You'll need this package to compile programs."
 url="http://www.gnu.org/software/libc"
-## depends=('freetype2' 'libjpeg' 'gd' 'x11' 'fontconfig' 'expat' 'zlib' 'libpng')
+## depends=('libXau' 'freetype2' 'libjpeg' 'libX11' 'libXpm' 'libXdmcp' 'gd' 'fontconfig' 'expat' 'zlib' 'libpng')
 source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.bz2			\
 	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-libidn-$pkgver.tar.bz2		\
 	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-linuxthreads-$pkgver.tar.bz2	\
+	http://www.openwall.com/crypt/crypt_blowfish-$CRYPTBF.tar.gz		\
 	glibc.locale.no-archive.diff						\
 	glibc.tls.crashfix.diff							\
 	libc.so									\
 	libpthread.so								\
 	glibc.nis-netgroups.diff						\
-	ru_RU.CP1251.diff							)
+	ru_RU.CP1251.diff							\
+	openbsd-strlcpy-strlcat.diff						)
 md5sums=('bfdce99f82d6dbcb64b7f11c05d6bc96' \
 	 '49dbe06ce830fc73874d6b38bdc5b4db' \
 	 'd4eeda37472666a15cc1f407e9c987a9' \
+	 '9654004cf2369fd486888877eb35e03e' \
 	 '38cab0b1083b7ad61f77b20d500cade8' \
 	 'de875ea21d1ca574ae3ef8c9028ba595' \
 	 'b3c7ab994b51d5a48a0a055dc123609e' \
 	 'fa1b5cf91c739b422913016af47247f8' \
 	 '2aa5d99f1387bd11721a8271c09cfbcd' \
-	 'ae83dbcf67dec9949e3efeddbf58c9f5' )
+	 'ae83dbcf67dec9949e3efeddbf58c9f5' \
+	 'bff477e78bba91586b18040e6b405e64' )
 
 ## Todo:
 ##   None
@@ -40,27 +46,29 @@ md5sums=('bfdce99f82d6dbcb64b7f11c05d6bc96' \
 ##   glibc, like gcc, is now one package, I may change both of these
 
 ## Changelog:
-##   rel8: rebuilt against kernel 2.6.15.5 headers 2006.03.03
-##   rel7: rebuilt against kernel 2.6.15.4 headers 2006.02.12
-##   rel6: rebuilt against kernel 2.6.15.3 headers 2006.02.07
-##   rel5: added support for ru_RU.cp1251 2006.02.04
-##   rel4: rebuilt against kernel 2.6.15.2 headers 2006.02.01
-##   rel3: rebuilt against kernel 2.6.15.1 headers 2006.01.21
-##   rel2: rebuilt against kernel 2.6.15 headers 2006.01.11
-##   rel1: upgraded to 2.3.6 2005.11.10
-##   rel5: rebuilt for kernel-headers 2.6.14 2005.10.28
-##   rel4: added the nis netgroup patch from slackware 2005.008.19
-##   rel3: rebuilt for kernel-headers 2.6.12 2005.06.18
-##   rel2: Added tls patch following suit with Slackware with nptl and nvidia driver issues 2005.05.16
-##   rel1: Initial Rubix release
+##   rel10: rebuilt against kernel 2.6.16.9 headers 2006.04.21
+##   rel9:  rebuilt with openwall's crypt_blowfish support for crypt and openbsd's strlcat/strlcpy 2006.04.15
+##   rel8:  rebuilt against kernel 2.6.15.5 headers 2006.03.03
+##   rel7:  rebuilt against kernel 2.6.15.4 headers 2006.02.12
+##   rel6:  rebuilt against kernel 2.6.15.3 headers 2006.02.07
+##   rel5:  added support for ru_RU.cp1251 2006.02.04
+##   rel4:  rebuilt against kernel 2.6.15.2 headers 2006.02.01
+##   rel3:  rebuilt against kernel 2.6.15.1 headers 2006.01.21
+##   rel2:  rebuilt against kernel 2.6.15 headers 2006.01.11
+##   rel1:  upgraded to 2.3.6 2005.11.10
+##   rel5:  rebuilt for kernel-headers 2.6.14 2005.10.28
+##   rel4:  added the nis netgroup patch from slackware 2005.008.19
+##   rel3:  rebuilt for kernel-headers 2.6.12 2005.06.18
+##   rel2:  Added tls patch following suit with Slackware with nptl and nvidia driver issues 2005.05.16
+##   rel1:  Initial Rubix release
 
 build() {
 
 	export MAKEFLAGS="-j2"
 	
 	#Use known working flags
-	CFLAGS="-O3 -march=i486 -mtune=i686"
-	CXXFLAGS="-O3 -march=i486 -mtune=i686"
+	CFLAGS="-O2 -march=i486 -mtune=i686"
+	CXXFLAGS="-O2 -march=i486 -mtune=i686"
 
 	find $startdir/src -type d -name CVS -exec rm -r {} \;
 
@@ -91,10 +99,17 @@ build() {
 	mkdir -p $startdir/pkg_nptl/usr/man
 	mkdir -p $startdir/pkg_nptl/usr/share
 
-	patch -p1 < $startdir/src/glibc.locale.no-archive.diff	|| return 1
-	patch -p1 < $startdir/src/glibc.tls.crashfix.diff	|| return 1
-	patch -p1 < $startdir/src/glibc.nis-netgroups.diff	|| return 1
-	patch -p1 < $startdir/src/ru_RU.CP1251.diff		|| return 1
+	patch -p1 < $startdir/src/glibc.locale.no-archive.diff				|| return 1
+	patch -p1 < $startdir/src/glibc.tls.crashfix.diff				|| return 1
+	patch -p1 < $startdir/src/glibc.nis-netgroups.diff				|| return 1
+	patch -p1 < $startdir/src/ru_RU.CP1251.diff					|| return 1
+	patch -p1 < $startdir/src/crypt_blowfish-$CRYPTBF/glibc-2.3.2-crypt.diff	|| return 1
+	patch -p1 < $startdir/src/openbsd-strlcpy-strlcat.diff				|| return 1
+
+	cd crypt
+	mv crypt.h gnu-crypt.h
+	cp $startdir/src/crypt_blowfish-$CRYPTBF/*.{c,h,S} .
+	cd ..
 
 	mkdir build-$pkgname-$pkgver
 	cd build-$pkgname-$pkgver
@@ -126,10 +141,17 @@ build() {
 
 	find $startdir/src -type d -name CVS -exec rm -r {} \;
 
-	patch -p1 < $startdir/src/glibc.locale.no-archive.diff	|| return 1
-	patch -p1 < $startdir/src/glibc.tls.crashfix.diff	|| return 1
-	patch -p1 < $startdir/src/glibc.nis-netgroups.diff	|| return 1
-	patch -p1 < $startdir/src/ru_RU.CP1251.diff		|| return 1
+	patch -p1 < $startdir/src/glibc.locale.no-archive.diff				|| return 1
+	patch -p1 < $startdir/src/glibc.tls.crashfix.diff				|| return 1
+	patch -p1 < $startdir/src/glibc.nis-netgroups.diff				|| return 1
+	patch -p1 < $startdir/src/ru_RU.CP1251.diff					|| return 1
+	patch -p1 < $startdir/src/crypt_blowfish-$CRYPTBF/glibc-2.3.2-crypt.diff        || return 1
+	patch -p1 < $startdir/src/openbsd-strlcpy-strlcat.diff				|| return 1
+
+	cd crypt
+	mv crypt.h gnu-crypt.h
+	cp $startdir/src/crypt_blowfish-$CRYPTBF/*.{c,h,S} .
+	cd ..
 
 	mkdir build-$pkgname-$pkgver
 	cd build-$pkgname-$pkgver

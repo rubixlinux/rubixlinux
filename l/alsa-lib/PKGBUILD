@@ -1,16 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=alsa-lib
-pkgver=1.0.10
-pkgrel=2
+pkgver=1.0.11
+pkgrel=1
 groups=('alsa')
 pkgdesc="alsa-lib (Advanced Linux Sound Architecture library) The Advanced Linux Sound Architecture (ALSA) provides audio and MIDI functionality to the Linux operating system.  This is the ALSA library (libasound) which is used by audio applications. For more information, see http://alsa-project.org"
 url="http://www.alsa-project.org"
 depends=('glibc')
 source=(ftp://ftp.alsa-project.org/pub/lib/$pkgname-$pkgver.tar.bz2	\
-	dmix.diff.gz							)
-md5sums=('b1a4e15c9ff81798507de470a92fcc43' \
-	 'c71d8931e8214bca9d4ff1ec73289f82' )
+	dmix.diff							)
+md5sums=('ef7ae78a0ef08cbeacb295f2518886ab' \
+	 'acb466a83c1c50a345998c5015e0dcdd' )
 
 ## Todo:
 ##   None
@@ -19,6 +19,7 @@ md5sums=('b1a4e15c9ff81798507de470a92fcc43' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 1.0.11 2006.04.20
 ##   rel2: added to the dmix patch so that unknown cards also default to using dmix
 ##         while I dont think that this could cause problems, since it is not configured
 ##         this way by default I suppose that it may not always work properly. Please
@@ -30,6 +31,8 @@ md5sums=('b1a4e15c9ff81798507de470a92fcc43' \
 ##   rel1: Initial Rubix release
 
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/$pkgname-$pkgver
 
@@ -48,5 +51,7 @@ build() {
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 	cp -a COPYING		$startdir/pkg/usr/doc/$pkgname-$pkgver/COPYING.lib
 	cp -a aserver/COPYING	$startdir/pkg/usr/doc/$pkgname-$pkgver/COPYING.aserver
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

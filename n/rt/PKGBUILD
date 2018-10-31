@@ -1,0 +1,67 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=rt
+pkgver=3.4.5
+pkgrel=1
+pkgdesc="RT is an enterprise-grade ticketing system which enables a group of people to intelligently and efficiently manage tasks, issues, and requests submitted by a community of users"
+url="http://www.bestpractical.com/rt"
+depends=('perl' 'perl-params-validate' 'perl-cache-cache' 'perl-exception-class' 'perl-html-mason' 'perl-mldbm' 'perl-freezethaw' 'perl-apache-session' 'perl-xml-rss' 'perl-http-server-simple' 'perl-http-server-simple-mason' 'perl-text-wikiformat' 'perl-html-tree' 'perl-html-format' 'perl-lwp' 'perl-dbi' 'perl-test-inline' 'perl-class-returnvalue' 'perl-dbix-searchbuilder' 'perl-text-template' 'perl-html-parser' 'perl-html-scrubber' 'perl-log-dispatch' 'perl-locale-maketext-lexicon' 'perl-locale-maketext-fuzzy' 'perl-mime-tools' 'perl-mail-tools' 'perl-text-wrapper' 'perl-time-modules' 'perl-term-readkey' 'perl-text-autoformat' 'perl-text-quoted' 'perl-tree-simple' 'perl-module-versions-report' 'perl-cache-simple-timedexpiry' 'perl-xml-simple' 'perl-regexp-common' 'perl-apache-test' 'perl-www-mechanize' 'perl-test-www-mechanize' 'perl-module-refresh' 'perl-dbd-mysql' 'sendmail' 'mysql' 'apache' 'mod_perl')
+backup=('etc/rt/RT_SiteConfig.pm')
+source=(http://download.bestpractical.com/pub/$pkgname/release/$pkgname-$pkgver.tar.gz	\
+	config.layout-rubix								)
+md5sums=('16c8007cba54669e6c9de95cfc680b2a' \
+	 'cb1bef1225f8abc9f373a6e7896e5a4f' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	cat $startdir/src/config.layout-rubix >> config.layout
+
+	./configure				\
+		--enable-layout=Rubix		\
+		--with-bin-owner=root		\
+		--with-libs-owner=root		\
+		--with-libs-group=root		\
+		--with-rt-group=nobody		\
+		--with-web-user=nobody		\
+		--with-web-group=nobody
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		Changelog	\
+		README		\
+		README.Oracle	\
+		UPGRADING	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg/usr/share/rt/html -type f -exec chmod 644 {} \;
+	find $startdir/pkg/usr/lib -type f -exec chmod 644 {} \;
+
+	chown root.root -R $startdir/pkg/etc
+	find $startdir/pkg -perm 500 -exec chmod 600 {} \;
+	find $startdir/pkg -perm 550 -exec chmod 640 {} \;
+	chown root.nobody $startdir/pkg/etc/rt/RT_Config.pm
+	chown root.nobody $startdir/pkg/etc/rt/RT_SiteConfig.pm
+	chown root -R $startdir/pkg/var
+	chmod 770 $startdir/pkg/var/mason/data/*
+
+	rm -r $startdir/pkg/usr/share/doc
+	rm -r $startdir/pkg/usr/local
+	rm -r $startdir/pkg/var/log
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

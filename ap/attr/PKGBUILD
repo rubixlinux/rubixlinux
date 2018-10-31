@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=attr
+pkgver=2.4.28
+pkgrel=1
+pkgdesc="attr (tools for using extended attributes on filesystems) This package contains a set of tools for manipulating extended attributes (name:value pairs associated permanently with files and directories) on filesystem objects, and the library and header files needed to develop programs which make use of extended attributes. Extended attributes are used to provide additional functionality to a filesystem.  For example, Access Control Lists (ACLs) are implemented using extended attributes."
+url="http://oss.sgi.com/projects/xfs"
+depends=('glibc')
+source=(ftp://oss.sgi.com/projects/xfs/cmd_tars/$pkgname-$pkgver.src.tar.gz)
+md5sums=('4fe11d4221199e51f6eeeee37d5dd84c')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+	make prefix=$startdir/pkg/usr install-dev
+	make prefix=$startdir/pkg/usr install-lib
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/lib $startdir/pkg
+	rm $startdir/pkg/lib/*.a
+
+	mv $startdir/pkg/usr/libexec $startdir/pkg/usr/lib
+
+	rm $startdir/pkg/usr/lib/libattr.so
+	ln -s /lib/libattr.so.1 $startdir/pkg/usr/lib/libattr.so
+
+	rmdir $startdir/pkg/usr/share/doc
+
+	chmod 755 $startdir/pkg/lib/libattr.so.1.1.0
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

@@ -1,0 +1,18 @@
+--- linux-2.6.16.9/include/linux/input.h.orig	2006-04-21 01:42:36.000000000 -0600
++++ linux-2.6.16.9/include/linux/input.h	2006-04-21 01:42:47.000000000 -0600
+@@ -796,6 +796,7 @@
+ 
+ #define FF_MAX		0x7f
+ 
++#ifdef __KERNEL__
+ struct input_device_id {
+ 
+ 	kernel_ulong_t flags;
+@@ -814,6 +815,7 @@
+ 
+ 	kernel_ulong_t driver_info;
+ };
++#endif
+ 
+ /*
+  * Structure for hotplug & device<->driver matching.

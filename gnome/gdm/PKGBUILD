@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gdm
+pkgver=2.14.0
+pkgrel=1
+pkgdesc="gdm - gnome display manager"
+depends=('glibc' 'libXi' 'fontconfig' 'openssl' 'libgnomecanvas' 'expat' 'libXrender' 'zlib' 'libXau' 'libXdmcp' 'libxml2' 'libpng' 'libXinerama' 'libXext' 'orbit2' 'libglade' 'gtk+2' 'libcroco' 'atk' 'libgsf' 'librsvg' 'gconf' 'libart_lgpl' 'freetype2' 'libdmx' 'cairo' 'pango' 'libXfixes' 'libXcursor' 'libX11' 'libbonobo' 'bzip2' 'glib2' 'gnome-vfs' 'libXrandr' 'popt')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('1f82485c4e8cd8ca2f1523a91a624eff')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-scrollkeeper
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

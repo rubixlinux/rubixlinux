@@ -1,20 +1,32 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=gtkspell
-pkgver=2.0.8
+pkgver=2.0.11
 pkgrel=1
 url="http://gtkspell.sourceforge.net"
 pkgdesc="GtkSpell provides MSWord/MacOSX-style highlighting of misspelled words in a GtkTextView widget.  Right-clicking a misspelled word pops up a menu ofsuggested replacements."
-depends=('gtk+2' 'aspell')
+depends=('libXext' 'glibc' 'libXi' 'aspell' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'pango' 'cairo' 'libXfixes' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'gcc' 'libpng' 'libXinerama' 'libXrandr')
 source=(http://gtkspell.sourceforge.net/download/$pkgname-$pkgver.tar.gz)
-md5sums=('1199f7479ddb8ce286606a0893174c2f')
+md5sums=('494869f67146a12a3f17a958f51aeb05')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.0.11 2006.04.12
+##   rel1: initial rubix release
 
 build() {
 
+	export MAKEFLAGS=""
+
 	cd $startdir/src/$pkgname-$pkgver
 
-	./configure --prefix=/usr
-	make
+	./configure --prefix=/usr --disable-gtk-doc
+	make || return 1
 	make DESTDIR=$startdir/pkg install
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/html
@@ -31,5 +43,8 @@ build() {
 
 	mv $startdir/pkg/usr/share/gtk-doc/html/$pkgname/* $startdir/pkg/usr/doc/$pkgname-$pkgver/html
 	rm -r $startdir/pkg/usr/share/gtk-doc
+	chmod 755 $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

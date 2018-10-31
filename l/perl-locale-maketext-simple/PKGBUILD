@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-locale-maketext-simple
+pkgver=0.12
+pkgrel=1
+pkgdesc="Locale::Maketext::Simple - Simple interface to Locale::Maketext::Lexicon"
+depends=('perl')
+url="http://search.cpan.org/~autrijus/Locale-Maketext-Simple-$pkgver/lib/Locale/Maketext/Simple.pm"
+source=(http://search.cpan.org/CPAN/authors/id/A/AU/AUTRIJUS/Locale-Maketext-Simple-$pkgver.tar.gz)
+md5sums=('9a65312da2ae8d59f898151f9c044383')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Locale-Maketext-Simple-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Locale-Maketext-Simple-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/Locale-Maketext-Simple-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-html-scrubber
+pkgver=0.08
+pkgrel=1
+pkgdesc="HTML::Scrubber - Perl extension for scrubbing/sanitizing html"
+url="http://search.cpan.org/~podmaster/HTML-Scrubber-$pkgver/Scrubber.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/P/PO/PODMASTER/HTML-Scrubber-$pkgver.tar.gz)
+md5sums=('abadf246e528f3e2d31717ef8a1d90f2')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/HTML-Scrubber-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/HTML-Scrubber-$pkgver
+	cp	-a		\
+		Changes		\
+		LICENSE		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/HTML-Scrubber-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/HTML-Scrubber-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=dasher
+pkgver=4.0.1
+pkgrel=1
+pkgdesc="dasher - a text entry interface, driven by continuous pointing gestures"
+depends=('glibc' 'at-spi' 'libXi' 'libgnomeui' 'libXtst' 'esound' 'libwnck' 'fontconfig' 'openssl' 'expat' 'libgnomecanvas' 'libXrender' 'gail' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libgnome' 'audiofile' 'libXdmcp' 'libxml2' 'libbonoboui' 'startup-notification' 'libpng' 'libXinerama' 'libSM' 'orbit2' 'libXext' 'libglade' 'gtk+2' 'atk' 'gconf' 'libICE' 'libart_lgpl' 'freetype2' 'libXres' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libbonobo' 'glib2' 'gnome-keyring' 'gnome-vfs' 'gcc' 'libXrandr' 'popt')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/4.0/$pkgname-$pkgver.tar.bz2)
+md5sums=('aaee9989b51a8bae535fd11ba628911f')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL*	\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

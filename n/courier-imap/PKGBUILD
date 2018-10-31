@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=courier-imap
-pkgver=4.0.6
-pkgrel=2
+pkgver=4.1.1
+pkgrel=1
 pkgdesc="Courier-IMAP is a fast, scalable enterprise IMAP server that uses Maildirs."
 url="http://www.courier-mta.org/imap"
 depends=('glibc' 'courier-authlib' 'openssl' 'gdbm' 'gcc')
 source=(http://dl.sourceforge.net/sourceforge/courier/$pkgname-$pkgver.tar.bz2	\
 	$pkgname								)
-md5sums=('5e1c53a49d5ffb2ec9f3b600a6e1fbef' \
+md5sums=('f423a609d9cce0dcf193cac64eb4cbdd' \
 	 'a145b5891fa2b84387b53aabbffc3793' )
 backup=('etc/courier-imap/imapd'	\
 	'etc/courier-imap/imapd-ssl'	\
@@ -25,6 +25,7 @@ backup=('etc/courier-imap/imapd'	\
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 4.1.1 2006.06.04
 ##   rel2: updated rc script to new format 2006.01.15
 ##   rel1: upgraded to 4.0.6 2005.11.15
 ##   rel1: upgraded to 4.0.4 2005.09.04

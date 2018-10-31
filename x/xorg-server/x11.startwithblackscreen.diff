@@ -1,0 +1,13 @@
+--- xorg-server-X11R7.0-1.0.1/dix/window.c.orig	2006-03-15 00:19:15.000000000 -0700
++++ xorg-server-X11R7.0-1.0.1/dix/window.c	2006-03-15 00:19:52.000000000 -0700
+@@ -122,8 +122,8 @@
+  *
+  ******/
+ 
+-static unsigned char _back_lsb[4] = {0x88, 0x22, 0x44, 0x11};
+-static unsigned char _back_msb[4] = {0x11, 0x44, 0x22, 0x88};
++static unsigned char _back_lsb[4] = {0x00, 0x00, 0x00, 0x00};
++static unsigned char _back_msb[4] = {0x00, 0x00, 0x00, 0x00};
+ 
+ int screenIsSaved = SCREEN_SAVER_OFF;
+ 

@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-device-serialport
+pkgver=1.002
+pkgrel=1
+pkgdesc="Device::SerialPort - Linux/POSIX emulation of Win32::SerialPort functions."
+depends=('glibc' 'perl')
+url="http://search.cpan.org/~cook/Device-SerialPort-$pkgver/SerialPort.pm"
+source=(http://search.cpan.org/CPAN/authors/id/C/CO/COOK/Device-SerialPort-$pkgver.tar.gz)
+md5sums=('aeef199bfdd2aece043649a0673146d5')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release 2006.03.09
+
+build() {
+
+	cd $startdir/src/Device-SerialPort-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Device-SerialPort-$pkgver
+	cp	-a	\
+		Changes	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/perl-$PERL/Device-SerialPort-$pkgver
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

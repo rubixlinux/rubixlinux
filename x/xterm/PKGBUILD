@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=xterm
+pkgver=207
+pkgrel=1
+pkgdesc="X.Org xterm app"
+url="http://www.x.org"
+depends=('glibc' 'libSM' 'libXext' 'libXaw' 'fontconfig' 'expat' 'libICE' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXpm' 'libX11' 'libXdmcp' 'libXmu' 'libXt' 'libXft' 'libtermcap')
+source=(ftp://ftp.x.org/pub/$X11/src/extras/$pkgname-$pkgver.tar.gz)
+md5sums=('3de8a3756c284a46a08c6d0308909486')
+groups=('x11-app')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a			\
+		AAA_README_VMS.txt	\
+		INSTALL			\
+		MANIFEST		\
+		README			\
+		README.i18n		\
+		README.os390		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+}

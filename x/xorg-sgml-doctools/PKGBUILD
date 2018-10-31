@@ -1,0 +1,37 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=xorg-sgml-doctools
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="X.Org xorg-sgml-doctools doc"
+url="http://www.x.org"
+source=(ftp://ftp.x.org/pub/$X11/src/doc/$pkgname-$X11-$pkgver.tar.bz2)
+md5sums=('d08d4fd10ac46d8b4636efe4d8c0de74')
+groups=('x11-doc')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		ChangeLog	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+}

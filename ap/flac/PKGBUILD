@@ -1,32 +1,33 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=flac
 pkgver=1.1.2
-pkgrel=4
-pkgdesc="flac (Free Lossless Audio Codec) FLAC stands for Free Lossless Audio Codec. Grossly oversimplified, FLAC is similar to MP3, but lossless.  "Free" means that the specification of the stream format is in the public domain, and that neither the FLAC format nor any of the implemented encoding/decoding methods are covered by any patent. It also means that the sources for libFLAC and libFLAC++ are available under the LGPL and the sources for flac, metaflac, and the plugins are available under the GPL. FLAC was developed by Josh Coalson."
-depends=('libogg' 'xmms')
-source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz	\
-	flac.man.diff.gz							\
-	xmms-plugin.diff.gz							)
+pkgrel=5
+pkgdesc="flac (Free Lossless Audio Codec) FLAC stands for Free Lossless Audio Codec. Grossly oversimplified, FLAC is similar to MP3, but lossless.  \"Free\" means that the specification of the stream format is in the public domain, and that neither the FLAC format nor any of the implemented encoding/decoding methods are covered by any patent. It also means that the sources for libFLAC and libFLAC++ are available under the LGPL and the sources for flac, metaflac, and the plugins are available under the GPL. FLAC was developed by Josh Coalson."
 url="http://flac.sourceforge.net"
+depends=('glibc' 'libogg' 'gcc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz	\
+	flac.man.diff								\
+	xmms-plugin.diff							)
 md5sums=('2bfc127cdda02834d0491ab531a20960' \
-	 '3d57d00003e18cfeb8c7fc70c5c9f10a' \
-	 '35730ba8086ff8c7f897a812e9e6f151' )
+	 '50f33fe78215bc1bcc93283c9ec501ac' \
+	 '19a503de95d67f8e6e88283e0943095f' )
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#Requires several rebuilds\installs to link properly
+## Notes:
+##   Requires several rebuilds\installs to link properly
 
-#Changelog:
-#rel4: Rebuilt with xmms-plugin patch 2005.04.21
-#rel3: Rebuilt and removed xmms plugin temporarily until the flac developers fix it 2005.02.23
-#        Since I went through and recompiled all programs to use the new flac library
-#        I will not revert back to 1.1.1
-#        I am also not changing the deps since xmms will be required again in the near future
-#rel2: Rebuild to link properly 2005.02.20
-#rel1: Initial Rubix release
+## Changelog:
+##   rel5: rebuilt without dependance on xmms 2006.04.12
+##   rel4: Rebuilt with xmms-plugin patch 2005.04.21
+##   rel3: Rebuilt and removed xmms plugin temporarily until the flac developers fix it 2005.02.23
+##         Since I went through and recompiled all programs to use the new flac library
+##         I will not revert back to 1.1.1
+##         I am also not changing the deps since xmms will be required again in the near future
+##   rel2: Rebuild to link properly 2005.02.20
+##   rel1: Initial Rubix release
 
 build() {
 
@@ -38,7 +39,7 @@ build() {
 	find . -perm 777 | xargs chmod 755
 
 	./configure --prefix=/usr $CHOST
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
@@ -64,5 +65,6 @@ EOF
 	chown -R root.bin $startdir/pkg/usr/bin
 
 	find $startdir/pkg -perm 0664 -exec chmod 0644 {} \;
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

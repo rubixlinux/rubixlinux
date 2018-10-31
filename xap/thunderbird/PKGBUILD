@@ -27,8 +27,8 @@ md5sums=('ada9c163f5b26fe81958e7a85340811e' \
 
 
 ## Changelog:
-##   rel1: upgraded to 1.5.0.4 2006.06.04 *security*
-##   rel1: upgraded to 1.5.0.2 2006.05.03 *security*
+##   rel1: upgraded to 1.5.0.4 2006.06.01
+##   rel1: upgraded to 1.5.0.2 2006.05.03
 ##   rel2: made firefox the default http, https and ftp handler 2006.01.16
 ##   rel1: upgraded to thunderbird 1.5, enigmail is no longer included
 ##         again built with official branding, mozilla's decision on rubix's

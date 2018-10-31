@@ -4,7 +4,7 @@ SHORTVER=31
 
 pkgname=bash
 pkgver=3.1
-pkgrel=2
+pkgrel=3
 pkgdesc="The GNU Bourne-Again SHell.  Bash is a sh-compatible command interpreter that executes commands read from the standard input or from a file.  Bash also incorporates useful features from the Korn and C shells (ksh and csh).  Bash is ultimately intended to be a conformant implementation of the IEEE Posix Shell and Tools specification (IEEE Working Group 1003.2). Bash must be present for the system to boot properly."
 url="http://www.gnu.org/software/bash/bash.html"
 depends=('glibc' 'libtermcap')
@@ -16,7 +16,17 @@ source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz				\
 	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-004	\
 	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-005	\
 	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-006	\
-	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-007	)
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-007	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-008	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-009	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-010	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-011	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-012	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-013	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-014	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-015	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-016	\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver-patches/bash$SHORTVER-017	)
 md5sums=('ef5304c4b22aaa5088972c792ed45d72' \
 	 'c0d33bdfed6e4e6a9ae9200b77cd5c99' \
 	 '0c9be3bad344d04b79c4eac9eb39624c' \
@@ -24,7 +34,17 @@ md5sums=('ef5304c4b22aaa5088972c792ed45d72' \
 	 '0c2856794ab16a4c224223c1964140c2' \
 	 '943233d7227071fa040c8b9eb016fa0c' \
 	 '68a41a9da7c669b4358837d06556a06f' \
-	 'f6ca4950256fefd88d49c5702338e501' )
+	 'f6ca4950256fefd88d49c5702338e501' \
+	 '4fd01140cb5875fe020939aab02791f0' \
+	 '37aad0d5aa57881742ec6419faf9e480' \
+	 '91c52d2a51d41d4b6907758952aa0554' \
+	 '37ace691fc4bd386fb764b5f53cde4a1' \
+	 'cd5d17f0729a6da39a60039f2730e408' \
+	 '31317d6a80bed2eb9b6fd3d12d304259' \
+	 '7f4aef181659265d822c48e774834975' \
+	 '1c05456b278235f578009b8fb2454a9a' \
+	 'fbc981edfff97a0940487937db3fb202' \
+	 'b08ffabafce3a967e3a7e0a5b29d8331' )
 
 ## Todo:
 ##   None
@@ -35,6 +55,7 @@ md5sums=('ef5304c4b22aaa5088972c792ed45d72' \
 ##   the patches are all the official bash patches for inclusion in the next release
 
 ## Changelog:
+##   rel3: upgraded to patchset 017 2006.04.17
 ##   rel2: added patchs 6 and 7 2006.02.16
 ##   rel1: try 3.1 (patch 5) again 2006.01.13
 ##   rel4: Reverted back to bash 3.0, there were sh compatibility problems with 3.1 2005.12.21

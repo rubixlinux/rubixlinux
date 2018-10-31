@@ -2,9 +2,9 @@
 
 pkgname=vorbis-tools
 pkgver=1.1.1
-pkgrel=1
+pkgrel=2
 pkgdesc="vorbis-tools (Ogg Vorbis Tools) The vorbis-tools package contains several basic tools for working with compressed audio files in the Ogg Vorbis (.ogg) format: oggenc (an .ogg encoder), ogg123 (a playback tool), vorbiscomment (add comments to vorbis files), ogginfo (show information about an ogg file), oggdec (a command line decoder), and vcut (a tool for splitting vorbis files). These tools require the libao, libogg, and libvorbis libraries."
-depends=('glibc' 'flac' 'libao' 'libvorbis' 'openssl' 'libogg' 'curl' 'zlib')
+depends=('glibc' 'flac' 'libidn' 'libao' 'libvorbis' 'openssl' 'libogg' 'curl' 'zlib')
 source=(http://downloads.xiph.org/releases/vorbis/$pkgname-$pkgver.tar.gz)
 md5sums=('47845fd76f5f2354a3619c4097575487')
 
@@ -15,6 +15,7 @@ md5sums=('47845fd76f5f2354a3619c4097575487')
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt without $CHOST configure option 2006.05.09
 ##   rel1: upgraded to 1.1.1 2005.09.18
 ##   rel1: initial rubix release
 
@@ -25,7 +26,7 @@ build() {
 	find . -perm 777 -exec chmod 755 {} \;
 	find . -perm 664 -exec chmod 644 {} \;
 
-	./configure --prefix=/usr $CHOST
+	./configure --prefix=/usr
 	make || return 1
 	make install DESTDIR=$startdir/pkg
 

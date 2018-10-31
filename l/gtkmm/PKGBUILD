@@ -1,13 +1,23 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=gtkmm
-pkgver=2.8.0
+pkgver=2.8.3
 pkgrel=1
 pkgdesc="gtkmm is the official C++ interface for the popular GUI library GTK+. Highlights include typesafe callbacks, widgets extensible via inheritance and a comprehensive set of widgets."
 url="http://www.gtkmm.org"
-depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'glibmm' 'fontconfig' 'libsigc++' 'x11' 'expat' 'glib2' 'zlib' 'gcc' 'libpng')
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'glibmm' 'fontconfig' 'libsigc++' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'gcc' 'libpng' 'libXinerama' 'libXrandr')
 source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.8/$pkgname-$pkgver.tar.bz2)
-md5sums=('337027bb21635967fd232fcc6bcb9359')
+md5sums=('578dca71e56db17f400abd21ca8e7ce5')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.8.3 2006.04.12
+##   rel1: initial rubix release
 
 build() {
 
@@ -37,5 +47,7 @@ build() {
 	rm -r $startdir/pkg/usr/share
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

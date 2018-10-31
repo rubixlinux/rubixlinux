@@ -1,0 +1,68 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=boxbackup
+pkgver=0.10
+pkgrel=1
+pkgdesc="boxbackup - an open source, completely automatic on-line backup system"
+url="http://www.fluffy.co.uk/boxbackup"
+depends=('glibc' 'db' 'openssl' 'gcc' 'zlib' 'readline' 'libtermcap')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tgz	\
+	bbstored								\
+	bbackupd								)
+md5sums=('2dc02d87932fdb222ed019443ddcf444' \
+	 '14e6757b8f33252cafb8c3a9b0c5818e' \
+	 '24e55b6d7ee3de3a097a79e53553ec3c' )
+backup=('etc/bbstored'	\
+	'etc/bbackupd'	)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --enable-gnu-readline
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/sbin
+
+	cd parcels/$pkgname-$pkgver-backup-server-linux-gnu
+	for file in		\
+		bbstored	\
+		bbstoreaccounts	\
+		bbstored-certs	\
+		bbstored-config	\
+		raidfile-config
+	do
+		cp $file $startdir/pkg/usr/sbin
+	done
+
+	cd ../$pkgname-$pkgver-backup-client-linux-gnu
+	for file in		\
+		bbackupd	\
+		bbackupquery	\
+		bbackupctl	\
+		bbackupd-config
+	do
+		cp $file $startdir/pkg/usr/sbin
+	done
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a *.txt $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/{bbstored,bbackupd} $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

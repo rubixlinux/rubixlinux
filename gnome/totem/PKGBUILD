@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=totem
+pkgver=1.4.0
+pkgrel=2
+pkgdesc="totem - media player for gnome"
+depends=('glibc' 'libXi' 'libgnomeui' 'libXtst' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'dbus' 'libxml2' 'xine-lib' 'libbonoboui' 'startup-notification' 'libpng' 'libXinerama' 'libXext' 'libSM' 'orbit2' 'libXxf86vm' 'libglade' 'gtk+2' 'atk' 'nautilus' 'gconf' 'libICE' 'lirc' 'libart_lgpl' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libbonobo' 'libX11' 'gnome-desktop' 'firefox' 'glib2' 'gnome-keyring' 'gcc' 'gnome-vfs' 'popt' 'libXrandr' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.4/$pkgname-$pkgver.tar.bz2)
+md5sums=('34be929fc384b078afabd6d81ab47285')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mv $startdir/pkg/usr/lib/firefox* $startdir/pkg/usr/lib/mozilla
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

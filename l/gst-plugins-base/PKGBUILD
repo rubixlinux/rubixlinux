@@ -1,0 +1,60 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gst-plugins-base
+pkgver=0.10.7
+pkgrel=1
+pkgdesc="gst-plugins-base - this is gst-plugins-base, a set of multimedia plugins for GStreamer."
+url="http://gstreamer.freedesktop.org"
+depends=('orbit2' 'libXext' 'libSM' 'libvisual' 'glibc' 'gconf' 'fontconfig' 'openssl' 'libICE' 'expat' 'libogg' 'zlib' 'alsa-lib' 'libXau' 'libXv' 'freetype2' 'cdparanoia' 'pango' 'liboil' 'libbonobo' 'libX11' 'libvorbis' 'libXdmcp' 'libxml2' 'gstreamer' 'glib2' 'gnome-vfs' 'popt')
+provides=('gst-plugins')
+replaces=('gst-plugins')
+source=(http://gstreamer.freedesktop.org/src/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('faf548942d5d3068026c83b184e5c1f5')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.10.7 2006.05.25
+##   rel2: added replaces gst-plugins 2006.03.23
+##   rel1: upgraded to 0.10.5, renamed to gst-plugins-base 2006.03.22
+##   rel1: Upgraded to 0.8.8 2005.05.22
+##   rel2: Recompiled against new flac 2005.02.20
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc		\
+		--localstatedir=/var/lib	\
+		--program-prefix=""		\
+		--program-suffix=""		\
+		--disable-static		\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		NEWS		\
+		README		\
+		RELEASE		\
+		REQUIREMENTS	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

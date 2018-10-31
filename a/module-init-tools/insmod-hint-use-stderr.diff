@@ -1,0 +1,11 @@
+--- ./insmod/insmod.c.orig	2004-12-22 15:38:11.000000000 -0700
++++ ./insmod/insmod.c	2004-12-22 15:38:16.000000000 -0700
+@@ -1272,7 +1272,7 @@
+ 		ret = sys_init_module(m_name, (struct module *) image);
+ 		if (ret) {
+ 			error("init_module: %m");
+-			lprintf("Hint: insmod errors can be caused by incorrect module parameters, "
++			error("Hint: insmod errors can be caused by incorrect module parameters, "
+ 				"including invalid IO or IRQ parameters.\n"
+ 			        "      You may find more information in syslog or the output from dmesg");
+ 		}

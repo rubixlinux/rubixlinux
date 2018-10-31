@@ -1,27 +1,30 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=freetype2
 pkgver=2.1.10
-pkgrel=1
+pkgrel=2
 pkgdesc="FreeType 2 is a software font engine that is designed to be small, efficient, highly customizable and portable while capable of producing high-quality output (glyph images). It can be used in graphics libraries, display servers, font conversion tools, text image generation tools, and many other products as well."
 url="http://freetype.sourceforge.net"
 depends=('glibc' 'zlib')
 source=(http://dl.sourceforge.net/sourceforge/freetype/freetype-$pkgver.tar.bz2	\
-	freetype.illadvisederror.diff.gz					)
+	freetype.illadvisederror.diff						)
 md5sums=('a4012e7d1f6400df44a16743b11b8423' \
-	 '33246ed78664ce8c4be106b83e6cd83f' )
+	 'f8c5e07aaefbb986c420dc6f7d215a05' )
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: upgraded to 2.1.10 2005.09.30
-#rel1: Initial Rubix release
+## Changelog:
+##   rel2: rebuilt for X11R7 2006.03.15
+##   rel1: upgraded to 2.1.10 2005.09.30
+##   rel1: Initial Rubix release
 
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/freetype-$pkgver
 
@@ -36,9 +39,9 @@ build() {
 	ln -sf		freetype2/freetype .
 
 	cd $startdir/src/freetype-$pkgver
-	mkdir -p	$startdir/pkg/usr/X11R6/lib/X11/doc
-	cp -a docs	$startdir/pkg/usr/X11R6/lib/X11/doc/freetype-$pkgver
-	rm -r		$startdir/pkg/usr/X11R6/lib/X11/doc/freetype-$pkgver/reference
+	mkdir -p	$startdir/pkg/usr/X11R7/lib/X11/doc
+	cp -a docs	$startdir/pkg/usr/X11R7/lib/X11/doc/freetype-$pkgver
+	rm -r		$startdir/pkg/usr/X11R7/lib/X11/doc/freetype-$pkgver/reference
 
 	chown -R root.bin $startdir/pkg/usr/bin
 

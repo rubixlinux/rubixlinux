@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-net-ssleay
-pkgver=1.25
-pkgrel=2
+pkgver=1.30
+pkgrel=1
 pkgdesc="Net::SSLeay Perl module for using OpenSSL"
-depends=('perl' 'openssl')
-source=(http://www.cpan.org/authors/id/S/SA/SAMPO/Net_SSLeay.pm-$pkgver.tar.gz)
-md5sums=('87de8a06802fbb63c7c85e89eedbe139')
+depends=('perl' 'openssl' 'glibc')
+source=(http://www.cpan.org/authors/id/F/FL/FLORA/Net_SSLeay.pm-$pkgver.tar.gz)
+md5sums=('b0cd6c1681bbc0695d81be5cd852d1d0')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: rebuilt for perl 5.8.7
-#rel1: initial rubix release
+## Changelog:
+##   rel1: upgraded to 1.30, built for perl 5.8.8 2006.03.06
+##   rel2: rebuilt for perl 5.8.7
+##   rel1: initial rubix release
 
 build() {
 

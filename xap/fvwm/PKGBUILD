@@ -2,21 +2,23 @@
 
 pkgname=fvwm
 pkgver=2.4.19
-pkgrel=1
+pkgrel=2
 pkgdesc="fvwm (a small and fast virtual window manager for X) Fvwm is the classic highly-configurable virtual window manager for X11.  It is a derivative of twm, redesigned to minimize memory consumption, provide a 3-D look to window frames, and provide a simple virtual desktop."
 url="http://www.fvwm.org"
-depends=('imlib' 'libtermcap' 'readline')
+depends=('libXau' 'glibc' 'libXext' 'libSM' 'glib' 'libX11' 'libXpm' 'libXdmcp' 'imlib' 'libICE' 'gtk+' 'readline' 'libXinerama' 'libtermcap')
 backup=('etc/X11/fvwm2/system.fvwm2rc')
 source=(ftp://ftp.fvwm.org/pub/fvwm/version-2/$pkgname-$pkgver.tar.gz	\
 	ancient-icons.tar.gz						\
-	system.fvwm2rc.gz						\
-	xinitrc.fvwm2.gz						)
+	system.fvwm2rc							\
+	xinitrc.fvwm2							)
 md5sums=('a2fd2c07061303883d6bf89eb2b259ff' \
 	 '99437d72bc59780cbef55763e6a281d0' \
-	 'df00697ad18e8f226745ae0c68516349' \
-	 'bcccfa08beda6b2ccf0a17af1097d67a' )
+	 '14e1828c0934f0a73c809a5530d2eee0' \
+	 '428ea13ea3e9c747190c4910f74f458d' )
 
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/$pkgname-$pkgver
 
@@ -25,17 +27,16 @@ build() {
 	find . -perm 664 -exec chmod 644 {} \;
 
 	./configure				\
-		--prefix=/usr/X11R6		\
+		--prefix=/usr/X11R7		\
 		--sysconfdir=/etc/X11/fvwm2	\
 		--enable-extras			\
 		$CHOST
 	make
 	make install DESTDIR=$startdir/pkg
 
-	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
-
 	cp	-a		\
 		AUTHORS		\
 		COPYING		\
@@ -52,7 +53,7 @@ build() {
 		$startdir/pkg/usr/doc/$pkgname-$pkgver/docs/Makefile*		\
 		$startdir/pkg/usr/doc/$pkgname-$pkgver/sample.fvwmrc/Makefile*
 
-	mkdir -p $startdir/pkg/usr/X11R6/include/X11/pixmaps
+	mkdir -p $startdir/pkg/usr/X11R7/include/X11/pixmaps
 
 	mkdir -p $startdir/pkg/etc/X11/xinit
 	cp $startdir/src/xinitrc.fvwm2 $startdir/pkg/etc/X11/xinit
@@ -61,14 +62,17 @@ build() {
 	mkdir -p $startdir/pkg/etc/X11/fvwm2
 	cp $startdir/src/system.fvwm2rc $startdir/pkg/etc/X11/fvwm2
 
-	mkdir -p $startdir/pkg/usr/X11R6/lib/X11
-	cd $startdir/pkg/usr/X11R6/lib/X11
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11
+	cd $startdir/pkg/usr/X11R7/lib/X11
 	ln -sf ../../../../etc/X11/fvwm2 fvwm2
 
-	cd $startdir/pkg/usr/X11R6/man/man1
+	cd $startdir/pkg/usr/X11R7/man/man1
 	ln -sf xpmroot.1 fvwm-root.1
 
 	cd $startdir/pkg
 	tar xzvf $startdir/src/ancient-icons.tar.gz
+
+	mv $startdir/pkg/usr/X11R6/include/X11/pixmaps/* $startdir/pkg/usr/X11R7/include/X11/pixmaps
+	rm -r $startdir/pkg/usr/X11R6
 
 }

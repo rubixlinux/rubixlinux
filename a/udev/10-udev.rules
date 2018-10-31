@@ -227,6 +227,9 @@ KERNEL=="issm*", NAME="infiniband/%k"
 # tun devices
 KERNEL=="tun", NAME="net/%k"
 
+# fuse device
+KERNEL="fuse", NAME="%k", MODE="0666"
+
 # libusb device access
 SUBSYSTEM=="usb_device", PROGRAM="/bin/sh -c 'X=%k X=$${X#usbdev}; B=$${X%%%%.*}; D=$${X#*.}; echo bus/usb/$$B/$$D'", SYMLINK+="%c"
 
@@ -260,6 +263,3 @@ ACTION=="add", SUBSYSTEM=="pcmcia_socket", RUN+="/sbin/pcmcia-socket-startup"
 # network devices
 SUBSYSTEM=="net", ACTION=="add", RUN+="/etc/rc.d/network hotplug_ifup $env{INTERFACE}"
 SUBSYSTEM=="net", ACTION=="remove", RUN+="/etc/rc.d/network ifdown $env{INTERFACE}"
-
-# Let hal see what udev is up to
-RUN+="/usr/libexec/hal.hotplug"

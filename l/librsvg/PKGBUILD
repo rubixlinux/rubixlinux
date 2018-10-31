@@ -1,19 +1,31 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=librsvg
-pkgver=2.8.1
+pkgver=2.14.3
 pkgrel=1
 pkgdesc="librsvg Library used by Nautilus to handle Scalable Vector Graphics."
-depends=('gtk+2' 'libart_lgpl' 'libcroco' 'libgsf' 'popt')
+depends=('glibc' 'libXi' 'fontconfig' 'libgnomecanvas' 'openssl' 'expat' 'libXrender' 'libgnomeprintui' 'zlib' 'libXau' 'libgnomeprint' 'libXdmcp' 'libxml2' 'libXinerama' 'libpng' 'orbit2' 'libXext' 'gtk+2' 'libcroco' 'atk' 'libgsf' 'gconf' 'libart_lgpl' 'freetype2' 'libXfixes' 'cairo' 'pango' 'libXcursor' 'libbonobo' 'libX11' 'bzip2' 'glib2' 'gnome-vfs' 'popt' 'libXrandr')
 url="http://librsvg.sourceforge.net"
-source=(ftp://ftp.gnome.org/pub/gnome/sources/$pkgname/2.8/$pkgname-$pkgver.tar.bz2)
-md5sums=('01c14f6adcf3a71be2b808879e1223a0')
+source=(ftp://ftp.gnome.org/pub/gnome/sources/$pkgname/2.14/$pkgname-$pkgver.tar.bz2)
+md5sums=('f926aa102ccc3ce99ddf257fcce8ebf4')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.14.3 2006.04.22
+##   rel1: upgraded to 2.14.2 2006.03.22
+##   rel1: initial rubix release
 
 build() {
 
+	export MAKEFLAGS=""
+
 	cd $startdir/src/$pkgname-$pkgver
 
-	
 	find . -perm 777 -exec chmod 755 {} \;
 	find . -perm 664 -exec chmod 644 {} \;
 
@@ -23,14 +35,12 @@ build() {
 		--localstatedir=/var/lib	\
 		--enable-static=no		\
 		$CHOST
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	chown -R root.bin $startdir/pkg/usr/bin
 
-	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
-
-	mv $startdir/pkg/usr/doc/librsvg $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
 	cp	-a		\
 		AUTHORS		\
 		COPYING		\
@@ -39,6 +49,8 @@ build() {
 		README		\
 		TODO		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -name '*.la' -exec rm {} \;
 
 	rm -r $startdir/pkg/usr/lib/mozilla
 

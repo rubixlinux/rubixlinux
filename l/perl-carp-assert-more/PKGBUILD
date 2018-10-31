@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-carp-assert-more
+pkgver=1.12
+pkgrel=1
+pkgdesc="Carp::Assert::More - convenience wrappers around Carp::Assert"
+url="http://search.cpan.org/~petdance/Carp-Assert-More-$pkgver/More.pm"
+depends=('perl' 'perl-carp-assert')
+source=(http://search.cpan.org/CPAN/authors/id/P/PE/PETDANCE/Carp-Assert-More-$pkgver.tar.gz)
+md5sums=('dbd6a0fcbff5f00d2e39b77322036d3f')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Carp-Assert-More-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Carp-Assert-More-$pkgver
+	cp	-a		\
+		Changes		\
+		INSTALL		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Carp-Assert-More-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

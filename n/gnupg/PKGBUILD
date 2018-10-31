@@ -2,7 +2,7 @@
 
 pkgname=gnupg
 pkgver=1.4.2.2
-pkgrel=1
+pkgrel=2
 pkgdesc="gnupg (The GNU Privacy Guard) GnuPG is GNU's tool for secure communication and data storage.  It can be used to encrypt data and to create digital signatures.  It includes an advanced key management facility and is compliant with the proposed OpenPGP Internet standard as described in RFC2440."
 url="http://www.gnupg.org"
 depends=('glibc' 'openssl' 'bzip2' 'libusb' 'openldap' 'zlib' 'readline' 'libtermcap' 'cyrus-sasl')
@@ -29,6 +29,7 @@ md5sums=('50d8fd9c5715ff78b7db0e5f20d08550' \
 ##   and decrypt the data just fine.
 
 ## Changelog:
+##   rel2: rebuilt against openldap 2.3 2006.03.10
 ##   rel1: ugraded to 1.4.2.2 *security* 2006.03.09
 ##   rel1: upgraded to 1.4.2.1 for security reasons 2006.02.15
 ##   rel1: rebuilt against proper openldap 2005.08.19

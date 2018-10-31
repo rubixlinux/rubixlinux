@@ -1,24 +1,24 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-io-socket-ssl
-pkgver=0.96
-pkgrel=2
+pkgver=0.97
+pkgrel=1
 pkgdesc="IO::Socket::SSL is a class implementing an object oriented interface to SSL sockets. The class is a descendent of IO::Socket::INET."
 depends=('perl-net-ssleay')
 source=(http://www.cpan.org/authors/id/B/BE/BEHROOZI/IO-Socket-SSL-$pkgver.tar.gz)
-md5sums=('85f84c0810851eb4f540b118c9902b03')
+md5sums=('34562e9475de132faa0f14ca2be053a5')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: rebuilt for perl 5.8.7 2005.06.13
-#rel1: initial rubix release
+## Changelog:
+##   rel2: rebuilt for perl 5.8.7 2005.06.13
+##   rel1: initial rubix release
 
 build() {
 

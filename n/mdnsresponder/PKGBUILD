@@ -1,0 +1,66 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=mdnsresponder
+pkgver=107.5
+pkgrel=1
+pkgdesc="mDNSResponder is a component of bonjour, apple's initiative for zero-configuration networking"
+url="http://developer.apple.com/networking/bonjour/index.html"
+depends=('glibc')
+source=(mDNSResponder-$pkgver.tar.gz	\
+	mdns				)
+md5sums=('ec345a16649ecb5b6e50096f2b5cbdaf' \
+	 'd45742f52f36b2f486cfc76ea6411a39' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/mDNSResponder-$pkgver/mDNSPosix
+
+	make os=linux || return 1
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/include
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/man/man5
+	mkdir -p $startdir/pkg/lib
+	make						\
+		os=linux				\
+		INSTBASE=$startdir/pkg/usr		\
+		STARTUPSCRIPTDIR=$startdir/pkg/etc/rc.d	\
+		MANPATH=$startdir/pkg/usr/man		\
+		NSSINSTPATH=$startdir/pkg/lib		\
+		install
+	cp nss_mdns.conf $startdir/pkg/etc
+	chmod 644 $startdir/pkg/etc/nss_mdns.conf
+
+	cd ..
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		APPLE_LICENSE	\
+		README.txt	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp $startdir/src/mdns $startdir/pkg/etc/rc.d
+
+	chmod 644 $startdir/pkg/usr/include/*
+	chmod 644 $startdir/pkg/usr/man/man?/*
+	chmod 755 $startdir/pkg/lib/*
+
+	ln -sf libdns_sd.so.1		$startdir/pkg/usr/lib/libdns_sd.so
+	ln -sf libnss_mdns-0.2.so	$startdir/pkg/lib/libnss_mdns.so.2
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

@@ -1,10 +1,10 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-lwp
 pkgver=5.805
-pkgrel=1
+pkgrel=2
 pkgdesc="LWP - The World-Wide Web library for Perl"
 url="http://search.cpan.org/~gaas/libwww-perl-$pkgver/lib/LWP.pm"
 depends=('perl-compress-zlib')
@@ -18,6 +18,7 @@ md5sums=('db1eb693eee45d251966ad2bab49dbbf')
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt for perl 5.8.8 2006.03.06
 ##   rel1: upgraded to 5.805 2006.02.21
 ##   rel2: rebuilt for perl 5.8.7 2005.06.13
 ##   rel1: Initial Rubix release

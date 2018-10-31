@@ -1,0 +1,11 @@
+--- Mesa/progs/xdemos/Makefile.orig	2006-03-20 21:12:10.000000000 -0700
++++ Mesa/progs/xdemos/Makefile	2006-03-20 21:13:56.000000000 -0700
+@@ -37,7 +37,7 @@
+ .SUFFIXES: .c
+ 
+ .c: $(LIB_DEP)
+-	$(CC) -I$(INCDIR) $(CFLAGS) $< $(APP_LIB_DEPS) -o $@
++	$(CC) -I$(INCDIR) $(CFLAGS) -L/usr/X11R7/lib $< $(APP_LIB_DEPS) -o $@
+ 
+ 
+ ##### TARGETS #####

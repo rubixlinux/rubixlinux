@@ -1,0 +1,34 @@
+post_install() {
+
+	if [ ! -e etc/nxserver/users.id_dsa ]; then
+		usr/bin/ssh-keygen -f etc/nxserver/users.id_dsa -t dsa -N "" > /dev/null 2>&1
+	fi
+
+	if [ ! -e etc/nxserver/client.id_dsa.key ] || [ ! -e etc/nxserver/server.id_dsa.pub.key ]; then
+		rm -f etc/nxserver/client.id_dsa.key
+		rm -f etc/nxserver/server.id_dsa.pub.key
+		usr/bin/ssh-keygen -q -t dsa -N "" -f etc/nxserver/local.id_dsa > /dev/null 2>&1
+		mv etc/nxserver/local.id_dsa etc/nxserver/client.id_dsa.key
+		mv etc/nxserver/local.id_dsa.pub etc/nxserver/server.id_dsa.pub.key
+	fi
+
+	cp -f etc/nxserver/client.id_dsa.key     var/lib/nxserver/home/.ssh/client.id_dsa.key
+	cp -f etc/nxserver/server.id_dsa.pub.key var/lib/nxserver/home/.ssh/server.id_dsa.pub.key
+
+	chmod 600 etc/nxserver/client.id_dsa.key
+	chmod 600 var/lib/nxserver/home/.ssh/client.id_dsa.key
+
+	echo -n "no-port-forwarding,no-X11-forwarding,no-agent-forwarding,command=\"/usr/bin/nxserver\" " > var/lib/nxserver/home/.ssh/authorized_keys2
+	cat var/lib/nxserver/home/.ssh/server.id_dsa.pub.key >> var/lib/nxserver/home/.ssh/authorized_keys2
+
+	echo -n "127.0.0.1 " > var/lib/nxserver/home/.ssh/known_hosts
+	cat etc/ssh/ssh_host_rsa_key.pub >> var/lib/nxserver/home/.ssh/known_hosts
+
+	chown -R nx.nx var/lib/nxserver
+	chown -R nx.nx etc/nxserver
+
+}
+
+op=$1
+shift
+$op $*

@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-config-tiny
+pkgver=2.05
+pkgrel=1
+pkgdesc="Config::Tiny - Read/Write .ini style files with as little code as possible"
+url="http://search.cpan.org/~adamk/Config-Tiny-$pkgver/lib/Config/Tiny.pm"
+source=(http://search.cpan.org/CPAN/authors/id/A/AD/ADAMK/Config-Tiny-$pkgver.tar.gz)
+md5sums=('bac7f9eda771593c869313859fe45ff7')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Config-Tiny-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Config-Tiny-$pkgver
+	cp	-a		\
+		Changes		\
+		LICENSE		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Config-Tiny-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/Config-Tiny-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-sys-hostname-long
-pkgver=1.2
-pkgrel=2
+pkgver=1.4
+pkgrel=1
 pkgdesc="Sys::Hostname::Long Try every conceivable way to get full hostname"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/S/SC/SCOTT/Sys-Hostname-Long-$pkgver.tar.gz)
-md5sums=('ae0fb8b0ed821ae2fc8e8009b8732978')
+md5sums=('a5b3c23754cbcff10e283d16c42ec3d3')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: rebuilt for perl 5.8.7 2005.06.13
-#rel1: initial rubix release
+## Changelog:
+##   rel1: upgraded to 1.4, built for perl 5.8.8 2006.03.06
+##   rel2: rebuilt for perl 5.8.7 2005.06.13
+##   rel1: initial rubix release
 
 build() {
 

@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=cups
-pkgver=1.1.23
-pkgrel=4
+pkgver=1.2.0
+pkgrel=1
 pkgdesc="CUPS (Common UNIX Printing System) The Common UNIX Printing System provides a portable printing layer for UNIX(R)-like operating systems. It has been developed by Easy Software Products to promote a standard printing solution for all UNIX vendors and users.  CUPS uses the Internet Printing Protocol ("IPP") as the basis for managing print jobs and queues.  The CUPS package includes System V and Berkeley command-line interfaces, a PostScript RIP package for supporting non-PostScript printer drivers, and tools for creating additional printer drivers and other CUPS services."
 url="http://www.cups.org"
-depends=('openssl' 'libtiff' 'libjpeg' 'libpng')
-source=(ftp://ftp3.easysw.com/pub/cups/$pkgver/$pkgname-$pkgver-source.tar.bz2	\
+depends=('glibc' 'libtiff' 'libtasn1' 'acl' 'libjpeg' 'attr' 'dbus' 'libgcrypt' 'gnutls' 'openssl' 'libgpg-error' 'openldap' 'gcc' 'zlib' 'libpng' 'cyrus-sasl')
+source=(ftp://ftp.easysw.com/pub/cups/$pkgver/$pkgname-$pkgver-source.tar.bz2	\
 	cups									)
-md5sums=('4ce09b1dce09b6b9398af0daae9adf63')
+md5sums=('a168b0b1c8bb946060e659e1df2927c5')
 backup=('etc/rc.d/cups'			\
 	'etc/cups/classes.conf'		\
 	'etc/cups/client.conf'		\
@@ -16,7 +16,7 @@ backup=('etc/rc.d/cups'			\
 	'etc/cups/mime.convs'		\
 	'etc/cups/mime.types'		\
 	'etc/cups/printers.conf'	)
-md5sums=('4ce09b1dce09b6b9398af0daae9adf63' \
+md5sums=('a168b0b1c8bb946060e659e1df2927c5' \
 	 'a62768e1c25e89a62f887208c81d7291' )
 
 ## Todo:
@@ -26,6 +26,7 @@ md5sums=('4ce09b1dce09b6b9398af0daae9adf63' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 1.2.0 2006.05.10
 ##   rel4: updated rc script to new format 2006.01.15
 ##   rel3: rebuilt with new execstack flag 2005.03.04
 ##   rel2: Changed spacing in rc script 2005.02.22
@@ -36,7 +37,7 @@ build() {
 	cd $startdir/src/$pkgname-$pkgver
 
 	./configure --disable-pam
-	make
+	make || return 1
 
 	mkdir -p $startdir/pkg/etc/cups
 	mkdir -p $startdir/pkg/var/spool
@@ -44,7 +45,7 @@ build() {
 	make BUILDROOT=$startdir/pkg install
 
 	cd $startdir/pkg/usr/lib/cups/backend
-	ln -sf /usr/bin/smbspool smb
+	ln -s /usr/bin/smbspool smb
 
 	cd $startdir/pkg/usr/share/man
 	find . -type d -name "cat*" | xargs rm -rf
@@ -59,7 +60,7 @@ build() {
 	mkdir -p $startdir/pkg/usr/doc
 	mv $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
 	cd $startdir/pkg/usr/doc
-	ln -sf $pkgname-$pkgver $pkgname
+	ln -s $pkgname-$pkgver $pkgname
 
 	cd $startdir/pkg/usr/doc
 	find . -name "*.pdf" -exec rm -f {} \;
@@ -77,27 +78,27 @@ build() {
 		cd $startdir/pkg
 		mv ${file} ${file}-${SUFFIX}
 		cd `dirname ${file}`
-		ln -sf `basename ${file}`-${SUFFIX} `basename ${file}`
+		ln -s `basename ${file}`-${SUFFIX} `basename ${file}`
 	done
 
-	mv $startdir/pkg/usr/man/man1/cancel.1	$startdir/pkg/usr/man/man1/cancel-${SUFFIX}.1
-	mv $startdir/pkg/usr/man/man1/lp.1	$startdir/pkg/usr/man/man1/lp-${SUFFIX}.1
-	mv $startdir/pkg/usr/man/man1/lpq.1	$startdir/pkg/usr/man/man1/lpq-${SUFFIX}.1
-	mv $startdir/pkg/usr/man/man1/lpr.1	$startdir/pkg/usr/man/man1/lpr-${SUFFIX}.1
-	mv $startdir/pkg/usr/man/man1/lprm.1	$startdir/pkg/usr/man/man1/lprm-${SUFFIX}.1
-	mv $startdir/pkg/usr/man/man1/lpstat.1	$startdir/pkg/usr/man/man1/lpstat-${SUFFIX}.1
-	mv $startdir/pkg/usr/man/man8/lpc.8	$startdir/pkg/usr/man/man8/lpc-${SUFFIX}.8
+	mv $startdir/pkg/usr/man/man1/cancel.1.gz	$startdir/pkg/usr/man/man1/cancel-${SUFFIX}.1.gz
+	mv $startdir/pkg/usr/man/man1/lp.1.gz		$startdir/pkg/usr/man/man1/lp-${SUFFIX}.1.gz
+	mv $startdir/pkg/usr/man/man1/lpq.1.gz		$startdir/pkg/usr/man/man1/lpq-${SUFFIX}.1.gz
+	mv $startdir/pkg/usr/man/man1/lpr.1.gz		$startdir/pkg/usr/man/man1/lpr-${SUFFIX}.1.gz
+	mv $startdir/pkg/usr/man/man1/lprm.1.gz		$startdir/pkg/usr/man/man1/lprm-${SUFFIX}.1.gz
+	mv $startdir/pkg/usr/man/man1/lpstat.1.gz	$startdir/pkg/usr/man/man1/lpstat-${SUFFIX}.1.gz
+	mv $startdir/pkg/usr/man/man8/lpc.8.gz		$startdir/pkg/usr/man/man8/lpc-${SUFFIX}.8.gz
 
 	cd $startdir/pkg/usr/man/man1
-	ln -sf cancel-${SUFFIX}.1.gz	cancel.1.gz
-	ln -sf lp-${SUFFIX}.1		lp.1
-	ln -sf lpq-${SUFFIX}.1		lpq.1
-	ln -sf lpr-${SUFFIX}.1		lpr.1
-	ln -sf lprm-${SUFFIX}.1		lprm.1
-	ln -sf lpstat-${SUFFIX}.1	lpstat.1
+	ln -s cancel-${SUFFIX}.1.gz	cancel.1.gz
+	ln -s lp-${SUFFIX}.1.gz		lp.1.gz
+	ln -s lpq-${SUFFIX}.1.gz	lpq.1.gz
+	ln -s lpr-${SUFFIX}.1.gz	lpr.1.gz
+	ln -s lprm-${SUFFIX}.1.gz	lprm.1.gz
+	ln -s lpstat-${SUFFIX}.1.gz	lpstat.1.gz
 
 	cd $startdir/pkg/usr/man/man8
-	ln -sf lpc-${SUFFIX}.8		lpc.8
+	ln -s lpc-${SUFFIX}.8.gz	lpc.8.gz
 
 	rmdir $startdir/pkg/usr/share/doc
 

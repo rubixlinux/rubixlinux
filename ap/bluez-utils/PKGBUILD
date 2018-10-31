@@ -1,7 +1,7 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=bluez-utils
-pkgver=2.24
+pkgver=2.25
 pkgrel=1
 pkgdesc="bluez-utils - Bluetooth protocol stack for Linux"
 url="http://www.bluez.org"
@@ -12,7 +12,7 @@ backup=('etc/bluetooth/hcid.conf'	\
 	'etc/rc.d/bluetooth'		)
 source=(http://bluez.sourceforge.net/download/$pkgname-$pkgver.tar.gz	\
 	bluetooth							)
-md5sums=('5f5488ff3d31bdb9cd36b7991fe68408' \
+md5sums=('ae3729ab5592be06ed01b973d4b3e9fe' \
 	 'c7fcbba2dbdf5c3a06a16f708f2e6a48' )
 
 ## Todo:
@@ -22,6 +22,8 @@ md5sums=('5f5488ff3d31bdb9cd36b7991fe68408' \
 ##   None
 
 ## Changelog:
+##   rel2: fixed fhs issues 2006.04.22
+##   rel1: upgraded to 2.25 2006.03.15
 ##   rel1: upgraded to 2.24, rewrote rc script using new format 2006.01.13
 ##   rel1: upgraded to 2.22 2005.11.25
 ##   rel1: upgraded to 2.21 2005.10.30
@@ -33,7 +35,7 @@ build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
-	./configure --prefix=/usr --sysconfdir=/etc
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
 	make || return 1
 	make DESTDIR=$startdir/pkg install
 

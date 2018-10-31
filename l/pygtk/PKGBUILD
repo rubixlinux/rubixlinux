@@ -2,9 +2,9 @@
 
 pkgname=pygtk
 pkgver=2.8.4
-pkgrel=2
+pkgrel=3
 pkgdesc="PyGTK provides a convenient wrapper for the GTK+ library for use in Python programs, taking care of many of the boring details such as managing memory and type casting."
-depends=('glibc' 'freetype2' 'libglade' 'gtk+2' 'cairo' 'pango' 'atk' 'libxml2' 'fontconfig' 'x11' 'expat' 'glib2' 'zlib' 'libpng')
+depends=('libXext' 'glibc' 'libXi' 'libglade' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'libxml2' 'glib2' 'libpng' 'libXinerama' 'libXrandr' 'pygobject')
 source=(http://ftp.gnome.org/pub/gnome/sources/pygtk/2.8/$pkgname-$pkgver.tar.gz)
 url="http://www.pygtk.org"
 md5sums=('738beeba4946113eb31a3516bd2b99dd')
@@ -16,6 +16,7 @@ md5sums=('738beeba4946113eb31a3516bd2b99dd')
 ##   None
 
 ## Changelog:
+##   rel3: rebuilt for new gnome 2006.03.22
 ##   rel2: bumped the pkgrel for internal reasons 2006.02.01
 ##   rel1: upgraded to 2.8.4 2006.02.01
 ##   rel1: upgraded to 2.7.4 2005.09.04
@@ -44,6 +45,8 @@ build() {
 		TODO		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name '*.la' -exec rm {} \;
 
 	chown -R root.bin $startdir/pkg/usr/bin
 

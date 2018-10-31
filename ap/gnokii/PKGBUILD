@@ -1,16 +1,28 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=gnokii
-pkgver=0.6.8
+pkgver=0.6.12
 pkgrel=1
 pkgdesc="gnokii provides tools and a user space driver for use with mobile phones."
-depends=('glibc' 'x11' 'glib' 'bluez-libs' 'gtk+')
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXfixes' 'bluez-libs' 'pango' 'cairo' 'libXcursor' 'libXpm' 'libX11' 'libXdmcp' 'glib2' 'libpng' 'libXinerama' 'libXrandr')
 backup=(etc/gnokiirc)
-source=(ftp://ftp.gnokii.org/pub/gnokii/$pkgname-$pkgver.tar.bz2)
-md5sums=('8109a8c3eb8ac0ee3e6ef3314bd2ce82')
+source=(http://www.gnokii.org/download/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('846e03e7cf3581000c9d0141c2950b79')
 url="http://www.gnokii.org"
 
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.6.12 2006.03.29
+##   rel1: initial rubix release
+
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/$pkgname-$pkgver
 
@@ -38,5 +50,7 @@ build() {
 	rm -r $startdir/pkg/usr/share/doc
 
 	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

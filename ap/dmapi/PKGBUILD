@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=dmapi
+pkgver=2.2.3
+pkgrel=1
+pkgdesc="dmapi (Data Management API library) A library required to use the Data Management API (DMAPI). This interface is defined in the X/Open document 'Systems Management: Data Storage Managment (XDSM) API' dated February 1997. The DMAPI library is used by the xfsdump utility."
+url="http://oss.sgi.com/projects/xfs"
+depends=('glibc')
+source=(ftp://oss.sgi.com/projects/xfs/cmd_tars/$pkgname-$pkgver.src.tar.gz)
+md5sums=('e3bb24818f07139e7c5f024dc4e7bb89')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+	make prefix=$startdir/pkg/usr install-dev
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/share
+
+	mv $startdir/pkg/usr/lib $startdir/pkg
+	rm $startdir/pkg/lib/*.a
+	chmod 755 $startdir/pkg/lib/libdm.so.0.0.4
+
+	mv $startdir/pkg/usr/libexec $startdir/pkg/usr/lib
+
+	rm $startdir/pkg/usr/lib/libdm.so
+	ln -s /lib/libdm.so.0 $startdir/pkg/usr/lib/libdm.so
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

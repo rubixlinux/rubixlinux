@@ -116,13 +116,13 @@ write_log() {
 start_daemon() {
 	DAEMON=$1
 	shift
-	BIN=$*
+	BIN="$@"
 
 	check_root
 	stat_busy "starting $DAEMON"
 	if [ ! -f /var/run/daemons/$DAEMON ]; then
 		if [ "$BIN" = "${BIN#@}" ]; then
-			$BIN > /dev/null
+			"$@" > /dev/null
 		else
 			(${BIN:1}) > /dev/null &
 		fi

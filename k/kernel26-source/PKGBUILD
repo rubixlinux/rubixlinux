@@ -3,35 +3,19 @@
 ## DONT FORGET TO UPDATE THE INSTALL SCRIPT!!!!
 
 pkgname=kernel26-source
-pkgver=2.6.15.5
+pkgver=2.6.16.20
 pkgrel=1
 url="http://www.kernel.org"
 pkgdesc="kernel26-source (Linux kernel source) Source code for Linus Torvalds' Linux kernel. This is the complete and unmodified source code for the Linux kernel."
 install=$pkgname.install
 source=(http://kernel.org/pub/linux/kernel/v2.6/linux-$pkgver.tar.bz2	\
 	logo_linux_clut224.ppm						\
-	reiser4.diff							\
-	squashfs.diff							\
-	suspend2.diff							\
-	bootsplash.diff							\
-	ibm_acpi.diff							\
-	quiet_suspend.diff						\
-	ieee80211.diff							\
-	bluetooth.diff							\
-	nfs.diff							\
+	rubix.diff							\
 	config								)
-md5sums=('1b9d99238a2f8516101462b37f4679c3' \
+md5sums=('382aa4178ff79d58925622a8a97561eb' \
 	 '8cabdaa35412908edda7b851e4bb1632' \
-	 '496a124efe9206d4ecaab6abea71f33e' \
-	 'a2be7e4e201846e2a25088bf916d7a5e' \
-	 '275e08f727986c610a5c8019eb973b9f' \
-	 'bf176bd018bb5b28265191a5e1a5cce5' \
-	 'bdee870f19d819a16690100f47bacfc2' \
-	 'f70aab1cb8546f01f742fe1ede7e38d3' \
-	 '774e7e1207056d68cf2746809b3f343e' \
-	 '75ad6c384b51f5445355e58dc1f454b7' \
-	 'd3f3f5eb2e415a26c9c0d5bf2a51eab4' \
-	 '0a564ec897843c3772d0f504be0e28ea' )
+	 '2be65f36f61948f5c46f09e62d405551' \
+	 '46410e3bfc4a5dd45e923925cc18d34e' )
 
 ## Todo:
 ##   None
@@ -40,6 +24,12 @@ md5sums=('1b9d99238a2f8516101462b37f4679c3' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 2.6.16.20 2006.06.07
+##   rel1: upgraded to 2.6.16.19 2006.06.01
+##   rel1: upgraded to 2.6.16.18 2006.05.22
+##   rel1: upgraded to 2.6.16.16 2006.05.10
+##   rel1: upgraded to 2.6.16.11 2006.04.27
+##   rel1: upgraded to 2.6.16.9 2006.04.20
 ##   rel1: upgraded to 2.6.15.5 2006.03.03
 ##   rel1: upgraded to 2.6.15.4 2006.02.12
 ##   rel1: upgraded to 2.6.15.3 2006.02.06
@@ -63,21 +53,12 @@ build() {
 
 	cd $startdir/src/linux-$pkgver
 
-	patch -p1 < $startdir/src/reiser4.diff		|| return 1
-	patch -p1 < $startdir/src/squashfs.diff		|| return 1
-	patch -p1 < $startdir/src/suspend2.diff		|| return 1
-	patch -p1 < $startdir/src/bootsplash.diff	|| return 1
-	patch -p1 < $startdir/src/ibm_acpi.diff		|| return 1
-	patch -p1 < $startdir/src/quiet_suspend.diff	|| return 1
-	patch -p1 < $startdir/src/bluetooth.diff	|| return 1
-	patch -p1 < $startdir/src/nfs.diff		|| return 1
+	patch -p1 < $startdir/src/rubix.diff || return 1
 
 	cp $startdir/src/config .config
 	cp $startdir/src/logo_linux_clut224.ppm drivers/video/logo
 
 	make silentoldconfig
-
-	patch -p1 < $startdir/src/ieee80211.diff || return 1
 
 	make bzImage || return 1
 	make modules || return 1

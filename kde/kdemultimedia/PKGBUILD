@@ -1,19 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdemultimedia
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdemultimedia (multimedia applications for KDE) Multimedia applications for KDE, such as: noatun (multimedia player) kaboodle (light media player) kaudiocreator (CD ripper and audio encoder) kmid (a midi/karaoke player) kmidi (a midi-to-wav player/converter) kmix (a mixer) kscd (an audio CD player) krec (an audio recorder)"
 url="http://www.kde.org"
 groups=('kde')
-depends=('qt' 'glibc' 'esound' 'fontconfig' 'xfsprogs' 'expat' 'zlib' 'alsa-lib' 'libtunepimp'	\
-	 'libjpeg' 'libidn' 'libxml2' 'audiofile' 'libvorbis' 'libmad' 'gstreamer' 'xine-lib'	\
-	 'libmng' 'libpng' 'lame' 'flac' 'x11' 'libogg' 'libart_lgpl' 'libmusicbrainz'		\
-	 'freetype2' 'taglib' 'cdparanoia' 'pcre' 'arts' 'glib2' 'gcc' 'kdelibs' 'popt'		)
+depends=('glibc' 'mesa3d' 'esound' 'fontconfig' 'expat' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libtunepimp' 'acl' 'libjpeg' 'libidn' 'libXdmcp' 'libvorbis' 'audiofile' 'libxml2' 'libXmu' 'libmad' 'xine-lib' 'gstreamer' 'libmng' 'libXt' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'libXxf86vm' 'lame' 'flac' 'attr' 'libICE' 'libogg' 'libart_lgpl' 'libmusicbrainz' 'qt' 'libXv' 'freetype2' 'taglib' 'cdparanoia' 'libXxf86dga' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'arts' 'glib2' 'gcc' 'libXrandr' 'kdelibs')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('595f637c637987a92f6dac9d9cd6667d')
+md5sums=('61bd938c564e3280034944338955712b')
 
 ## Todo:
 ##   None
@@ -22,6 +19,10 @@ md5sums=('595f637c637987a92f6dac9d9cd6667d')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 3.5.2 2006.03.29
+##   rel2: rebuilt against new gstreamer and libtunepimp 2006.03.27
 ##   rel1: Upgraded to 3.5.1 2006.01.31
 ##   rel1: Upgraded to 3.5.0 2005.12.18
 ##   rel1: Upgraded to 3.4.3 2005.10.15

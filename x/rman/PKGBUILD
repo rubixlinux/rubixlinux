@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=rman
+pkgver=3.2
+pkgrel=1
+pkgdesc="rman takes man pages from most of the popular flavors of UNIX and transforms them into any of a number of text source formats"
+url="http://polyglotman.sourceforge.net"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/polyglotman/$pkgname-$pkgver.tar.gz)
+md5sums=('6d1d67641c6d042595a96a62340d3cc6')
+groups=('x11-app')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make || return 1
+	mkdir -p $startdir/pkg/usr/X11R7/bin $startdir/pkg/usr/X11R7/man/man1
+	make BINDIR=$startdir/pkg/usr/X11R7/bin MANDIR=$startdir/pkg/usr/X11R7/man/man1 install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		README-rman.txt	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+
+}

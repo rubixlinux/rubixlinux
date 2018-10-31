@@ -1,33 +1,28 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
-
-ARTS=0.7.1
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=xmms
 pkgver=1.2.10
-pkgrel=4
+pkgrel=5
 pkgdesc="xmms (X Multimedia System) XMMS is the X Multimedia System.  It is used to play audio and other kinds of media files.  By default XMMS can play MPEG audio, Ogg Vorbis, RIFF wav, most module formats, and a few other formats.  XMMS can be extended through plugins to play a number of other audio and video formats."
-depends=('glibc' 'libmikmod' 'glib' 'audiofile' 'esound' 'libvorbis' 'arts' 'x11' 'glib2' 'libogg' 'zlib' 'gtk+' 'alsa-lib')
+depends=('libXext' 'glibc' 'libSM' 'mesa3d' 'libXxf86vm' 'esound' 'libICE' 'libogg' 'zlib' 'libdrm' 'alsa-lib' 'libXau' 'glib' 'libmikmod' 'libX11' 'audiofile' 'libXdmcp' 'libvorbis' 'gtk+')
 url="http://www.xmms.org"
 source=(http://www.xmms.org/files/1.2.x/$pkgname-$pkgver.tar.bz2		\
-	http://havardk.xmms.org/plugins/arts_output/arts_output-$ARTS.tar.gz	\
-	alsa_pause_fix.diff.gz							)
+	alsa_pause_fix.diff							)
 md5sums=('03a85cfc5e1877a2e1f7be4fa1d3f63c' \
-	 '6d028255ed86e37211bbda0122c14483' \
-	 'e83c68d1b30066764314c227ef75f950' )
+	 'dc9b8850a731dfbe15d9374e35c84ed8' )
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#This is a 2 step build:
-#  1. comment out build_arts_output, build, install
-#  2. uncomment build_arts_output, build, install
+## Notes:
+##   None
 
-#Changelog:
-#rel4: Added patch to fix alsa pause bug (from Slackware) 2005.08.19
-#rel3: Added patch to fix header 2005.02.19
-#rel2: Rebuild without reference to libGL.la 2005.02.19
-#rel1: Initial Rubix release
+## Changelog:
+##   rel5: rebuilt without dependance on arts 2006.04.12
+##   rel4: Added patch to fix alsa pause bug (from Slackware) 2005.08.19
+##   rel3: Added patch to fix header 2005.02.19
+##   rel2: Rebuild without reference to libGL.la 2005.02.19
+##   rel1: Initial Rubix release
 
 build() {
 
@@ -53,7 +48,7 @@ build() {
 		--enable-simd			\
 		--with-ipv6			\
 		$CHOST
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
@@ -68,38 +63,8 @@ build() {
 		TODO		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
-	build_arts_output
-
 	chown -R root.bin $startdir/pkg/usr/bin
 
-}
-
-build_arts_output() {
-
-	cd $startdir/src/arts_output-$ARTS
-
-	find . -perm 664 -exec chmod 644 {} \;
-	find . -perm 600 -exec chmod 644 {} \;
-	find . -perm 444 -exec chmod 644 {} \;
-	find . -perm 400 -exec chmod 644 {} \;
-	find . -perm 440 -exec chmod 644 {} \;
-	find . -perm 777 -exec chmod 755 {} \;
-	find . -perm 775 -exec chmod 755 {} \;
-	find . -perm 511 -exec chmod 755 {} \;
-	find . -perm 711 -exec chmod 755 {} \;
-	find . -perm 555 -exec chmod 755 {} \;
-
-	./configure --prefix=/usr $CHOST
-	make
-	make install DESTDIR=$startdir/pkg
-
-	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/arts_output-$ARTS
-	cp	-a	\
-		AUTHORS	\
-		COPYING	\
-		INSTALL	\
-		NEWS	\
-		README	\
-	$startdir/pkg/usr/doc/$pkgname-$pkgver/arts_output-$ARTS
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

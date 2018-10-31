@@ -1,0 +1,209 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=21
+AGENT=112
+COMP=80
+EXT=20
+DESK=78
+PROXY=9
+SCRIPTS=11
+VIEWER=15
+AUTH=1
+NXSSH=23
+NXESD=3
+
+pkgname=nx
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="NoMachine NX is a Terminal Server and Remote Access solution based on a comprising set of enterprise class open source technologies. Thanks to the outstanding compression, session resilience and resource management developed on top of the X-Window system, and the integration with the powerful audio, printing and resource sharing capabilities of the Unix world, NoMachine NX makes it possible to run any graphical application on any operating system across any network connection as if you were sitting in front of your computer."
+url="http://www.nomachine.com"
+depends=('libXext' 'libSM' 'glibc' 'libXp' 'libXaw' 'libICE' 'openssl' 'libXrender' 'zlib' 'alsa-lib' 'libXau' 'libjpeg' 'libX11' 'libXpm' 'libXdmcp' 'audiofile' 'libXmu' 'libXt' 'gcc' 'libpng')
+source=(http://64.34.161.181/download/$pkgver/sources/nx-X11-$pkgver-$X11.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxcompext-$pkgver-$EXT.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxagent-$pkgver-$AGENT.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxcomp-$pkgver-$COMP.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxdesktop-$pkgver-$DESK.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxproxy-$pkgver-$PROXY.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxscripts-$pkgver-$SCRIPTS.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxviewer-$pkgver-$VIEWER.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxauth-$pkgver-$AUTH.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxssh-$pkgver-$NXSSH.tar.gz	\
+	http://64.34.161.181/download/$pkgver/sources/nxesd-$pkgver-$NXESD.tar.gz	\
+	docs.tar.bz2									)
+md5sums=('11877c3357732a957e3bf7e3d2f2ca0a' \
+	 '6a5b8b79b9e0cc81b88233b18c4f227f' \
+	 '160726ed67698a9694b707950c49e19e' \
+	 '782f04870142c9fc5b2e1f654fd0a5d7' \
+	 '6c20c1300ca6b4d362237ef44cfee7f7' \
+	 'd2e3c1a109db336dfa497f4c2004f2d5' \
+	 '9432195d04bf226909bc5d68773657a3' \
+	 'ff3e5a4c1601b58f5fc405f990691bdf' \
+	 'a7c5e68e9678cb5c722c334b33baf660' \
+	 '86df9d5f03bd7e1e1930f129fe87347d' \
+	 'fe0d5e0e78b37725336b339ba7596d0b' \
+	 '0511072ee377316879bb91a75153ed47' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	mkdir -p $startdir/pkg/opt/NX/lib
+	mkdir -p $startdir/pkg/opt/NX/bin
+
+	## nxcomp
+
+	cd $startdir/src/nxcomp
+
+	./configure
+	make || return 1
+	cp -a libXcomp.so.* $startdir/pkg/opt/NX/lib
+	ln -s libXcomp.so.1 $startdir/pkg/opt/NX/lib/libXcomp.so
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nxcomp-$pkgver-$COMP
+	cp	-a		\
+		CHANGELOG	\
+		LICENSE		\
+		README		\
+		README-IPAQ	\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nxcomp-$pkgver-$COMP
+
+	## nxproxy
+
+	cd $startdir/src/nxproxy
+
+	./configure
+	make || return 1
+	cp nxproxy $startdir/pkg/opt/NX/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nxproxy-$pkgver-$PROXY
+	cp	-a			\
+		CHANGELOG		\
+		LICENSE			\
+		README			\
+		README-IPAQ		\
+		README-VALGRIND		\
+		VERSION			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nxproxy-$pkgver-$PROXY
+
+	## nx-X11
+
+	cd $startdir/src/nx-X11
+
+	make World || return 1
+	cp	-a				\
+		lib/X11/libX11.so.*		\
+		lib/Xext/libXext.so.*		\
+		lib/Xrender/libXrender.so.*	\
+	$startdir/pkg/opt/NX/lib
+
+	cp programs/Xserver/nxagent $startdir/pkg/opt/NX/bin
+	cp programs/nxauth/nxauth   $startdir/pkg/opt/NX/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nx-X11-$pkgver-$X11
+	cp	-a		\
+		CHANGELOG	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nx-X11-$pkgver-$X11
+
+	## nxcompext
+
+	cd $startdir/src/nxcompext
+
+	./configure
+	make || return 1
+	cp -a libXcompext.so.* $startdir/pkg/opt/NX/lib
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nxcompext-$pkgver-$EXT
+	cp	-a		\
+		CHANGELOG	\
+		LICENSE		\
+		README		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nxcompext-$pkgver-$EXT
+
+	## nxviewer
+
+	cd $startdir/src/nxviewer
+
+	xmkmf -a
+	cp /usr/X11R7/lib/libXp.so ../nx-X11/exports/lib 
+	make || return 1
+	cp nxpasswd/nxpasswd $startdir/pkg/opt/NX/bin
+	cp nxviewer/nxviewer $startdir/pkg/opt/NX/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nxviewer-$pkgver-$VIEWER
+	cp	-a		\
+		CHANGELOG	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nxviewer-$pkgver-$VIEWER
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/nxviewer-$pkgver-$VIEWER/*
+
+	## nxdesktop
+
+	cd $startdir/src/nxdesktop
+
+	./configure --prefix=/opt/NX
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nxdesktop-$pkgver-$DESK
+	cp	-a		\
+		CHANGELOG	\
+		COPYING		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nxdesktop-$pkgver-$DESK
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/nxdesktop-$pkgver-$DESK/*
+
+	cp -a doc $startdir/pkg/usr/doc/$pkgname-$pkgver/nxdesktop-$pkgver-$DESK
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/nxdesktop-$pkgver-$DESK/doc/*
+
+	## nxscripts
+
+	cp -a $startdir/src/nxscripts $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 755 $startdir/pkg/usr/doc/$pkgname-$pkgver/nxscripts/run-nxproxy-server
+
+	## docs
+
+	tar xjf $startdir/src/docs.tar.bz2 -C $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.root $startdir/pkg/usr/doc
+
+	## nxssh
+
+	cd $startdir/src/nxssh
+
+	./configure
+	make || return 1
+	cp nxssh $startdir/pkg/opt/NX/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nxssh-$pkgver-$NXSSH
+	cp	-a		\
+		CHANGELOG	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nxssh-$pkgver-$NXSSH
+
+	## nxesd
+
+	cd $startdir/src/nxesd
+
+	./configure --with-libwrap
+	make || return 1
+	cp nxesd    $startdir/pkg/opt/NX/bin
+	cp nxesddsp $startdir/pkg/opt/NX/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nxesd-$pkgver-$NXESD
+	cp	-a		\
+		CHANGELOG	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nxesd-$pkgver-$NXESD
+
+	chmod 755 $startdir/pkg/opt/NX/bin/*
+
+}

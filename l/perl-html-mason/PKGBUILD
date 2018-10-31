@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-html-mason
+pkgver=1.32
+pkgrel=1
+pkgdesc="Mason - High-performance, dynamic web site authoring system"
+url="http://search.cpan.org/~drolsky/HTML-Mason-$pkgver/lib/HTML/Mason.pm"
+depends=('perl' 'perl-class-container' 'libapreq')
+source=(http://search.cpan.org/CPAN/authors/id/D/DR/DROLSKY/HTML-Mason-$pkgver.tar.gz)
+md5sums=('b0abfdd869d828a0ebbf2f64cfb9d094')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/HTML-Mason-$pkgver
+
+	perl Build.PL || return 1
+	./Build || return 1
+#	./Build test || return 1
+	./Build install destdir=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/HTML-Mason-$pkgver
+	cp	-a		\
+		CREDITS		\
+		Changes		\
+		LICENSE		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+		UPGRADE		\
+	$startdir/pkg/usr/doc/perl-$PERL/HTML-Mason-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -2,11 +2,11 @@
 
 pkgname=etc
 pkgver=1.0
-pkgrel=18
+pkgrel=21
 pkgdesc="etc (system configuration files) System configuration files.  The /etc directory is traditionally the location where configuration files are found."
-url="http://www.rubix-os.org"
+url="http://www.rubixlinux.org"
 source=($pkgname.tar.gz)
-md5sums=('f2cb9be7d984fc400638f30587941de2')
+md5sums=('26a5d86c13db1eafc14cf61477ee04fa')
 backup=('etc/mtab'		\
 	'etc/motd'		\
 	'etc/group'		\
@@ -38,6 +38,9 @@ backup=('etc/mtab'		\
 ##   included here
 
 ## Changelog:
+##   rel21: added nx user 2006.05.19
+##   rel20: added gdm user 2006.03.27
+##   rel19: updated all X11R6 references to X11R7 2006.03.15
 ##   rel18: added mythtv user/group 2006.02.06
 ##   rel17: added mythtv to necessary groups 2006.02.05
 ##   rel16: added postgres user, fixed language support for sh shells 2006.01.31

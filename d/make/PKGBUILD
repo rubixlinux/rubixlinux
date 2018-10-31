@@ -1,15 +1,13 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=make
-pkgver=3.80
-pkgrel=2
+pkgver=3.81
+pkgrel=1
 pkgdesc="make (GNU make utility to maintain groups of programs) This is the GNU implementation of make, which was written by Richard Stallman and Roland McGrath.  The purpose of the make utility is to determine automatically which pieces of a large program need to be recompiled, and issue the commands to recompile them. This is needed to compile just about any major C program, including the Linux kernel."
 url="http://www.gnu.org/software/make"
 depends=('glibc')
-source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz	\
-	make.eval-crash.diff					)
-md5sums=('c68540da9302a48068d5cce1f0099477' \
-	 '41dc0b913e0c6f9d2bdda58e7761ae91' )
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('a4e9494ac6dc3f6b0c5ff75c5d52abba')
 
 ## Todo:
 ##   None
@@ -18,14 +16,13 @@ md5sums=('c68540da9302a48068d5cce1f0099477' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.81 206.04.22
 ##   rel2: added a patch from slackware to fix a memory issue 2006.02.15
 ##   rel1: Initial Rubix release
 
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
-
-	patch -p0 < $startdir/src/make.eval-crash.diff || return 1
 
 	./configure --prefix=/usr $CHOST
 	make || return 1

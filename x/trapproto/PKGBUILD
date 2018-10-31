@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=trapproto
+pkgver=3.4.3
+pkgrel=1
+pkgdesc="X.Org Trap protocol headers"
+url="http://www.x.org"
+source=(ftp://ftp.x.org/pub/$X11/src/proto/$pkgname-$X11-$pkgver.tar.bz2)
+md5sums=('84ab290758d2c177df5924e10bff4835')
+groups=('x11-dev')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7 --libdir=/usr/lib
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+}

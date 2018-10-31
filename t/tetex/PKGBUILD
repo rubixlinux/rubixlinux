@@ -39,7 +39,7 @@ install=$pkgname.install
 ##   None
 
 ## Changelog:
-##   rel4: added slackware security patches 2006.06.05
+##   rel4: added patches from slackware 2006.06.05
 ##   rel3: fixed install script to init tetex system wide 2005.10.09
 ##   rel2: removed shared fontcache scheme 2005.03.03
 ##   rel1: upgraded to 3.0 and gzipped man pages 2005.02.28
@@ -119,5 +119,7 @@ build() {
 			gzip -9 "$i"
 		fi
 	done
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

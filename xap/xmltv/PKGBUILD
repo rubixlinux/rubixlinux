@@ -1,42 +1,46 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=xmltv
-pkgver=0.5.39
-pkgrel=2
+pkgver=0.5.42
+pkgrel=1
 pkgdesc="XMLTV is a set of programs to process TV (tvguide) listings and manage your TV viewing, storing listings in an XML format. There are backends to download TV listings for several countries, filter programs and Perl libraries to process listings."
 url="http://membled.com/work/apps/xmltv"
 depends=('perl-term-readkey' 'perl-date-manip' 'perl-lwp' 'perl-xml-twig' 'perl-xml-writer' 'perl-compress-zlib' 'perl-lingua-en-numbers-ordinate'			\
 	 'perl-lingua-preferred' 'perl-term-progressbar' 'perl-unicode-string' 'perl-archive-zip' 'perl-io-stringy' 'perl-soap-lite' 'perl-html-tableextract'		\
 	 'perl-www-mechanize' 'perl-html-tree' 'perl-xml-libxml' 'perl-compress-zlib' 'perl-http-cache-transparent' 'perl-io-stringy' 'perl-tk' 'perl-tk-tablematrix'	)
-source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
-md5sums=('c714a77870b4df3194257de898788b98')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	make.diff								)
+md5sums=('a8166e4bcbb2cdb04ff183f618ef6dd9' \
+	 'd8f70b87218312cc6e5b8c1758cdb51b' )
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: upgraded to 0.5.43, built for perl 5.8.8 2006.03.07
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/make.diff || return 1
 
 	perl Makefile.PL || return 1
 	make || return 1
 #	make test || return 1
 	make install DESTDIR=$startdir/pkg
 
-	mv	$startdir/pkg/share/doc		$startdir/pkg/usr
-	mv	$startdir/pkg/share/$pkgname/*	$startdir/pkg/usr/doc/$pkgname-$pkgver
-	mv	$startdir/pkg/usr/share/man	$startdir/pkg/usr
-	rm -r	$startdir/pkg/share
-	rmdir	$startdir/pkg/usr/share
+	mv	$startdir/pkg/usr/share/doc		$startdir/pkg/usr
+	mv	$startdir/pkg/usr/share/$pkgname/*	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	mv	$startdir/pkg/usr/share/man		$startdir/pkg/usr
+	rm -r	$startdir/pkg/usr/share
 
 	cp	-a		\
 		COPYING		\

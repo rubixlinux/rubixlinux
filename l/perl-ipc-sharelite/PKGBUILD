@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-ipc-sharelite
+pkgver=0.09
+pkgrel=1
+pkgdesc="IPC-ShareLite.pm - Interface to Gd Graphics Library"
+url="http://search.cpan.org/~maurice/IPC-ShareLite-$pkgver/ShareLite.pm"
+depends=('glibc' 'perl')
+source=(http://search.cpan.org/CPAN/authors/id/M/MA/MAURICE/IPC-ShareLite-$pkgver.tar.gz	\
+	config.sh										\
+	make.diff										)
+md5sums=('3942a55cfc5e6d3b612a46cc1a9515b9' \
+	 'd09e6dd45a6ae154fb8d476f2a8f9d95' \
+	 '87bff326e925da27712289d700e6fd84' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/IPC-ShareLite-$pkgver
+
+	patch -p1 < $startdir/src/make.diff || return 1
+
+	cp $startdir/src/config.sh .
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/IPC-ShareLite-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/IPC-ShareLite-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=poppler
+pkgver=0.5.1
+pkgrel=4
+pkgdesc="poppler - poppler is a pdf rendering library based on the xpdf-3.0 code base"
+url="http://poppler.freedesktop.org"
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXfixes' 'libjpeg' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'gcc' 'libpng' 'libXinerama' 'libXrandr')
+source=(http://poppler.freedesktop.org/$pkgname-$pkgver.tar.gz)
+md5sums=('a136cd731892f4570933034ba97c8704')
+
+## Todo:
+##   None
+
+## Notes:
+##   Does not build with ssp and does not like pie either
+
+## Changelog:
+##   rel4: added some missing headers 2006.03.27
+##   rel3: one more rebuild 2006.03.27
+##   rel2: added old libpoppler symlink 2006.03.27
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --enable-xpdf-headers
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

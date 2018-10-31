@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-module-load-conditional
+pkgver=0.08
+pkgrel=1
+pkgdesc="Module::Load::Conditional - Looking up module information / loading at runtime"
+url="http://search.cpan.org/~kane/Module-Load-Conditional-$pkgver/lib/Module/Load/Conditional.pm"
+depends=('perl' 'perl-params-check')
+source=(http://search.cpan.org/CPAN/authors/id/K/KA/KANE/Module-Load-Conditional-$pkgver.tar.gz)
+md5sums=('9e2a706b6511651ca4eb6de0c4c89a12')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Module-Load-Conditional-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Module-Load-Conditional-$pkgver
+	cp	-a		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Module-Load-Conditional-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

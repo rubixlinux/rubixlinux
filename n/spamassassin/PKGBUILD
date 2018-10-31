@@ -1,10 +1,10 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=spamassassin
 pkgver=3.1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="spamassassin is a spam filter for email which can be invoked from mail delivery agents"
 url="http://spamassassin.apache.org"
 backup=(etc/mail/init.pre	\
@@ -33,7 +33,8 @@ md5sums=('d28bd7e83d01b234144e336bbfde0caa' \
 ## Notes:
 ##   None
 
-## Changelog
+## Changelog:
+##   rel3: rebuilt for perl 5.8.8 2006.03.07
 ##   rel2: updated rc script to new format 2006.01.16
 ##   rel1: upgraded to 3.1.0 2005.09.30
 ##   rel2: Rebuilt for perl 5.8.7 2005.06.13

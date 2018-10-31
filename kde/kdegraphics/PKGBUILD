@@ -1,20 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdegraphics
-pkgver=3.5.1
-pkgrel=2
+pkgver=3.5.3
+pkgrel=1
 pkgdesc="kdegraphics (KDE graphics programs) Graphics programs for KDE, including:  kdvi (displays TeX's device independent .dvi files), kfax (displays fax files), kfract (a fractal generator), kghostview (displays postscript .ps files), kpaint (a simple drawing program), kruler (an onscreen ruler), ksnapshot (a screenshot utility), and kview (displays many graphic file formats)."
 url="http://www.kde.org"
 groups=('kde')
-depends=('qt' 'glibc' 'libtiff' 'libieee1284' 'xfsprogs' 'x11' 'fontconfig' 'expat' 'libusb'	\
-	 'lcms' 'zlib' 'libart_lgpl' 'sane' 'freetype2' 'libjpeg' 'libidn' 'pcre' 'imlib'	\
-	 'libungif' 'libmng' 'gphoto2' 'libexif' 'gcc' 'kdelibs' 'libpng'			)
-source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2			\
-	ftp://ftp.kde.org/pub/kde/security_patches/post-$KDE-$pkgname-CVE-2006-0301.diff	)
-md5sums=('2cd1c5348b7df46cf7f9d91e1dbfebd2' \
-	 'bc7dc2a5235f95a41fc1d7ab885899da' )
+depends=('glibc' 'libXi' 'mesa3d' 'libtiff' 'poppler' 'fontconfig' 'expat' 'libXrender' 'lcms' 'zlib' 'libXau' 'sane' 'acl' 'libjpeg' 'libidn' 'libXdmcp' 'libXmu' 'libungif' 'libmng' 'gphoto2' 'libXt' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'libXxf86vm' 'libieee1284' 'attr' 'libICE' 'libusb' 'libart_lgpl' 'qt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'imlib' 'fribidi' 'libexif' 'gcc' 'kdelibs' 'libXrandr')
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('56bd5537521dc94633f8effaace523cb')
 
 ## Todo:
 ##   None
@@ -23,6 +19,9 @@ md5sums=('2cd1c5348b7df46cf7f9d91e1dbfebd2' \
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 3.5.2 2006.03.29
 ##   rel2: added security patch 2006.02.06
 ##   rel1: Upgraded to 3.5.1 2006.01.31
 ##   rel1: Upgraded to 3.5.0 2005.12.18
@@ -42,12 +41,11 @@ build() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
-	patch -p0 < $startdir/src/post-$KDE-$pkgname-CVE-2006-0301.diff || return 1
-
 	./configure			\
 		--prefix=/opt/kde	\
 		--disable-debug		\
-		--enable-final
+		--enable-final		\
+		--without-kamera
 	make || return 1
 	make install DESTDIR=$startdir/pkg
 

@@ -1,13 +1,13 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=cairo
-pkgver=1.0.2
+pkgver=1.0.4
 pkgrel=1
 pkgdesc="Cairo is a 2D graphics library with support for multiple output devices. Currently supported output targets include the X Window System, win32, and image buffers. Experimental backends include OpenGL (through [WWW]glitz), Quartz, XCB, PostScript and PDF file output."
-depends=('glibc' 'fontconfig' 'x11' 'expat' 'freetype2' 'zlib' 'libpng')
+depends=('libXau' 'glibc' 'freetype2' 'libX11' 'libXdmcp' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libpng')
 url="http://cairographics.org"
 source=(http://cairographics.org/releases/$pkgname-$pkgver.tar.gz)
-md5sums=('d0b7111a14f90ec3afa777ec40c44984')
+md5sums=('9002b0e69b3f94831a22d3f2a7735ce2')
 
 ## Todo:
 ##   None
@@ -16,6 +16,7 @@ md5sums=('d0b7111a14f90ec3afa777ec40c44984')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 1.0.4 2006.03.21
 ##   rel1: upgraded to 1.0.2 2005.12.05
 ##   rel1: initial rubix release
 
@@ -40,4 +41,8 @@ build() {
 		README		\
 		TODO		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
 }

@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=acl
+pkgver=2.2.34
+pkgrel=1
+pkgdesc="acl (tools for using POSIX Access Control Lists) This package contains a set of tools and libraries for manipulating POSIX Access Control Lists.  POSIX Access Control Lists (defined in POSIX 1003.1e draft standard 17) are used to define more fine-grained discretionary access rights for files and directories."
+url="http://oss.sgi.com/projects/xfs"
+depends=('glibc' 'attr')
+source=(ftp://oss.sgi.com/projects/xfs/cmd_tars/$pkgname-$pkgver.src.tar.gz)
+md5sums=('50f1c271071048539d25ad67f1e8b375')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+	make prefix=$startdir/pkg/usr install-dev
+	make prefix=$startdir/pkg/usr install-lib
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rmdir $startdir/pkg/usr/share/doc
+
+	mv $startdir/pkg/usr/lib $startdir/pkg
+	rm $startdir/pkg/lib/*.a
+
+	mv $startdir/pkg/usr/libexec $startdir/pkg/usr/lib
+
+	rm $startdir/pkg/usr/lib/libacl.so
+	ln -s /lib/libacl.so.1 $startdir/pkg/usr/lib/libacl.so
+
+	chmod 755 $startdir/pkg/lib/libacl.so.1.1.0
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

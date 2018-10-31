@@ -1,12 +1,22 @@
 # Maintainer: Joshua Rubin <joshua@rubix-os.org>
 
 pkgname=libungif
-pkgver=4.1.3
+pkgver=4.1.4
 pkgrel=1
 pkgdesc="libungif GIF loading and saving shared library.  (Saving uses an uncompressed GIF algorithm that does not use LZW compression.)"
 depends=('glibc')
 source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
-md5sums=('cb11e300347ad29e502abc6f56fd23df')
+md5sums=('efdfcf8e32e35740288a8c5625a70ccb')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 4.1.4 2006.04.22
+##   rel1: initial rubix release
 
 build() {
 
@@ -45,5 +55,7 @@ build() {
 	ln -sf libgif.so.$pkgver libgif.so.4
 	ln -sf libgif.so.4 libgif.so
 	ln -sf libungif.a libgif.a
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

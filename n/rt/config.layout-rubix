@@ -1,0 +1,22 @@
+
+<Layout Rubix>
+  prefix:		/usr
+  exec_prefix:		${prefix}
+  bindir:		${exec_prefix}/bin
+  sbindir:		${exec_prefix}/sbin
+  sysconfdir:		/etc/rt
+  mandir:		${prefix}/man
+  libdir:		${prefix}/lib/rt
+  datadir:		${prefix}/share
+  htmldir:		${datadir}/rt/html
+  manualdir:		${datadir}/doc
+  localstatedir:	/var
+  logfiledir:		${localstatedir}/log
+  masonstatedir:	${localstatedir}/mason/data
+  sessionstatedir:	${localstatedir}/mason/session
+  customdir:		${prefix}/local
+  custometcdir:		${customdir}/etc
+  customhtmldir:	${customdir}/html
+  customlexdir:		${customdir}/po
+  customlibdir:		${customdir}/lib
+</Layout>

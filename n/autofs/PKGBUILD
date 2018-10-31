@@ -1,10 +1,10 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=autofs
 pkgver=4.1.4
-pkgrel=2
+pkgrel=3
 pkgdesc="autofs (kernel-based automounter) autofs is a kernel-based automounter for Linux.  It performs a job similar to amd(8) but relies on a small stub of kernel code instead of pretending to be an NFS server.  The result is simpler code, better reliability, and much faster operation in the common case (everything already mounted.)"
-depends=('openldap')
+depends=('glibc' 'openssl' 'openldap' 'cyrus-sasl')
 source=(ftp://ftp.kernel.org/pub/linux/daemons/$pkgname/v4/$pkgname-$pkgver.tar.bz2)
 md5sums=('7e3949114c00665b4636f0c318179657')
 
@@ -15,6 +15,7 @@ md5sums=('7e3949114c00665b4636f0c318179657')
 ##   None
 
 ## Changelog:
+##   rel3: rebuilt against openldap 2.3 2006.03.10
 ##   rel2: Recompiled to support openldap 2005.06.03
 ##   rel1: Initial Rubix release 2005.06.03
 

@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-module-corelist
+pkgver=2.04
+pkgrel=1
+pkgdesc="Module::CoreList - what modules shipped with versions of perl"
+url="http://search.cpan.org/~rgarcia/Module-CoreList-$pkgver/lib/Module/CoreList.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/R/RG/RGARCIA/Module-CoreList-$pkgver.tar.gz)
+md5sums=('1bb36ff429224faa5fb72a8b45ee7af2')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Module-CoreList-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Module-CoreList-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Module-CoreList-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

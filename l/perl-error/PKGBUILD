@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-error
+pkgver=0.15005
+pkgrel=1
+pkgdesc="Error - Error/exception handling in an OO-ish way"
+url="http://search.cpan.org/~shlomif/Error-$pkgver/lib/Error.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/S/SH/SHLOMIF/Error-$pkgver.tar.gz)
+md5sums=('a324e023220db569463052261b6d8dfc')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Error-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Error-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Error-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

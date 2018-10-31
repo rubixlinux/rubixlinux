@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-xml-libxml-common
 pkgver=0.13
-pkgrel=2
+pkgrel=3
 pkgdesc="XML::LibXML::Common - Routines and Constants common for XML::LibXML and XML::GDOME"
 url="http://search.cpan.org/~phish/XML-LibXML-Common-$pkgver/Common.pm"
-depends=('perl' 'libxml2')
+depends=('glibc' 'zlib' 'libxml2')
 source=(http://search.cpan.org/CPAN/authors/id/P/PH/PHISH/XML-LibXML-Common-$pkgver.tar.gz)
 md5sums=('13b6d93f53375d15fd11922216249659')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel3: rebuilt for perl 5.8.8 2006.03.07
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 

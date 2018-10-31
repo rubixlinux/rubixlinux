@@ -1,0 +1,11 @@
+diff -uNr linux-2.6.16.19.orig/drivers/acpi/ibm_acpi.c linux-2.6.16.19/drivers/acpi/ibm_acpi.c
+--- linux-2.6.16.19.orig/drivers/acpi/ibm_acpi.c	2006-05-30 18:31:44.000000000 -0600
++++ linux-2.6.16.19/drivers/acpi/ibm_acpi.c	2006-06-01 09:15:38.000000000 -0600
+@@ -1915,7 +1915,6 @@
+ 	/* ec is required because many other handles are relative to it */
+ 	IBM_HANDLE_INIT(ec);
+ 	if (!ec_handle) {
+-		printk(IBM_ERR "ec object not found\n");
+ 		return -ENODEV;
+ 	}
+ 

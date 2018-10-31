@@ -1,0 +1,73 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=kernel26-xen-source
+pkgver=2.6.16.20
+pkgrel=1
+url="http://www.kernel.org"
+pkgdesc="kernel26-xen-source (Linux kernel source) Source code for Linus Torvalds' Linux kernel. This is the complete linux kernel patched with xen."
+source=(http://kernel.org/pub/linux/kernel/v2.6/linux-$pkgver.tar.bz2	\
+	xenrubix.diff							\
+	config								)
+md5sums=('382aa4178ff79d58925622a8a97561eb' \
+	 '32c98aca607cc9fd2ceb939ddcd02e6e' \
+	 'afa08f63722c007512de84ab6b1b1c97' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.6.16.20 2006.06.07
+##   rel1: upgraded to 2.6.16.19 2006.06.01
+##   rel1: upgraded to 2.6.16.18 2006.05.22
+##   rel2: added xen_nvidia patch again 2006.05.12
+##   rel1: upgraded to 2.6.16.16 2006.05.11
+##   rel2: rebuilt with new xen patch 2006.04.27
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/linux-$pkgver
+
+	patch -p1 < $startdir/src/xenrubix.diff || return 1
+
+	cp $startdir/src/config .config
+
+	make silentoldconfig
+
+	make vmlinux || return 1
+	make modules || return 1
+	cp vmlinux $startdir/pkg
+	make clean
+	rm .version
+
+	mkdir -p $startdir/pkg/usr/src
+	cd $startdir/pkg/usr/src
+	cp -a $startdir/src/linux-$pkgver linux-$pkgver-XenRubix
+
+	find $startdir/pkg -perm 0664 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0775 -exec chmod 0755 {} \;
+
+	cd linux-$pkgver-XenRubix
+	mv $startdir/pkg/vmlinux .
+
+	## provided by the ieee80211 package
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_module.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_crypt_ccmp.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_geo.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_crypt_tkip.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_rx.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_tx.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_wx.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_crypt.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/net/ieee80211/ieee80211_crypt_wep.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/include/net/ieee80211_radiotap.h
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/include/net/ieee80211_crypt.h
+	rm $startdir/pkg/usr/src/linux-$pkgver-XenRubix/include/net/ieee80211.h
+
+	find $startdir/pkg -perm 777 -exec chmod 755 {} \;
+	find $startdir/pkg -perm 666 -exec chmod 644 {} \;
+
+}

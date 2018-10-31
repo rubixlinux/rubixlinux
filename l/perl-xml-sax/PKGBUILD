@@ -1,10 +1,10 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-xml-sax
 pkgver=0.13
-pkgrel=2
+pkgrel=3
 pkgdesc="XML::SAX - Simple API for XML"
 url="http://search.cpan.org/~msergeant/XML-SAX-$pkgver/SAX.pm"
 depends=('perl' 'perl-xml-namespacesupport')
@@ -20,6 +20,7 @@ md5sums=('e8b1ce0a954888bcd3aa2ed8621774ef' \
 ##   None
 
 ## Changelog:
+##   rel3: rebuilt for perl 5.8.8 2006.03.07
 ##   rel2: added perl-xml-namespacesupport as a dep 2005.12.23
 ##   rel1: upgraded to 0.13 2005.12.22
 ##   rel2: Rebuilt for perl 5.8.7 2005.06.13

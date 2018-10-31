@@ -1,23 +1,24 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=libidl
-pkgver=0.8.5
+pkgver=0.8.6
 pkgrel=1
 pkgdesc="libIDL is a library licensed under the GNU LGPL for creating trees of CORBA Interface Definition Language (IDL) files, which is a specification for defining portable interfaces. The Mozilla suite uses libIDL."
 provides=('libidl2')
-depends=('glib2')
+depends=('glibc' 'glib2')
 source=(ftp://ftp.gnome.org/pub/GNOME/sources/libIDL/0.8/libIDL-$pkgver.tar.bz2)
-md5sums=('c63f6513dc7789d0575bea02d62d58d7')
+md5sums=('2fde1aed5ea77d532f9e11442f761b81')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#libidl from the gnome repos is now the default libidl, libidl2 is now libidl
+## Notes:
+##   libidl from the gnome repos is now the default libidl, libidl2 is now libidl
 
-#Changelog:
-#rel1: Upgraded to 0.8.5 2005.05.12
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: Upgraded to 0.8.6 2006.03.21
+##   rel1: Upgraded to 0.8.5 2005.05.12
+##   rel1: Initial Rubix release
 
 build() {
 
@@ -46,5 +47,8 @@ build() {
 		NEWS		\
 		README		\
 	$startdir/pkg/usr/doc/libIDL-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/libIDL-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

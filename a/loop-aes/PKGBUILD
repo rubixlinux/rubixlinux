@@ -3,17 +3,18 @@
 ## REMEMBER: Update versions in the install script!!!
 
 pkgname=loop-aes
-pkgver=v3.1c
-pkgrel=5
+pkgver=v3.1d
+pkgrel=7
 pkgdesc="This package provides loadable Linux kernel module (loop.o or loop.ko on 2.6 kernels) that has AES cipher built-in. The AES cipher can be used to encrypt local file systems and disk partitions."
 url="http://loop-aes.sourceforge.net"
 source=(http://loop-aes.sourceforge.net/loop-AES/loop-AES-$pkgver.tar.bz2)
-md5sums=('3e54b8e66142fe58282e58075f73e58c')
+md5sums=('b4d13d6421382ea048e113ad8a868dfa')
 install=$pkgname.install
 
 vver24=2.4.32
 gver24=2.4.32-grsec
-vver26=2.6.15.5-Rubix
+vver26=2.6.16.20-Rubix
+xver26=2.6.16.20-XenRubix
 
 ## Todo:
 ##   None
@@ -22,6 +23,13 @@ vver26=2.6.15.5-Rubix
 #   This package builds the loop-aes kernel modules for each rubix kernel
 
 ## Changelog:
+##   rel7: rebuilt for 2.6.16.20 kernels 2006.06.07
+##   rel6: rebuilt for 2.6.16.19 kernels 2006.06.01
+##   rel5: rebuilt for 2.6.16.18 kernels 2006.05.22
+##   rel4: rebuilt for 2.6.16.16 kernels 2006.05.11
+##   rel3: rebuilt 2006.04.27
+##   rel2: added xen module 2006.04.27
+##   rel1: upgraded to 3.1d, built for kernel 2.6.16.9 2006.04.20
 ##   rel5: rebuilt for kernel 2.6.15.5 2006.03.03
 ##   rel4: rebuilt for kernel 2.6.15.4 2006.02.12
 ##   rel3: rebuilt for kernel 2.6.15.3 2006.02.07
@@ -61,6 +69,10 @@ build() {
 
 	# Make 2.6 vanilla module:
 		make LINUX_SOURCE=/usr/src/linux-$vver26 INSTALL_MOD_PATH=$startdir/pkg || return 1
+		make clean
+
+	# Make 2.6 xen module:
+		make LINUX_SOURCE=/usr/src/linux-$xver26 INSTALL_MOD_PATH=$startdir/pkg || return 1
 		make clean
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver

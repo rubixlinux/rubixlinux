@@ -1,23 +1,24 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=python-demo
-pkgver=2.4.2
+pkgver=2.4.3
 pkgrel=1
 pkgdesc="python-demo (Sample Python programs) This package installs a library of sample Python programs into your Python documentation directory (under /usr/doc/Python*)."
 url="http://www.python.org"
 depends=('python')
 source=(http://www.python.org/ftp/python/$pkgver/Python-$pkgver.tgz)
-md5sums=('07cfc759546f6723bb367be5b1ce9875')
+md5sums=('edf994473a8c1a963aaa71e442b285b7')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: upgraded to 2.4.2 2005.09.30
-#rel1: Initial Rubix release 2005.05.12
+## Changelog:
+##   rel1: upgraded to 2.4.3 2006.04.04
+##   rel1: upgraded to 2.4.2 2005.09.30
+##   rel1: Initial Rubix release 2005.05.12
 
 build() {
 

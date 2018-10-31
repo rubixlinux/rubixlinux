@@ -1,21 +1,33 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=imlib
 pkgver=1.9.15
-pkgrel=1
+pkgrel=2
 pkgdesc="Imlib is a display depth-independent image loading and rendering library.  Imlib is designed to simplify and speed up the process of loading images and obtaining X Window System drawables.  Imlib provides many simple manipulation routines which can be used for common operations."
-depends=('gtk+' 'libjpeg' 'libtiff' 'libungif')
+depends=('libSM' 'libXau' 'libXext' 'glibc' 'libtiff' 'libjpeg' 'glib' 'libX11' 'libXdmcp' 'libICE' 'libungif' 'zlib' 'gtk+' 'libpng')
 source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.9/$pkgname-$pkgver.tar.bz2)
 md5sums=('7db987e6c52e4daf70d7d0f471238eae')
 
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt without .la files 2006.05.08
+##   rel1: initial rubix release
+
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/$pkgname-$pkgver
 
 	find . -perm 777 -exec chmod 755 {} \;
 
 	./configure --prefix=/usr --sysconfdir=/etc
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	chown -R root.bin $startdir/pkg/usr/bin
@@ -35,5 +47,7 @@ build() {
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
 	rm $startdir/pkg/usr/doc/$pkgname-$pkgver/doc/Makefile*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

@@ -17,7 +17,7 @@
 #   0 = halt
 #   1 = single user mode
 #   2 = unused (but configured the same as runlevel 3)
-#   3 = multiuser mode (default Slackware runlevel)
+#   3 = multiuser mode (default Rubix runlevel)
 #   4 = X11 with KDM/GDM/XDM (session managers)
 #   5 = mythtv (same as X11, but runs /etc/rc.mythtv instead of /etc/rc.4)
 #   6 = reboot

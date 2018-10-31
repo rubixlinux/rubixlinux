@@ -1,13 +1,13 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=sed
-pkgver=4.1.4
-pkgrel=2
+pkgver=4.1.5
+pkgrel=1
 pkgdesc="sed (stream editor) This is the GNU version of sed, a stream editor.  A stream editor is used to perform basic text transformations on an input stream (a file or input from a pipeline).  It is sed's ability to filter text in a pipeline which distinguishes it from other types of editors. sed is a required package (it is needed by many system scripts)."
 url="http://www.gnu.org/software/sed"
 depends=('glibc')
 source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
-md5sums=('2a62ceadcb571d2dac006f81df5ddb48')
+md5sums=('7a1cbbbb3341287308e140bd4834c3ba')
 
 ## Todo:
 ##   None
@@ -16,6 +16,7 @@ md5sums=('2a62ceadcb571d2dac006f81df5ddb48')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 4.1.5 2006.04.23
 ##   rel2: fixed doc in /usr/share/doc 2005.10.18
 ##   rel1: Initial Rubix release
 
@@ -54,9 +55,6 @@ build() {
 		README.boot	\
 		THANKS		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
-
-	mv $startdir/pkg/usr/share/doc/* $startdir/pkg/usr/doc/$pkgname-$pkgver
-	rmdir $startdir/pkg/usr/share/doc
 
 	rm $startdir/pkg/usr/info/dir
 

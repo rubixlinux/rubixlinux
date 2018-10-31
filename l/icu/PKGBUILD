@@ -1,0 +1,37 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=icu
+pkgver=3.4.1
+pkgrel=1
+pkgdesc="ICU is a set of C and C++ libraries that provides robust and full-featured Unicode and locale support"
+depends=('glibc' 'gcc')
+source=(ftp://ftp.software.ibm.com/software/globalization/icu/$pkgver/$pkgname-$pkgver.tgz)
+md5sums=('2a16f58bcb26e5010c946dca9ec08d5f')
+
+## Todo:
+##   None
+
+## Notes:
+##   ICU will not build with pie
+
+## Changelog:
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export MAKEFLAGS=""
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname/source
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a ../*.html $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

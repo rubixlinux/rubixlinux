@@ -291,7 +291,7 @@ fi
 # because TCP/IP is not yet configured, and not proc because
 # that has already been mounted)
 stat_busy "mounting filesystems"
-/sbin/mount -a -t nonfs,nosmbfs,noproc
+/sbin/mount -a -t nonfs,nosmbfs,noproc,nofuse
 stat_done
 
 stat_busy "initializing environment"

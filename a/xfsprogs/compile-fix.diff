@@ -1,0 +1,14 @@
+diff -Naur xfsprogs-2.6.25-orig/libxfs/xfs_bmap.c xfsprogs-2.6.25/libxfs/xfs_bmap.c
+--- xfsprogs-2.6.25-orig/libxfs/xfs_bmap.c	2004-10-12 17:26:05.000000000 -0700
++++ xfsprogs-2.6.25/libxfs/xfs_bmap.c	2004-11-14 11:09:30.000000000 -0800
+@@ -196,8 +196,10 @@
+ 	}
+ done:
+ #ifdef DEBUG
++	/*
+ 	if (!error)
+ 		xfs_bmap_check_leaf_extents(*curp, ip, whichfork);
++	*/
+ #endif
+ 	*logflagsp = logflags;
+ 	return error;

@@ -1,0 +1,10 @@
+--- IPC-ShareLite-0.09/Makefile.PL.orig	2006-04-04 15:06:26.000000000 -0600
++++ IPC-ShareLite-0.09/Makefile.PL	2006-04-04 15:06:36.000000000 -0600
+@@ -1,6 +1,6 @@
+ use ExtUtils::MakeMaker;
+ 
+-system('./Configure');
++system('./Configure -dE');
+ 
+ # See lib/ExtUtils/MakeMaker.pm for details of how to influence
+ # the contents of the Makefile that is written.

@@ -1,13 +1,13 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=pango
-pkgver=1.10.3
+pkgver=1.12.0
 pkgrel=1
 pkgdesc="pango is a library for layout and rendering of text, with an emphasis on internationalization. Pango can be used anywhere that text layout is needed; however, most of the work on Pango-1.0 was done using the GTK+ widget toolkit as a test platform. Pango forms the core of text and font handling for GTK+-2.0."
-depends=('glibc' 'fontconfig' 'x11' 'freetype2' 'expat' 'glib2' 'cairo' 'zlib' 'libpng')
-source=(http://ftp.gnome.org/pub/gnome/sources/$pkgname/1.10/$pkgname-$pkgver.tar.bz2)
+depends=('libXau' 'libXext' 'glibc' 'freetype2' 'cairo' 'libX11' 'libXdmcp' 'fontconfig' 'expat' 'libXrender' 'glib2' 'zlib' 'libpng' 'libXft')
+source=(http://ftp.gnome.org/pub/gnome/sources/$pkgname/1.12/$pkgname-$pkgver.tar.bz2)
 url="http://www.gtk.org"
-md5sums=('6fc5097f9c10d90ed386e074cb22cf6f')
+md5sums=('86c3e08169a18200e64a0c5ee1be7fd9')
 install=pango.install
 
 ## Todo:
@@ -17,6 +17,7 @@ install=pango.install
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 1.12.0 2006.03.21
 ##   rel1: upgraded to 1.10.3 2006.02.15
 ##   rel2: rebuilt 2005.12.19
 ##   rel1: upgraded to 1.10.2 2005.12.05
@@ -45,7 +46,8 @@ build() {
 		ChangeLog	\
 		NEWS		\
 		README		\
-		TODO		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

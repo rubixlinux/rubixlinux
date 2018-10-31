@@ -1,25 +1,26 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-tk-tablematrix
-pkgver=1.2
-pkgrel=2
+pkgver=1.21
+pkgrel=1
 pkgdesc="TableMatrix - Create and manipulate tables"
 url="http://search.cpan.org/~cerney/Tk-TableMatrix-$pkgver/pod/TableMatrix.pod"
-depends=('perl-tk')
+depends=('glibc' 'x11' 'perl' 'perl-tk')
 source=(http://search.cpan.org/CPAN/authors/id/C/CE/CERNEY/Tk-TableMatrix-$pkgver.tar.gz)
-md5sums=('076a1660486806c73ad1b37ae5bbd82b')
+md5sums=('b167fd98f033dbdc07e94deabbb3a4d7')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.8 2005.06.13
-#rel1: Initial Rubix release
+##Changelog:
+##   rel1: upgraded to 1.21, built for perl 5.8.8 2006.03.07
+##   rel2: Rebuilt for perl 5.8.8 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 
@@ -33,7 +34,6 @@ build() {
 	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Tk-TableMatrix-$pkgver
 	cp	-a		\
 		COPYING		\
-		ChangeLog	\
 		Changes		\
 		README		\
 	$startdir/pkg/usr/doc/perl-$PERL/Tk-TableMatrix-$pkgver

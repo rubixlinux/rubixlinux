@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-cache-simple-timedexpiry
+pkgver=0.23
+pkgrel=1
+pkgdesc="Cache::Simple::TimedExpiry"
+url="http://search.cpan.org/~jesse/Cache-Simple-TimedExpiry-0.23/lib/Cache/Simple/TimedExpiry.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/J/JE/JESSE/Cache-Simple-TimedExpiry-$pkgver.tar.gz)
+md5sums=('35cb46fc96272591db75491c9250a48d')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Cache-Simple-TimedExpiry-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Cache-Simple-TimedExpiry-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+	$startdir/pkg/usr/doc/perl-$PERL/Cache-Simple-TimedExpiry-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

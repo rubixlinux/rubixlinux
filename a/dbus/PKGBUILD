@@ -1,14 +1,15 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=dbus
-pkgver=0.60
-pkgrel=2
+pkgver=0.61
+pkgrel=3
 pkgdesc="D-BUS is a message bus system, a simple way for applications to talk to one another."
 url="http://www.freedesktop.org/Software/dbus"
-depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'libxml2' 'fontconfig' 'x11' 'expat' 'glib2' 'gcc' 'zlib' 'libpng')
+depends=('glibc' 'expat' 'glib2' 'zlib' 'libxml2')
+#depends=('libXext' 'libSM' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libICE' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libxml2' 'libXdmcp' 'glib2' 'gcc' 'libpng' 'libXrandr' 'libXinerama')
 source=(http://dbus.freedesktop.org/releases/$pkgname-$pkgver.tar.gz	\
 	dbus								)
-md5sums=('da9561b5e579cedddc34f53427e99a93' \
+md5sums=('cfd4f26004e4304e0dace4d82894e50b' \
 	 'd846470dc1d78224e3f8dc9a58d72f7b' )
 
 ## Todo:
@@ -18,6 +19,9 @@ md5sums=('da9561b5e579cedddc34f53427e99a93' \
 ##   None
 
 ## Changelog:
+##   rel3: rebuilt with gtk/qt bindings, but did not change dependencies 2006.06.09
+##   rel2: rebuilt without dependence on x 2006.06.05
+##   rel1: upgraded to 0.61 2006.03.21
 ##   rel2: updated rc script to new format 2006.01.15
 ##   rel1: Upgraded to 0.60 2005.12.18
 ##   rel1: initial rubix release
@@ -44,7 +48,8 @@ build() {
 		--with-system-socket=/var/run/dbus/system_bus_socket	\
 		--with-session-socket-dir=/tmp				\
 		--with-dbus-user=messagebus				\
-		--disable-xml-docs
+		--disable-xml-docs					\
+		--with-x
 	make || return 1
 	make DESTDIR=$startdir/pkg install
 
@@ -64,5 +69,7 @@ build() {
 	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

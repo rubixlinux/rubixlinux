@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-test-deep
+pkgver=0.093
+pkgrel=1
+pkgdesc="Test::Deep - Extremely flexible deep comparison"
+url="http://search.cpan.org/~fdaly/Test-Deep-$pkgver/lib/Test/Deep.pod"
+depends=('perl' 'perl-test-nowarnings' 'perl-test-tester')
+source=(http://search.cpan.org/CPAN/authors/id/F/FD/FDALY/Test-Deep-$pkgver.tar.gz)
+md5sums=('b47659e09457a72157d3db5b5be62f75')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Test-Deep-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Test-Deep-$pkgver
+	cp	-a		\
+		CHANGES		\
+		MANIFEST	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/Test-Deep-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

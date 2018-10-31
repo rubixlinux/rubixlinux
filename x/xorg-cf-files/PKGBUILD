@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=xorg-cf-files
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="X.Org xorg-cf-files util"
+url="http://www.x.org"
+source=(ftp://ftp.x.org/pub/$X11/src/util/$pkgname-$X11-$pkgver.tar.bz2	\
+	site.def.diff							)
+md5sums=('f2dd453c37386293fb207431b4a073dd' \
+	 'df1c673fef6520d0e491c8f7a4ddfdea' )
+groups=('x11-util')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	patch -p1 < $startdir/src/site.def.diff || return 1
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+}

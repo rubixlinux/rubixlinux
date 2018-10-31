@@ -1,0 +1,45 @@
+#!/bin/bash
+
+PGROOT="/var/lib/postgres"
+SCRIPT=`basename $0`
+
+. /etc/rubixlib
+
+init_pg() {
+	if [ ! -d $PGROOT ]; then
+		stat_busy "initializing postgresql database"
+		mkdir -p $PGROOT/data && chown postgres.postgres $PGROOT/data
+		su postgres -c "/usr/bin/initdb -D $PGROOT/data" > /dev/null 2>&1
+		stat_done
+	fi
+	if [ ! -r /var/log/postgresql.log ]; then
+		stat_busy "initializing postgresql log"
+		touch /var/log/postgresql.log
+		chown postgres /var/log/postgresql.log
+		stat_done
+	fi
+}
+
+do_pg() {
+	su postgres -c "/usr/bin/pg_ctl -D $PGROOT/data -l /var/log/postgresql.log -W $1" > /dev/null 2>&1
+}
+
+case "$1" in
+	start)
+		init_pg
+		start_daemon $SCRIPT do_pg start
+		;;
+        stop)
+		stop_daemon $SCRIPT do_pg stop
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT /usr/bin/postgres
+		;;
+	*)
+	stat_err "usage: $0 {start|stop|restart|status}"
+esac

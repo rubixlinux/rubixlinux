@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gtk-engines
+pkgver=2.6.8
+pkgrel=1
+pkgdesc="gtk-engines - gtk+2 standard engines and themes"
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'pango' 'cairo' 'libXfixes' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'libXinerama' 'libXrandr' 'libpng')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.6/$pkgname-$pkgver.tar.bz2)
+md5sums=('da44fa2cbb89da5abcb40e845e74bc76')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

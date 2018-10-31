@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=libXdmcp
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="X.Org libXdmcp library"
+url="http://www.x.org"
+depends=('glibc')
+source=(ftp://ftp.x.org/pub/$X11/src/lib/$pkgname-$X11-$pkgver.tar.bz2)
+md5sums=('509390dc46af61e3a6d07656fc5ad0ec')
+groups=('x11-lib')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	mkdir -p $startdir/pkg/usr/lib
+	mv $startdir/pkg/usr/X11R7/lib/pkgconfig $startdir/pkg/usr/lib
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

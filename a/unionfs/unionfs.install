@@ -1,5 +1,12 @@
 post_install() {
-	depmod -a -e -F boot/System.map-2.6.15.5-Rubix 2.6.15.5-Rubix > /dev/null 2>&1
+
+	VVER26=2.6.16.20-Rubix
+	XVER26=2.6.16.20-XenRubix
+
+	for kernel in $VVER26 $XVER26; do
+		depmod -a -e -F boot/System.map-$kernel $kernel > /dev/null 2>&1
+	done
+
 }
 
 post_upgrade() {

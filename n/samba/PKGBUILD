@@ -2,11 +2,11 @@
 
 pkgname=samba
 pkgver=3.0.22
-pkgrel=1
+pkgrel=2
 pkgdesc="samba (SMB file and print server) Samba is an SMB file and print server for SMB and CIFS clients.  It allows you to make file space or printers on a Samba host available to any PCs running SMB clients (such as PCs running Windows). If you have any SMB servers (such as Windows NT/2K Server), you may be able to replace them by or supplement them with Samba. One of Samba's big strengths is integration, so you can use it to tie together your Linux hosts and Windows PC clients."
 url="http://www.samba.org"
 backup=(etc/rc.d/samba)
-depends=('glibc' 'ncurses' 'db' 'heimdal' 'e2fsprogs' 'xfsprogs' 'openssl' 'cups' 'openldap' 'readline' 'popt' 'cyrus-sasl' 'perl-crypt-smbhash')
+depends=('glibc' 'db' 'heimdal' 'acl' 'attr' 'ncurses' 'e2fsprogs' 'openssl' 'cups' 'openldap' 'popt' 'readline' 'cyrus-sasl' 'perl' 'perl-crypt-smbhash')
 source=(http://us1.samba.org/$pkgname/ftp/$pkgname-$pkgver.tar.gz	\
 	smb.conf.default						\
 	samba								)
@@ -23,7 +23,9 @@ md5sums=('5c39505af17cf5caf3d6ed8bab135036' \
 ##      so PIE is disabled.
 
 ## Changelog:
+##   rel2: rebuilt for acl 2006.05.07
 ##   rel1: upgraded to 3.0.22 *security* 2006.04.02
+##   rel1: upgraded to 3.0.21c, rebuilt against openldap 2.3 2006.03.10
 ##   rel1: upgraded to 3.0.21b 2006.02.15
 ##   rel1: upgraded to 3.0.21a 2005.12.31
 ##   rel1: upgraded to 3.0.21 2005.12.28

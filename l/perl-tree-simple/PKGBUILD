@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-tree-simple
+pkgver=1.16
+pkgrel=1
+pkgdesc="Tree::Simple - A simple tree object"
+url="http://search.cpan.org/~stevan/Tree-Simple-$pkgver/lib/Tree/Simple.pm"
+depends=('perl' 'perl-test-exception')
+source=(http://search.cpan.org/CPAN/authors/id/S/ST/STEVAN/Tree-Simple-$pkgver.tar.gz)
+md5sums=('7f003a9af1aea6a9931c3de8fc49b3ab')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Tree-Simple-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Tree-Simple-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Tree-Simple-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

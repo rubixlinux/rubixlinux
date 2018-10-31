@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-digest-nilsimsa
 pkgver=0.06
-pkgrel=2
+pkgrel=3
 pkgdesc="Digest::Nilsimsa Perl version of Nilsimsa code"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/V/VI/VIPUL/Digest-Nilsimsa-$pkgver.tar.gz)
 md5sums=('08e940bd7f5d1167ef3fd1aa7ce234d7')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: Rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel3: rebuilt for perl 5.8.8 2006.03.06
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 

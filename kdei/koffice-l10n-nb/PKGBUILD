@@ -1,11 +1,12 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=koffice-l10n-nb
-pkgver=1.4.2
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="koffice-l10n-nb Norwegian (Bokmaal) language support for KOffice."
 depends=('koffice')
-source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.4.2/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+source=(ftp://ftp.kde.org/pub/kde/stable/koffice-1.5.0/src/koffice-l10n/$pkgname-$pkgver.tar.bz2)
+md5sums=('8cffcf181366737bea12a1ae9a14c294')
 
 build() {
 

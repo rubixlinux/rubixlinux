@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=ipsec-tools
+pkgver=0.6.5
+pkgrel=1
+pkgdesc="ipsec-tools is a port of kame's ipsec utilities to the linux-2.6 ipsec implementation"
+url="http://ipsec-tools.sourceforge.net"
+depends=('glibc' 'e2fsprogs' 'db' 'openssl' 'heimdal')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('4593bd5e1117a10f2d0f4b656de36208')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--localstatedir=/var	\
+		--enable-shared		\
+		--enable-gssapi		\
+		--enable-hybrid		\
+		--enable-dpd		\
+		--enable-natt		\
+		--enable-adminport	\
+		--enable-frag
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

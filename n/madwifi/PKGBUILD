@@ -1,16 +1,19 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=madwifi
-pkgver=20060303
-pkgrel=1
+pkgver=0.9.0
+pkgrel=3
 pkgdesc="MADWiFi is short for Multiband Atheros Driver for WiFi. In other words: this project provides a Linux kernel driver for Atheros-based Wireless LAN devices. The driver works such that your WLAN card will appear as normal network interface in the system. Additionally there is support for the Wireless Extensions API. This allows you to configure the device using the usual tools (ifconfig, iwconfig and friends)."
 url="http://madwifi.sourceforge.net"
+source=(http://umn.dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
 depends=('glibc')
+md5sums=('9b558d1df84cab2b0006c595feee0fba')
 install=$pkgname.install
 
 vver24=2.4.32
 gver24=2.4.32-grsec
-vver26=2.6.15.5-Rubix
+vver26=2.6.16.20-Rubix
+xver26=2.6.16.20-XenRubix
 
 ## Todo:
 ##   None
@@ -19,6 +22,14 @@ vver26=2.6.15.5-Rubix
 ##   None
 
 ## Changelog:
+##   rel3: rebuilt for 2.6.16.20 kernels 2006.06.07
+##   rel2: rebuilt for 2.6.16.19 kernels 2006.06.01
+##   rel1: upgraded to 0.9.0 release 2006.05.28
+##   rel1: upgraded to latest svn, built for 2.6.16.18 kernels 2006.05.22
+##   rel1: upgraded to latest svn, built for 2.6.16.16 kernels 2006.05.11
+##   rel2: rebuilt 2006.04.27
+##   rel1: upgraded to latest svn, added xen module 2006.04.27
+##   rel1: upgraded to latest svn, switched to "ng" code, built for 2.6.16.9 2006.04.21
 ##   rel1: upgraded to latest cvs, built for 2.6.15.5 2006.03.03
 ##   rel1: upgraded to latest cvs, built for 2.6.15.4 2006.02.12
 ##   rel1: upgraded to latest cvs, built for 2.6.15.3 2006.02.07
@@ -35,32 +46,24 @@ build() {
 
 	export COPTS="-DSOFTLED"
 
-	cd $startdir/src
+	cd $startdir/src/$pkgname-$pkgver
 
-	svn checkout http://svn.madwifi.org/branches/$pkgname-old $pkgname-old
-
-	cd $pkgname-old
-
-	make clean
 	make KERNELPATH=/lib/modules/$vver24/build KERNELRELEASE=$vver24 || return 1
-	make KERNELPATH=/lib/modules/$vver24/build KERNELRELEASE=$vver24 DESTDIR=$startdir/pkg install
+	make KERNELPATH=/lib/modules/$vver24/build KERNELRELEASE=$vver24 DESTDIR=$startdir/pkg BINDIR=/usr/bin MANDIR=/usr/man install
 
 	make clean
 	make KERNELPATH=/lib/modules/$gver24/build KERNELRELEASE=$gver24 || return 1
-	make KERNELPATH=/lib/modules/$gver24/build KERNELRELEASE=$gver24 DESTDIR=$startdir/pkg install
+	make KERNELPATH=/lib/modules/$gver24/build KERNELRELEASE=$gver24 DESTDIR=$startdir/pkg BINDIR=/usr/bin MANDIR=/usr/man install
+
+	make clean
+	make KERNELPATH=/lib/modules/$xver26/build KERNELRELEASE=$xver26 || return 1
+	make KERNELPATH=/lib/modules/$xver26/build KERNELRELEASE=$xver26 DESTDIR=$startdir/pkg BINDIR=/usr/bin MANDIR=/usr/man install
 
 	make clean
 	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 || return 1
-	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 DESTDIR=$startdir/pkg install
-
-	cd tools
-	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 || return 1
-	mkdir -p $startdir/pkg/usr/bin
-	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 DESTDIR=$startdir/pkg BINDIR=/usr/bin install
+	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 DESTDIR=$startdir/pkg BINDIR=/usr/bin MANDIR=/usr/man install
 
 	chown -R root.bin $startdir/pkg/usr/bin
-
-	cd ..
 
 	mkdir -p $startdir/pkg/usr/include/madwifi
 	for i in include net80211
@@ -73,7 +76,7 @@ build() {
 		COPYRIGHT	\
 		INSTALL		\
 		README		\
-		TODO		\
+		docs		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
 	cp -a hal/COPYRIGHT $startdir/pkg/usr/doc/$pkgname-$pkgver/COPYRIGHT.hal

@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5
+KDE=3.5.3
 
 pkgname=kde-i18n-lv
-pkgver=3.5.0
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kde-i18n-lv Latvian language support for KDE."
 depends=('kdebase')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
-md5sums=('4c3f19b6208784da447535d39cbe617b')
+md5sums=('549ed7bc713a7ca725e8eae0149be613')
 
 build() {
 

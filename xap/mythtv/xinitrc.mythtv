@@ -24,9 +24,6 @@ if [ -f $usermodmap ]; then
     xmodmap $usermodmap
 fi
 
-# Give everything some time to start up
-sleep 10
-
 # Start mythtv setup (uncomment to go to setup):
 #/usr/bin/mythtv-setup
 

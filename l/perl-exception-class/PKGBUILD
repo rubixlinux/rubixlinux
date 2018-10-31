@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-exception-class
+pkgver=1.23
+pkgrel=1
+pkgdesc="Exception::Class - A module that allows you to declare real exception classes in Perl"
+url="http://search.cpan.org/~drolsky/Exception-Class-$pkgver/lib/Exception/Class.pm"
+depends=('perl' 'perl-class-data-inheritable' 'perl-devel-stacktrace')
+source=(http://search.cpan.org/CPAN/authors/id/D/DR/DROLSKY/Exception-Class-$pkgver.tar.gz)
+md5sums=('560b42c0cf8b795bdc793459edb7ec13')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Exception-Class-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Exception-Class-$pkgver
+	cp	-a		\
+		Changes		\
+		LICENSE		\
+		MANIFEST	\
+		README		\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/Exception-Class-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0640 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+#	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+#	chown -R root.bin $startdir/pkg/usr/bin
+
+}

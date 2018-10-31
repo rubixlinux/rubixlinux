@@ -1,0 +1,75 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+MESA=6.4.2
+
+pkgname=xorg-server
+pkgver=1.0.1
+pkgrel=3
+pkgdesc="X.Org xorg-server xserver"
+url="http://www.x.org"
+depends=('libSM' 'libXext' 'glibc' 'libXxf86vm' 'libXi' 'libXfont' 'liblbxutil' 'libXxf86misc' 'ncurses' 'libXaw' 'libICE' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libdmx' 'libXpm' 'libX11' 'libxkbui' 'libXdmcp' 'libXmu' 'libfontenc' 'libXt' 'gcc' 'libxkbfile')
+source=(ftp://ftp.x.org/pub/$X11/src/xserver/$pkgname-$X11-$pkgver.tar.bz2			\
+	http://xorg.freedesktop.org/releases/X11R7.0/patches/xorg-server-1.0.1-geteuid.diff	\
+	http://xorg.freedesktop.org/releases/X11R7.0/patches/xorg-server-1.0.x-mitri.diff	\
+	http://dl.sourceforge.net/sourceforge/mesa3d/MesaLib-$MESA.tar.bz2			\
+	x11.startwithblackscreen.diff								\
+	xorgconfig.diff										)
+md5sums=('0e7527480fb845a3c2e333bd0f47ff50' \
+	 '80db6a3ab76334061ec6102e74ef5607' \
+	 '9a9356f86fe2c10985f1008d459fb272' \
+	 '7674d2c603b5834259e4e5a820cefd5b' \
+	 'f9c900749f0fda8bd0a2d97fa3878f02' \
+	 'ece83e09fea55d1299ea208d1d6a24a8' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: added security patch 2006.05.02 *security*
+##   rel2: rebuilt with geteuid patch 2006.03.21
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	patch -p1 < $startdir/src/x11.startwithblackscreen.diff		|| return 1
+	patch -p1 < $startdir/src/xorgconfig.diff			|| return 1
+	patch -p0 < $startdir/src/xorg-server-1.0.1-geteuid.diff	|| return 1
+	patch -p1 < $startdir/src/xorg-server-1.0.x-mitri.diff		|| return 1
+
+	./configure						\
+		--prefix=/usr/X11R7				\
+		--disable-xprint				\
+		--sysconfdir=/etc/X11				\
+		--localstatedir=/var				\
+		--with-module-dir=/usr/X11R7/lib/modules	\
+		--with-mesa-source=$startdir/src/Mesa-$MESA
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	mkdir -p $startdir/pkg/usr/lib
+	mv $startdir/pkg/usr/X11R7/lib/pkgconfig $startdir/pkg/usr/lib
+
+	mkdir -p $startdir/pkg/usr/share
+	mv $startdir/pkg/usr/X11R7/share/aclocal $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/X11R7/bin
+	chmod 4755 $startdir/pkg/usr/X11R7/bin/Xorg
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

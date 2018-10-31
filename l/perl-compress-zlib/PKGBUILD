@@ -1,15 +1,15 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-compress-zlib
-pkgver=1.34
-pkgrel=3
+pkgver=1.41
+pkgrel=1
 pkgdesc="Compress::Zlib - Interface to zlib compression library"
 url="http://search.cpan.org/~pmqs/Compress-Zlib-1.34/Zlib.pm"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/P/PM/PMQS/Compress-Zlib-$pkgver.tar.gz)
-md5sums=('dbdbf491f8ce66e613545c4d4e82a763')
+md5sums=('ac135b84a03e814734496777cf5e5722')
 
 ## Todo:
 ##   None
@@ -18,6 +18,7 @@ md5sums=('dbdbf491f8ce66e613545c4d4e82a763')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 1.41, rebuilt for perl 5.8.8 2006.03.06
 ##   rel3: removed the .packlist file 2005.12.22
 ##   rel2: rebuilt with perl 5.8.7 2005.06.13
 ##   rel1: Initial Rubix release

@@ -1,0 +1,43 @@
+# Maintainer: Jordan Neumeyer <jnengland77@gmail.com>
+
+pkgname=rubygems
+pkgver=0.8.11
+pkgrel=3
+pkgdesc="rubygems - a package management framework for the Ruby programming language"
+url="http://docs.rubygems.org"
+depends=('ruby')
+source=(http://rubyforge.org/frs/download.php/5207/$pkgname-$pkgver.tgz)
+md5sums=('aa363b428c4c1fc2e076a4ff77b957d7')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: rebuilt 2006.03.30
+##   rel2: moved to d/ 2006.03.29
+##   rel1: Initial Release to the /community
+
+
+build() {
+
+	export GEM_HOME=$startdir/pkg/usr/lib/ruby/gems/1.8
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	ruby setup.rb config --prefix=/
+	ruby setup.rb setup
+	ruby setup.rb install --prefix=$startdir/pkg/usr
+
+	chown -R root.bin $startdir/pkg/usr/bin
+	
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		README		\
+		TODO		\
+		ChangeLog	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

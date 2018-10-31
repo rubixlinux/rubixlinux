@@ -1,6 +1,7 @@
 post_install() {
-	rm -rf /usr/src/linux				> /dev/null 2>&1
-	ln -sf linux-2.6.15.5-Rubix /usr/src/linux	> /dev/null 2>&1
+	KVER=2.6.16.20-Rubix
+	rm -rf /usr/src/linux             > /dev/null 2>&1
+	ln -sf linux-$KVER /usr/src/linux > /dev/null 2>&1
 }
 
 post_upgrade() {

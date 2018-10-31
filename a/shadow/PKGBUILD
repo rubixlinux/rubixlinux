@@ -1,68 +1,55 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=shadow
-pkgver=4.0.13
+pkgver=4.0.15
 pkgrel=2
 pkgdesc="This set of login related programs utilizes an alternate, non-readable file to contain the actual encrypted passwords. This is presumed to increase system security by increasing the difficulty with which system crackers obtain encrypted passwords. It was written by Julianne Frances Haugh and the Linux port is maintained by Tomasz Kloczko. This package provides 'login', which is needed to log into the system."
 url="http://shadow.pld.org.pl"
-backup=(etc/login.defs \
-	etc/login.access\
-	var/log/faillog)
+backup=(etc/login.defs		\
+	etc/login.access	\
+	var/log/faillog		)
 depends=('cracklib' 'glibc' 'skey')
 source=(ftp://ftp.pld.org.pl/software/$pkgname/$pkgname-$pkgver.tar.bz2	\
-	shadow.login.defs.diff.gz					\
-	shadow.audiovideocdrom.diff.gz					\
-	adduser.gz							\
-	shadow.skey.diff.gz						)
-md5sums=('5c6a105d89afb0900922260e9c5650cc' \
-	 'cc5b757624f1aa62c971ddf4c87898c4' \
-	 '788e74bd2997a89df6d4618e2760df3f' \
-	 '1d8fd09754b16b8048c2a53a48394070' \
-	 '887d0ae3bfbc6f40d14a40b603e9196a' )
+	crypt_blowfish_gensalt.diff					\
+	login.defs							\
+	adduser								)
+md5sums=('a0452fa989f8ba45023cc5a08136568e' \
+	 'd4552bbd1e4b42bb8fa5e36bd83284ec' \
+	 '35d5acd88f88fec295a88c8cbdb6bf89' \
+	 '0365b9983675df485280fe5f570411f1' )
 
 ## Todo:
 ##   None
 
-#Notes:
-#shadow.shadowconfig patch not needed since shadowconfig is no longer included
-#  there is no reason to turn off shadow passwords anyway.
-#shadow.newgrp.nopam patch is not necessary since we build --without-libpam
-#shadow.audiovideocdrom changes /etc/login.defs and makes the following changes:
-#  enable the CONSOLE_GROUPS option and adds video to the included groups
-#  this means that these groups are added to the user's supplementary group set
-#  when logging in on the console
-#shadow.login.defs changes /etc/login.defs and makes the following changes:
-#  update ENV_PATH and ENV_SUPATH to include standard /usr/local directories
-#  change TTYPERM to 0620 so setgid programs in that group can write to tty
-#  set the correct CRACKLIB_DICTPATH
-#  change CHFN_RESTRICT to frwh
-#  enable MD5_CRYPT_ENAB
-#dpasswd is no longer included
-#usr/man/man1/groups.1.gz and usr/man/man1/id.1.gz are provided by core-utils so they
-#  are no longer included in shadow
+## Notes:
+##   dpasswd is no longer included
+##   usr/man/man1/groups.1.gz and usr/man/man1/id.1.gz are provided by core-utils so they
+##     are no longer included in shadow
 
-#Changelog:
-#rel2: rebuilt with skey support 2005.10.30
-#rel1: upgraded to 4.0.13 with cracklib support 2005.10.12
-#rel1: upgraded to 4.0.12 2005.09.04
-#rel1: Initial rubix release
+## Changelog:
+##   rel2: fixed some suid programs 2006.04.17
+##   rel1: upgraded to 4.0.15, built with openwall crypt_blowfish (gensalt) 2006.04.15
+##   rel2: rebuilt with skey support 2005.10.30
+##   rel1: upgraded to 4.0.13 with cracklib support 2005.10.12
+##   rel1: upgraded to 4.0.12 2005.09.04
+##   rel1: Initial rubix release
 
 build() {
 
+	export MAKEFLAGS=""
+
 	cd $startdir/src/$pkgname-$pkgver
 
-	patch -p0 < $startdir/src/shadow.login.defs.diff	|| return 1
-	patch -p1 < $startdir/src/shadow.audiovideocdrom.diff	|| return 1
-	patch -p1 < $startdir/src/shadow.skey.diff		|| return 1
+	patch -p1 < $startdir/src/crypt_blowfish_gensalt.diff || return 1
 
 	./configure			\
 		--prefix=/usr		\
 		--disable-shared	\
 		--disable-desrpc	\
 		--without-libpam	\
-		--without-selinux	\
 		--with-skey		\
 		--with-libcrack		\
+		--without-selinux	\
 		$CHOST
 	make || return 1
 
@@ -78,9 +65,9 @@ build() {
 	mkdir -p $startdir/pkg/usr/man/man5
 	mkdir -p $startdir/pkg/usr/man/man8
 
-	install -m0644		etc/login.defs		$startdir/pkg/etc/login.defs
-	install -m0644		etc/login.access	$startdir/pkg/etc/login.access
-	install -m0755 -g bin	$startdir/src/adduser	$startdir/pkg/usr/sbin/adduser
+	cp etc/login.defs		$startdir/pkg/etc
+	cp etc/login.access		$startdir/pkg/etc
+	cp $startdir/src/adduser	$startdir/pkg/usr/sbin
 	
 	cd po
 	for file in *.gmo ; do
@@ -89,9 +76,9 @@ build() {
 	done
 
 	cd ../src
-	install -m0755 -g bin login	$startdir/pkg/bin/login
-	install -m4711 -g bin su	$startdir/pkg/bin/su
-	install -m0755 -g bin sulogin	$startdir/pkg/sbin/sulogin
+	cp login	$startdir/pkg/bin/login
+	cp su		$startdir/pkg/bin/su
+	cp sulogin	$startdir/pkg/sbin/sulogin
 
 	for file in \
 		chpasswd	faillog		groupadd	groupdel	\
@@ -100,11 +87,11 @@ build() {
 		usermod		pwconv		pwunconv	grpconv		\
 		grpunconv	vipw
 	do
-		install -m0755 -g bin $file $startdir/pkg/usr/sbin/$file
+		cp $file $startdir/pkg/usr/sbin/$file
 	done
 
 	for file in chage chfn chsh expiry gpasswd newgrp passwd ; do
-		install -m4711 -g bin $file $startdir/pkg/usr/bin/$file
+		cp $file $startdir/pkg/usr/bin/$file
 	done
 
 	cd ..
@@ -197,5 +184,15 @@ build() {
 
 	cd $startdir/pkg
 	chown -R root.bin bin sbin usr/bin usr/sbin
+
+	cp $startdir/src/login.defs $startdir/pkg/etc
+	chmod 4711 $startdir/pkg/bin/su
+	chmod 4711 $startdir/pkg/usr/bin/chage
+	chmod 4711 $startdir/pkg/usr/bin/chfn
+	chmod 4711 $startdir/pkg/usr/bin/chsh
+	chmod 4711 $startdir/pkg/usr/bin/expiry
+	chmod 4711 $startdir/pkg/usr/bin/gpasswd
+	chmod 4711 $startdir/pkg/usr/bin/newgrp
+	chmod 4711 $startdir/pkg/usr/bin/passwd
 
 }

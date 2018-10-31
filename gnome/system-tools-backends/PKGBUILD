@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=system-tools-backends
+pkgver=1.4.2
+pkgrel=1
+pkgdesc="system-tools-backends - tools aimed to make easy the administration of unix systems"
+depends=('perl')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.4/$pkgname-$pkgver.tar.bz2)
+md5sums=('a0af1513becdf3b9bfed3535ad8f7dab')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

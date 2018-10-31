@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=xfsdump
+pkgver=2.2.33
+pkgrel=1
+pkgdesc="xfsdump (backup tools for the XFS filesystem) The xfsdump package contains the xfsdump and xfsrestore utilities for backing up and restoring XFS partitions.  xfsdump examines files in a filesystem, determines which need to be backed up, and copies those files to a specified disk, tape or other storage medium.  xfsrestore performs the inverse function of xfsdump; it can restore a full or incremental backup of a filesystem"
+url="http://oss.sgi.com/projects/xfs"
+depends=('e2fsprogs' 'glibc' 'xfsprogs' 'dmapi' 'attr' 'ncurses')
+source=(ftp://oss.sgi.com/projects/xfs/cmd_tars/$pkgname-$pkgver.src.tar.gz)
+md5sums=('d891a6f0215f4ad33840ddf60a295ec7')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/share
+
+	mv $startdir/pkg/usr/sbin $startdir/pkg
+	mkdir -p				$startdir/pkg/usr/sbin
+	mv $startdir/pkg/usr/bin/xfs_*		$startdir/pkg/usr/sbin
+	mv $startdir/pkg/usr/bin/xfsinvutil	$startdir/pkg/usr/sbin
+
+	rm $startdir/pkg/usr/bin/xfsdump
+	rm $startdir/pkg/usr/bin/xfsrestore
+
+	rmdir $startdir/pkg/usr/bin
+
+	ln -s /sbin/xfsdump	$startdir/pkg/usr/sbin/xfsdump
+	ln -s /sbin/xfsrestore	$startdir/pkg/usr/sbin/xfsrestore
+
+	chown -R root.bin $startdir/pkg/sbin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

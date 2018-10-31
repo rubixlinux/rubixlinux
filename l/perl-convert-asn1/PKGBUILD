@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-convert-asn1
-pkgver=0.19
+pkgver=0.20
 pkgrel=1
 pkgdesc="Convert::ASN1 - ASN.1 Encode/Decode library"
 depends=('perl')
 source=(http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/Convert-ASN1-$pkgver.tar.gz)
-md5sums=('6debb08ccac684a199c0afe54fad51a5')
+md5sums=('b6bce0b7a88f52dc27182b6fb82868c9')
 
 ## Todo:
 ##   None
@@ -17,6 +17,7 @@ md5sums=('6debb08ccac684a199c0afe54fad51a5')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 0.20, rebuilt for perl 5.8.8 2006.03.06
 ##   rel1: initial rubix release 2005.11.22
 
 build() {

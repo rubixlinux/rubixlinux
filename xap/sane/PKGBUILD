@@ -4,10 +4,9 @@ FRONT=1.0.14
 
 pkgname=sane
 pkgver=1.0.17
-pkgrel=1
+pkgrel=2
 pkgdesc="sane (Scanner Access Now Easy) SANE is a universal scanner interface that provides standardized access to any raster image scanner hardware, such as flatbed scanners, hand-held scanners, video and still cameras, frame-grabbers, and other similar devices."
-depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'gimp' 'libjpeg' 'libieee1284' 'fontconfig' 'x11' 'expat'	\
-	 'glib2' 'libusb' 'gphoto2' 'libexif' 'zlib' 'libpng'								)
+depends=('libXext' 'glibc' 'libXi' 'gtk+2' 'atk' 'libieee1284' 'fontconfig' 'expat' 'libXrender' 'libusb' 'zlib' 'libXau' 'freetype2' 'gimp' 'libXfixes' 'pango' 'cairo' 'libjpeg' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'gphoto2' 'libpng' 'libXinerama' 'libXrandr')
 source=(ftp://ftp.sane-project.org/pub/$pkgname/$pkgname-backends-$pkgver/$pkgname-backends-$pkgver.tar.gz	\
 	ftp://ftp.sane-project.org/pub/$pkgname/$pkgname-frontends-$FRONT/$pkgname-frontends-$FRONT.tar.gz	)
 md5sums=('b51c10da8a81a04e1bae88c9e6556df2' \
@@ -21,15 +20,18 @@ url="http://www.sane-project.org"
 ##   None
 
 ## Changelog:
+##   rel2: fixed fhs issues 2006.04.22
 ##   rel1: upgraded to 1.0.17 2005.12.20
 ##   rel1: upgraded to 1.0.16, frontend 1.0.14 2005.09.18
 ##   rel1: Initial Rubix release
 
 build() {
 
+	export MAKEFLAGS=""
+
 	cd $startdir/src/$pkgname-backends-$pkgver
 
-	./configure --prefix=/usr --sysconfdir=/etc
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
 	make || return 1
 	make install DESTDIR=$startdir/pkg
 
@@ -50,8 +52,10 @@ build() {
 	make || return 1
 	make install DESTDIR=$startdir/pkg
 
-	chown root.root $startdir/pkg/usr/var
-	chmod 755 $startdir/pkg/usr/var
+	chown root.root $startdir/pkg/var
+	chmod 755 $startdir/pkg/var
 	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

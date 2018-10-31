@@ -1,13 +1,23 @@
 # Maintainer: Joshua Rubin <joshua@rubix-os.org>
 
 pkgname=lsof
-pkgver=4.74
+pkgver=4.77
 pkgrel=1
 pkgdesc="lsof (list open files) Lsof is a Unix-specific tool.  Its name stands for \"LiSt Open Files\", and it does just that.  It lists information about files that are open by the processes running on the system. Victor A. Abell of Purdue University is the developer of lsof."
 depends=('glibc')
 url="ftp://vic.cc.purdue.edu/pub/tools/unix/lsof"
-source=(ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/${pkgname}_$pkgver.tar.bz2)
-md5sums=('f3259008d6cca746da6bb48278a56e59')
+source=(ftp://ftp.cerias.purdue.edu/pub/tools/unix/sysutils/lsof/${pkgname}_$pkgver.tar.bz2)
+md5sums=('7b0de0d1283f2d86407a98e5c2f05f04')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 4.76 2006.04.22
+##   rel1: initial rubix release
 
 build() {
 

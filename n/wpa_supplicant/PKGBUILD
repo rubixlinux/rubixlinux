@@ -1,16 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=wpa_supplicant
-pkgver=0.4.7
+pkgver=0.4.8
 pkgrel=1
 pkgdesc="wpa_supplicant is a WPA Supplicant for Linux, BSD and Windows with support for WPA and WPA2 (IEEE 802.11i / RSN). It is suitable for both desktop/laptop computers and embedded systems. Supplicant is the IEEE 802.1X/WPA component that is used in the client stations. It implements key negotiation with a WPA Authenticator and it controls the roaming and IEEE 802.11 authentication/association of the wlan driver."
 url="http://hostap.epitest.fi/wpa_supplicant"
 backup=('etc/wpa_supplicant.conf')
-depends=('glibc' 'openssl' 'gpm' 'readline' 'ncurses')
+depends=('glibc' 'openssl' 'readline' 'ncurses')
 source=(http://hostap.epitest.fi/releases/$pkgname-$pkgver.tar.gz	\
-	config.gz							)
-md5sums=('1345730f15d5f93f2f083096ddc903eb' \
-	 'f97a87484ead11f5d3be51f5272793a5' )
+	config								)
+md5sums=('765d6c70d75e88cd4dc010fa6b52c45f' \
+	 '0d2f06f6ec74e6f7a581964c8cac4422' )
 
 ## Todo:
 ##   None
@@ -19,6 +19,7 @@ md5sums=('1345730f15d5f93f2f083096ddc903eb' \
 ##   None
   
 ## Changelog:
+##   rel1: upgraded to 0.4.8 2006.04.21
 ##   rel1: upgraded to 0.4.7 2005.12.18
 ##   rel1: upgraded to 0.4.6 2005.10.27
 ##   rel1: Initial rubix release 0.4.4 2005.09.20

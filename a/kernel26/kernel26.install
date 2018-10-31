@@ -1,7 +1,8 @@
 post_install() {
-	depmod -a -e -F boot/System.map-2.6.15.5-Rubix 2.6.15.5-Rubix > /dev/null 2>&1
-	ln -sf vmlinuz-2.6.15.5-Rubix boot/vmlinuz                    > /dev/null 2>&1
-	ln -sf vmlinuz-2.6.15.5-Rubix boot/vmlinuz-2.6                > /dev/null 2>&1
+	KVER=2.6.16.20-Rubix
+	depmod -a -e -F boot/System.map-$KVER $KVER > /dev/null 2>&1
+	ln -sf vmlinuz-$KVER boot/vmlinuz           > /dev/null 2>&1
+	ln -sf vmlinuz-$KVER boot/vmlinuz-2.6       > /dev/null 2>&1
 }
 
 post_upgrade() {

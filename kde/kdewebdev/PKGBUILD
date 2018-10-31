@@ -1,16 +1,15 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdewebdev
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdewebdev (web development package for the K Desktop Environment) The kdewebdev package contains Quanta Plus and other applications which are useful for web development."
 url="http://www.kdewebdev.org"
-depends=('qt' 'glibc' 'kdesdk' 'fontconfig' 'xfsprogs' 'x11' 'expat' 'zlib' 'libart_lgpl' 'freetype2' 'libxslt'	\
-	 'libjpeg' 'libidn' 'libxml2' 'pcre' 'libgcrypt' 'libgpg-error' 'libmng' 'gcc' 'kdelibs' 'libpng'	)
+depends=('glibc' 'mesa3d' 'kdesdk' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'acl' 'libjpeg' 'libidn' 'libxml2' 'libXdmcp' 'libXmu' 'libmng' 'libXt' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'attr' 'libICE' 'libart_lgpl' 'qt' 'libxslt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'libgcrypt' 'libgpg-error' 'gcc' 'kdelibs' 'libXrandr')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('0faea4e8088005ae60f58b21c60b32ea')
+md5sums=('0eeaac8992c4b473caefcc32d49b79a2')
 
 ## Todo:
 ##   None
@@ -19,6 +18,9 @@ md5sums=('0faea4e8088005ae60f58b21c60b32ea')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 3.5.2 2006.03.29
 ##   rel1: Upgraded to 3.5.1 2006.01.31
 ##   rel1: Upgraded to 3.5.0 2005.12.18
 ##   rel1: Upgraded to 3.4.3 2005.10.16

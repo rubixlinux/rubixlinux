@@ -1,0 +1,74 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=fuse
+pkgver=2.5.3
+pkgrel=3
+pkgdesc="With FUSE it is possible to implement a fully functional filesystem in a userspace program"
+url="http://fuse.sourceforge.net"
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz	\
+	fusemount								)
+md5sums=('9c7e8b6606b9f158ae20b8521ba2867c' \
+	 'd371915ca93dca2ef0fe3cb89b672e0c' )
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: added fusemount to /etc/rc.d, added 2.4 kernel modules 2006.05.07
+##   rel2: removed udev rules (included in udev package now) 2006.04.22
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --disable-kernel-module
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	cd kernel
+
+	make clean
+	./configure  --with-kernel=/usr/src/linux-$vver24
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	make clean
+	./configure  --with-kernel=/usr/src/linux-$gver24
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog	\
+		FAQ		\
+		Filesystems	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm -r $startdir/pkg/dev
+	rm -r $startdir/pkg/etc
+
+	chown -R root.bin $startdir/pkg/sbin $startdir/pkg/usr/bin
+
+	chmod 4755 $startdir/pkg/usr/bin/fusermount
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/fusemount $startdir/pkg/etc/rc.d
+
+}

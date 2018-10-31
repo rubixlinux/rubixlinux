@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gtkhtml
+pkgver=3.10.0
+pkgrel=2
+pkgdesc="gtkhtml - lightweight html rendering/printing/editing engine"
+depends=('glibc' 'libXi' 'libgnomeui' 'esound' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'gail' 'libXrender' 'libgnomeprintui' 'zlib' 'alsa-lib' 'libXau' 'libgnomeprint' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'libbonoboui' 'libpng' 'libXinerama' 'libSM' 'orbit2' 'libXext' 'libglade' 'gtk+2' 'atk' 'gconf' 'libICE' 'libart_lgpl' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libbonobo' 'libX11' 'glib2' 'gnome-keyring' 'gnome-vfs' 'libXrandr' 'popt')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/3.10/$pkgname-$pkgver.tar.bz2)
+md5sums=('1d564a2d9a7a4911c8d1b50868acef81')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: does not actually provide libgtkhtml 2.0 (or conflict) 2006.03.27
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		BUGS		\
+		COPYING*	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

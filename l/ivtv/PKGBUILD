@@ -1,18 +1,18 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-REALVER=0.4.3
+REALVER=0.6.1
 
 pkgname=ivtv
-pkgver=0.4.3
-pkgrel=1
+pkgver=0.6.2
+pkgrel=4
 pkgdesc="ivtv The primary goal of the IvyTV Project is to create a kernel driver for the iTVC15 familiy of MPEG codecs. The iTVC15 family includes the iTVC15 (CX24315) and iTVC16 (CX24316). These chips are commonly found on Hauppauge's WinTV PVR-250 and PVR-350 TV capture cards."
 depends=('glibc' 'gcc')
-source=(http://dl.ivtvdriver.org/ivtv/archive/0.4.x/$pkgname-$REALVER.tar.gz	\
+source=(http://dl.ivtvdriver.org/ivtv/archive/0.6.x/$pkgname-$REALVER.tar.gz	\
 	v4l-cx2341x-dec.fw							\
 	v4l-cx2341x-enc.fw							\
 	v4l-cx25840.fw								\
 	ivtvdev_drv.so								)
-md5sums=('8837d8a7dc729be91f232ee2b63fe1da' \
+md5sums=('01a6843a2cdc5457d505a7e0afecbe15' \
 	 '305dba74bbe5905447add8883f3ecb68' \
 	 '5f5fa240ada73c3565f5f7de4c7b5138' \
 	 '3a4803384f749d644ee1f1ca9dcb12fa' \
@@ -20,7 +20,8 @@ md5sums=('8837d8a7dc729be91f232ee2b63fe1da' \
 url="http://www.ivtvdriver.org/index.php/Main_Page"
 install=$pkgname.install
 
-vver26=2.6.15.5-Rubix
+vver26=2.6.16.20-Rubix
+xver26=2.6.16.20-XenRubix
 
 ## Todo:
 ##   None
@@ -29,6 +30,15 @@ vver26=2.6.15.5-Rubix
 ##   None
 
 ## Changelog:
+##   rel4: rebuilt for 2.6.16.20 kernels 2006.06.07
+##   rel3: rebuilt for 2.6.16.19 kernels 2006.06.01
+##   rel2: rebuilt for 2.6.16.18 2006.05.22
+##   rel1: upgraded to 0.6.2, built for 2.6.16.16 kernels 2006.05.11
+##   rel3: rebuilt 2006.04.27
+##   rel2: added xen module 2006.04.27
+##   rel1: upgraded to 0.6.1, required for kernels >= 2.6.16 2006.04.23
+##   rel1: upgraded to 0.4.4, built for kernel 2.6.16.9 2006.04.21
+##   rel2: rebuilt for X11R7 2006.03.15
 ##   rel1: upraded to 0.4.3, built for 2.6.15.5 2006.03.03
 ##   rel5: rebuilt for 2.6.15.4 2006.02.12
 ##   rel4: fixed some permission issues 2006.02.08
@@ -69,8 +79,8 @@ build() {
 
 	chown -R root.bin $startdir/pkg/usr/bin
 
-	mkdir -p $startdir/pkg/usr/X11R6/lib/modules/drivers
-	cp $startdir/src/ivtvdev_drv.so $startdir/pkg/usr/X11R6/lib/modules/drivers || return 1
+	mkdir -p $startdir/pkg/usr/X11R7/lib/modules/drivers
+	cp $startdir/src/ivtvdev_drv.so $startdir/pkg/usr/X11R7/lib/modules/drivers || return 1
 
 	cd ../driver
 
@@ -80,6 +90,10 @@ build() {
 	make KVER=$vver26 || return 1
 	make KVER=$vver26 DESTDIR=$startdir/pkg install
 	make KVER=$vver26 clean
+
+	make KVER=$xver26 || return 1
+	make KVER=$xver26 DESTDIR=$startdir/pkg install
+	make KVER=$xver26 clean
 
 	cd ..
 

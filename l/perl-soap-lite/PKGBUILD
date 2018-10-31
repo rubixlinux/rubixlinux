@@ -1,29 +1,30 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-soap-lite
-pkgver=0.60a
-pkgrel=2
+pkgver=0.67
+pkgrel=1
 pkgdesc="SOAP::Lite - Client and server side SOAP implementation"
 url="http://search.cpan.org/~byrne/SOAP-Lite-$pkgver/lib/SOAP/Lite.pm"
 depends=('perl-crypt-ssleay' 'perl-mime-lite' 'perl-mime-tools' 'perl-lwp' 'perl-xml-parser' 'perl-compress-zlib')
 source=(http://search.cpan.org/CPAN/authors/id/B/BY/BYRNE/SOAP/SOAP-Lite-$pkgver.tar.gz)
-md5sums=('aed9f8e9c4cf180d15c6e15aedc484d7')
+md5sums=('2473030e75838e86529ca57a49f9104f')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: rebuilt for perl 5.8.7 2005.06.13
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: upgraded to 0.67, built for perl 5.8.8 2006.03.06
+##   rel2: rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
 
 build() {
 
-	cd $startdir/src/SOAP-Lite-0.60
+	cd $startdir/src/SOAP-Lite-$pkgver
 
 	perl Makefile.PL || return 1
 	make || return 1

@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=ucarp
+pkgver=1.2
+pkgrel=1
+pkgdesc="UCARP allows a couple of hosts to share common virtual IP addresses in order to provide automatic failover. It is a portable userland implementation of the secure and patent-free Common Address Redundancy Protocol (CARP, OpenBSD?s alternative to the patents-bloated VRRP)."
+depends=('glibc')
+url="http://www.ucarp.org"
+source=(http://download.pureftpd.org/pub/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('bed7ae84520f2e0faf3e68e9cfe4e1aa')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

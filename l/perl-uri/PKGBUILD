@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-uri
 pkgver=1.35
-pkgrel=2
+pkgrel=3
 pkgdesc="URI - Uniform Resource Identifiers (absolute and relative)"
 depends=('perl')
 source=(http://www.cpan.org/authors/id/G/GA/GAAS/URI-$pkgver.tar.gz)
 md5sums=('1a933b1114c41a25587ee59ba8376f7c')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel2: rebuilt for perl 5.8.7
-#rel1: initial rubix release
+## Changelog:
+##   rel3: rebuilt for perl 5.8.8 2006.03.07
+##   rel2: rebuilt for perl 5.8.7
+##   rel1: initial rubix release
 
 build() {
 

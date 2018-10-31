@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnome-mag
+pkgver=0.12.4
+pkgrel=1
+pkgdesc="gnome-mag - gnome magnification service definition"
+depends=('glibc' 'at-spi' 'libXi' 'libXtst' 'fontconfig' 'expat' 'libgnomecanvas' 'libXrender' 'gail' 'zlib' 'libXau' 'libXdamage' 'libXdmcp' 'libpng' 'libXinerama' 'orbit2' 'libSM' 'libXext' 'gtk+2' 'atk' 'libICE' 'libart_lgpl' 'freetype2' 'libXfixes' 'cairo' 'pango' 'libXcursor' 'libX11' 'libbonobo' 'glib2' 'popt' 'libXrandr')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/0.12/$pkgname-$pkgver.tar.bz2)
+md5sums=('5616186b04c2e8ad001dd61707a3fb3a')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

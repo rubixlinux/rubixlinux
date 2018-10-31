@@ -1,0 +1,40 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=ttf-bitstream-vera
+pkgver=1.10
+pkgrel=2
+pkgdesc="bitstream vera fonts"
+url="http://www.gnome.org/fonts"
+depends=('fontconfig' 'mkfontdir' 'mkfontscale')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/$pkgver/$pkgname-$pkgver.tar.bz2)
+md5sums=('bb22bd5b4675f5dbe17c6963d8c00ed6')
+groups=('x11-font')
+install=font.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added fontconfig, mkfontdir and mkfontscale as deps (for install script) 2006.04.06
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/fonts/TTF
+	cp *.ttf $startdir/pkg/usr/X11R7/lib/X11/fonts/TTF
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYRIGHT.TXT		\
+		README.TXT		\
+		RELEASENOTES.TXT	\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+}

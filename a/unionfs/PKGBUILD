@@ -1,18 +1,18 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-REALVER=20050918-0111
-
 pkgname=unionfs
-pkgver=200509180111
-pkgrel=5
+pkgver=1.1.4
+pkgrel=7
 pkgdesc="unionfs - a stackable unification file system"
 url="http://www.unionfs.org"
 depends=('e2fsprogs' 'glibc')
 install=$pkgname.install
-source=(ftp://ftp.fsl.cs.sunysb.edu/pub/$pkgname/snapshots/$pkgname-$REALVER.tar.gz)
-md5sums=('0d39844498f47a55e1cf131ef91bdf25')
-
-vver26=2.6.15.5-Rubix
+source=(ftp://ftp.fsl.cs.sunysb.edu/pub/$pkgname/$pkgname-$pkgver.tar.gz	\
+	linux-2.6.16.diff							)
+md5sums=('4b0a5393f6a41a24555c2cd30a689b2c' \
+	 '2fbd5fa8c13724ce61134def6f4ee11c' )
+vver26=2.6.16.20-Rubix
+xver26=2.6.16.20-XenRubix
 
 ## Todo:
 ##   None
@@ -21,6 +21,13 @@ vver26=2.6.15.5-Rubix
 ##   None
 
 ## Changelog:
+##   rel7: rebuilt for 2.6.16.20 kernels 2006.06.07
+##   rel6: rebuilt for 2.6.16.19 kernels 2006.06.01
+##   rel5: rebuilt for 2.6.16.18 kernels 2006.05.22
+##   rel4: built for 2.6.16.16 kernels 2006.05.11
+##   rel3: rebuilt 2006.04.27
+##   rel2: added xen modules 2006.04.27
+##   rel1: upgraded to 1.1.4, built for 2.6.16.9 2006.04.21
 ##   rel5: rebuilt for 2.6.15.5 2006.03.03
 ##   rel4: rebuilt for 2.6.15.4 2006.02.12
 ##   rel3: rebuilt for 2.6.15.3 2006.02.07
@@ -30,14 +37,19 @@ vver26=2.6.15.5-Rubix
 
 build() {
 
-	cd $startdir/src/$pkgname-$REALVER
+	cd $startdir/src/$pkgname-$pkgver
 
-	echo "EXTRACFLAGS=-DUNIONFS_NDEBUG" > fistdev.mk
+	patch -p1 < $startdir/src/linux-2.6.16.diff || return 1
+
+	echo "EXTRACFLAGS=-DUNIONFS_NDEBUG -DUNIONFS_UNSUPPORTED" > fistdev.mk
 
 	make KVERS=$vver26 || return 1
 	make KVERS=$vver26 PREFIX=$startdir/pkg MODPREFIX=$startdir/pkg MANDIR=$startdir/pkg/usr/man install
 
-	mkdir -p $startdir/pkg/usr/doc/$pkgname-$REALVER
+	make KVERS=$xver26 || return 1
+	make KVERS=$xver26 PREFIX=$startdir/pkg MODPREFIX=$startdir/pkg MANDIR=$startdir/pkg/usr/man install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
 	cp	-a		\
 		AUTHORS		\
 		COPYING		\
@@ -45,8 +57,8 @@ build() {
 		INSTALL		\
 		NEWS		\
 		README		\
-	$startdir/pkg/usr/doc/$pkgname-$REALVER
-	chmod 644 $startdir/pkg/usr/doc/$pkgname-$REALVER/*
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
 
 	find $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
 

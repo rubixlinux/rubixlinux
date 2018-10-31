@@ -1,13 +1,23 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=wv2
 pkgver=0.2.2
-pkgrel=1
+pkgrel=2
 pkgdesc="wv2 (MS Word document import library) wv2 is a portable MS Word .doc import filter that is used by KWord. Currently, it supports MS Word 6, MS Word 95, MS Word 97, MS Word 2000, and MS Word 2002 (XP) documents.  Older versions like Word 2, 3, 4, and 5 aren't supported yet, but might be in the future. wv2's authors are Shaheed Haque, Werner Trobin, and David Faure."
 url="http://sourceforge.net/projects/wvware/"
-depends=('libgsf')
+depends=('glibc' 'libgsf' 'bzip2' 'glib2' 'zlib' 'libxml2')
 source=(http://dl.sourceforge.net/sourceforge/wvware/$pkgname-$pkgver.tar.bz2)
 md5sums=('d05318852b6c599270c7e0376834c413')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt without .la files 2006.03.27
+##   rel1: initial rubix release
 
 build() {
 
@@ -23,7 +33,7 @@ build() {
 		--program-prefix=""	\
 		--program-suffix=""	\
 		$CHOST
-	make
+	make || return 1
 	make install DESTDIR=$startdir/pkg
 
 	chown -R root.bin $startdir/pkg/usr/bin
@@ -37,5 +47,7 @@ build() {
 		THANKS		\
 		TODO		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

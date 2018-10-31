@@ -1,0 +1,36 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=vte
+pkgver=0.12.0
+pkgrel=1
+pkgdesc="vte - xft powered terminal widget"
+depends=('libXext' 'libSM' 'glibc' 'libXi' 'gtk+2' 'atk' 'ncurses' 'fontconfig' 'libICE' 'expat' 'libXrender' 'zlib' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'glib2' 'libpng' 'libXrandr' 'libXinerama' 'libXft')
+source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/0.12/$pkgname-$pkgver.tar.bz2)
+md5sums=('2c3a321e7e6a8ec9d9740a7cb683c1d0')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

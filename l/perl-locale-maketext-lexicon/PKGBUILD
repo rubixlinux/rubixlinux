@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-locale-maketext-lexicon
+pkgver=0.56
+pkgrel=1
+pkgdesc="Locale::Maketext::Lexicon - Use other catalog formats in Maketext"
+url="http://search.cpan.org/~autrijus/Locale-Maketext-Lexicon-$pkgver/lib/Locale/Maketext/Lexicon.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/A/AU/AUTRIJUS/Locale-Maketext-Lexicon-$pkgver.tar.gz)
+md5sums=('eb9cdf5bb35a31df27210911977ae5b1')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Locale-Maketext-Lexicon-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Locale-Maketext-Lexicon-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		Changes		\
+		MANIFEST	\
+		README		\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/Locale-Maketext-Lexicon-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

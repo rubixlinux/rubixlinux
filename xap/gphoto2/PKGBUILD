@@ -2,14 +2,14 @@
 
 pkgname=gphoto2
 pkgver=2.1.6
-pkgrel=2
+pkgrel=3
 pkgdesc="gPhoto2 is a free, redistributable, ready to use set of digital camera software applications for Unix-like systems, written by a whole team of dedicated volunteers around the world. It supports more than 600 cameras. gPhoto2 runs on a large range of UNIX-like operating system, including Linux, FreeBSD, NetBSD, etc. gPhoto is provided by major Linux distributions like Debian GNU/Linux, Gentoo, RedHat Linux, SUSE Linux, Mandriva, etc. gPhoto2 is freely available and distributed under the terms of the GNU LGPL."
 url="http://www.gphoto.org"
 source=(http://dl.sourceforge.net/gphoto/$pkgname-$pkgver.tar.gz	\
 	http://dl.sourceforge.net/gphoto/lib$pkgname-$pkgver.tar.gz	)
 md5sums=('2de2bcc62599b8a7337b54b0a067c50b' \
 	 '1938cbd9718595fd419907bf2f7c3195' )
-depends=('ncurses' 'glibc' 'libjpeg' 'gpm' 'x11' 'libusb' 'libexif' 'aalib' 'readline' 'popt')
+depends=('libXau' 'glibc' 'libjpeg' 'gpm' 'ncurses' 'libX11' 'libXdmcp' 'libusb' 'aalib' 'readline' 'popt')
 
 ## Todo:
 ##   None
@@ -18,15 +18,20 @@ depends=('ncurses' 'glibc' 'libjpeg' 'gpm' 'x11' 'libusb' 'libexif' 'aalib' 'rea
 ##   None
 
 ## Changelog:
+##   rel3: rebuilt without .la files 2006.04.22
 ##   rel2: fixed docs in /usr/share/doc 2005.10.18
 ##   rel1: initial rubix release
 
 build() {
 
+	export MAKEFLAGS=""
+
 	makelibgphoto2 || return 1
 	makegphoto2 || return 1
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }
 
@@ -37,6 +42,7 @@ makelibgphoto2() {
 
 	./configure			\
 		--prefix=/usr		\
+		--without-exif		\
 		--with-drivers=all
 	make || return 1
 	make DESTDIR=$startdir/pkg install
@@ -67,7 +73,7 @@ makegphoto2() {
 
 	cd $startdir/src/$pkgname-$pkgver
 
-	./configure --prefix=/usr
+	./configure --prefix=/usr --without-exif
 	make || return 1
 	make DESTDIR=$startdir/pkg install
 

@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gconf
+pkgver=2.14.0
+pkgrel=1
+pkgdesc=""
+depends=('libXext' 'glibc' 'orbit2' 'libXi' 'gtk+2' 'atk' 'fontconfig' 'expat' 'openssl' 'libXrender' 'zlib' 'cyrus-sasl' 'libXau' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libX11' 'libXdmcp' 'libxml2' 'glib2' 'openldap' 'libXinerama' 'libXrandr' 'libpng' 'popt')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/GConf/2.14/GConf-$pkgver.tar.bz2)
+md5sums=('d07c2efcaf477cf34225c604a04b6271')
+groups=('gnome')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/GConf-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}

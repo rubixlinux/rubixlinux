@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+X11=X11R7.0
+
+pkgname=font-misc-misc
+pkgver=1.0.0
+pkgrel=2
+pkgdesc="X.Org misc misc font"
+url="http://www.x.org"
+depends=('fontconfig' 'mkfontdir' 'mkfontscale')
+source=(ftp://ftp.x.org/pub/$X11/src/font/$pkgname-$X11-$pkgver.tar.bz2	\
+	linux8x16.pcf							\
+	linux8x8.pcf							)
+md5sums=('4a5a7987183a9e1ea232c8391ae4c244' \
+	 '627c46bc4a19db0400f1d597b8f8485c' \
+	 'bb589035994b34f059d45c723f80aa33' )
+groups=('x11-font')
+install=font.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added fontconfig, mkfontdir and mkfontscale as deps (for install script) 2006.04.06
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$X11-$pkgver
+
+	./configure --prefix=/usr/X11R7
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		ChangeLog	\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver
+	chmod 644 $startdir/pkg/usr/X11R7/lib/X11/doc/$pkgname-$X11-$pkgver/*
+
+	cp $startdir/src/linux8x16.pcf  $startdir/pkg/usr/X11R7/lib/X11/fonts/misc/linux8x16.pcf
+	cp $startdir/src/linux8x8.pcf   $startdir/pkg/usr/X11R7/lib/X11/fonts/misc/linux8x8.pcf
+	gzip -9 $startdir/pkg/usr/X11R7/lib/X11/fonts/misc/linux8x16.pcf
+	gzip -9 $startdir/pkg/usr/X11R7/lib/X11/fonts/misc/linux8x8.pcf
+
+	rm $startdir/pkg/usr/X11R7/lib/X11/fonts/misc/fonts.dir
+	rm $startdir/pkg/usr/X11R7/lib/X11/fonts/misc/fonts.scale
+
+}

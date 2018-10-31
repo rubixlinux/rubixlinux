@@ -2,10 +2,10 @@
 
 pkgname=courier-authlib
 pkgver=0.58
-pkgrel=1
+pkgrel=4
 pkgdesc="The Courier authentication library provides authentication services for other Courier applications."
 url="http://www.courier-mta.org/authlib"
-depends=('glibc' 'mysql' 'openssl' 'openldap' 'zlib' 'gdbm' 'libtool' 'cyrus-sasl')
+depends=('postgresql' 'glibc' 'db' 'heimdal' 'gdbm' 'e2fsprogs' 'mysql' 'openssl' 'openldap' 'zlib' 'cyrus-sasl')
 source=(http://dl.sourceforge.net/sourceforge/courier/$pkgname-$pkgver.tar.bz2	\
 	$pkgname								)
 md5sums=('fb691558d611cb191ae6a83002f0195b' \
@@ -21,6 +21,9 @@ backup=('etc/authlib/authdaemonrc'	\
 ##   None
 
 ## Changelog:
+##   rel4: moved libs into /usr/lib 2006.06.11
+##   rel3: rebuilt against openldap 2.3 2006.03.10
+##   rel2: rebuilt against mysql 5.0 2006.03.06
 ##   rel1: upgraded to 0.58, updated rc script to new format 2006.01.15
 ##   rel1: upgraded to 0.57 2005.09.04
 ##   rel2: Rebuilt with authshadow 2005.06.13
@@ -56,9 +59,14 @@ build() {
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
 
+	mv $startdir/pkg/usr/lib/courier-authlib/* $startdir/pkg/usr/lib
+	rmdir $startdir/pkg/usr/lib/courier-authlib
+
 	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
 
 	mkdir -p $startdir/pkg/etc/rc.d
 	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	find $startdir/pkg -name '*.la' -exec rm {} \;
 
 }

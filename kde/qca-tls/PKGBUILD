@@ -2,16 +2,31 @@
 
 pkgname=qca-tls
 pkgver=1.0
-pkgrel=1
+pkgrel=3
 pkgdesc="qca-tls is a plugin to provide SSL/TLS capability to programs that utilize the Qt Cryptographic Architecture (QCA)."
-depends=('glibc' 'qt' 'freetype2' 'libjpeg' 'fontconfig' 'x11' 'expat' 'openssl' 'libmng' 'gcc' 'zlib' 'libpng')
+depends=('libSM' 'libXext' 'glibc' 'mesa3d' 'fontconfig' 'expat' 'libICE' 'openssl' 'libXrender' 'zlib' 'libXau' 'qt' 'freetype2' 'libXfixes' 'libjpeg' 'libXcursor' 'libX11' 'libXdmcp' 'libXmu' 'libmng' 'libXt' 'gcc' 'libpng' 'libXrandr' 'libXinerama' 'libXft')
 url="http://psi.affinix.com/beta"
-source=(http://psi.affinix.com/beta/$pkgname-$pkgver.tar.bz2)
-md5sums=('886b1f60fc31de3b1a0bd93281e27b73')
+source=(http://psi.affinix.com/beta/$pkgname-$pkgver.tar.bz2	\
+	openssl.diff						)
+md5sums=('886b1f60fc31de3b1a0bd93281e27b73' \
+	 '6b384d7a8a9789b70c2c0b8444179eea' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: removed dependence on nvidia 2006.04.23
+##   rel2: rebuilt 2006.04.23
+##   rel1: initial rubix release
 
 build() {
 
 	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/openssl.diff || return 1
 
 	./configure
 	make || return 1

@@ -1,24 +1,25 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=perl-ip-country
 pkgver=2.20
-pkgrel=1
+pkgrel=2
 pkgdesc="IP::Country - fast lookup of country codes from IP addresses"
 depends=('perl-geography-countries')
 source=(http://search.cpan.org/CPAN/authors/id/N/NW/NWETTERS/IP-Country-$pkgver.tar.gz)
 md5sums=('33a0fbda30e4572bcdf4c1d24d6b49cc')
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#None
+## Notes:
+##   None
 
-#Changelog:
-#rel1: upgraded to 2.20 and rebuilt for perl 5.8.7 2005.06.13
-#rel1: initial rubix release
+## Changelog:
+##   rel2: rebuilt for perl 5.8.8 2006.03.06
+##   rel1: upgraded to 2.20 and rebuilt for perl 5.8.7 2005.06.13
+##   rel1: initial rubix release
 
 build() {
 

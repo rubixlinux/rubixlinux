@@ -2,7 +2,7 @@
 
 pkgname=sudo
 pkgver=1.6.8p12
-pkgrel=1
+pkgrel=2
 pkgdesc="sudo (give limited root privileges to certain users) 'sudo' is a command that allows users to execute some commands as  root.  The /etc/sudoers file (edited with 'visudo') specifies which users have access to sudo and which commands they can run.  'sudo'  logs all its activities to /var/log/ so the system administrator can keep an eye on things."
 url="http://www.sudo.ws/sudo"
 depends=('glibc' 'skey' 'openssl' 'openldap' 'cyrus-sasl')
@@ -19,6 +19,7 @@ md5sums=('b29893c06192df6230dd5f340f3badf5' \
 ##   None
 
 ## Changelog:
+##   rel2: rebuilt against openldap 2.3 2006.03.10
 ##   rel1: upgraded to 1.6.8p12 for security reasons 2006.02.15
 ##   rel1: upgraded to 1.6.8p11 and added skey and ldap support 2005.10.30
 ##   rel1: RSA:2005-175-02 upgraded to 1.6.8p9 to fix a race condition

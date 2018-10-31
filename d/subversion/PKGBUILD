@@ -1,16 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-PERL=5.8.7
+PERL=5.8.8
 
 pkgname=subversion
-pkgver=1.3.0
+pkgver=1.3.1
 pkgrel=1
 pkgdesc="Subversion is version control software aimed at being a compelling replacement for the Concurrent Versions System (CVS)."
 source=(http://subversion.tigris.org/downloads/$pkgname-$pkgver.tar.bz2	\
 	svnserve							)
 backup=('etc/rc.d/svnserve')
-depends=('glibc' 'heimdal' 'db' 'gdbm' 'libxml2' 'e2fsprogs' 'expat' 'openssl' 'zlib')
-md5sums=('a9e69910f648028a159f3886b254261b' \
+depends=('glibc' 'python' 'heimdal' 'db' 'gdbm' 'e2fsprogs' 'openssl' 'expat' 'zlib')
+md5sums=('07b95963968ae345541ca99d0e7bf082' \
 	 '711f156518c3621bd8ed5631d6249fb8' )
 url="http://subversion.tigris.org"
 
@@ -21,6 +21,8 @@ url="http://subversion.tigris.org"
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 1.3.1 2006.04.22
+##   rel2: rebuilt for perl 5.8.8 2006.03.07
 ##   rel1: upgraded to 1.3.0, updated rc script to new style 2006.01.10
 ##   rel6: removed the .packlist file 2005.12.22
 ##   rel5: enabled svnserve, svnlook and svnadmin to use wrapper to set umask 002 2005.10.23
@@ -100,6 +102,9 @@ build() {
 
 	chown -R root.bin $startdir/pkg/usr/bin
 
+	find $startdir/pkg -perm 640 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 2750 -exec chmod 755 {} \;
 	find $startdir/pkg -name '.packlist' -exec rm {} \;
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

@@ -1,13 +1,13 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=sqlite
-pkgver=3.2.8
+pkgver=3.3.5
 pkgrel=1
 pkgdesc="SQLite is a small C library that implements a self-contained, embeddable, zero-configuration, award-winning SQL database engine."
 url="http://www.sqlite.org"
 depends=('glibc' 'ncurses' 'readline')
 source=(http://www.sqlite.org/$pkgname-$pkgver.tar.gz)
-md5sums=('9f2c014aaa46565b8163e047166a5686')
+md5sums=('dd2a7b6f2a07a4403a0b5e17e8ed5b88')
 
 ## Todo:
 ##   None
@@ -16,6 +16,7 @@ md5sums=('9f2c014aaa46565b8163e047166a5686')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.3.5 2006.05.30
 ##   rel1: upgraded to 3.2.8 2005.12.19
 ##   rel1: upgraded to 3.2.7 2005.09.30
 ##   rel1: upgraded to 3.2.5 2005.09.12
@@ -33,5 +34,7 @@ build() {
 	cp -a README $startdir/pkg/usr/doc/$pkgname-$pkgver
 
 	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name '*.la' -exec rm {} \;
 
 }

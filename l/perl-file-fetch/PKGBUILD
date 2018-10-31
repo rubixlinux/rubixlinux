@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.8
+
+pkgname=perl-file-fetch
+pkgver=0.07
+pkgrel=1
+pkgdesc="File::Fetch -- A generic file fetching mechanism"
+url="http://search.cpan.org/~kane/File-Fetch-$pkgver/lib/File/Fetch.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/K/KA/KANE/File-Fetch-$pkgver.tar.gz)
+md5sums=('53135c09fa15e9cb0a980b153b9634e0')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/File-Fetch-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/File-Fetch-$pkgver
+	cp	-a		\
+		CHANGES		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/File-Fetch-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

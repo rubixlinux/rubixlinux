@@ -2,14 +2,24 @@
 
 pkgname=bitchx
 pkgver=1.1
-pkgrel=1
+pkgrel=2
 pkgdesc="BitchX (chat client) BitchX is an advanced Internet Relay Chat (IRC) client."
 url="http://www.bitchx.org"
-depends=('glibc' 'mysql' 'openssl' 'gpm' 'zlib' 'ncurses')
+depends=('glibc' 'openssl' 'zlib' 'ncurses')
 source=(http://bitchx.org/files/source/ircii-pana-$pkgver-final.tar.gz	\
 	ircii-pana_1.1-1.diff.gz					)
 md5sums=('611d2dda222f00c10140236f4c331572' \
 	 'dc140419ec49f132814b471b90cdfc51' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt without dependence on mysql 2006.03.06
+##   rel1: initial rubix release
 
 build() {
 

@@ -1,14 +1,14 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
 pkgname=lftp
-pkgver=3.4.0
+pkgver=3.4.4
 pkgrel=1
 pkgdesc="lftp (command line file transfer program) lftp is a program that allows sophisticated ftp and http connections to other hosts.  lftp can handle many file access methods including ftp, ftps, http, https, hftp, fish and file.  Every operation in lftp is reliable, that is any non-fatal error is ignored and the operation is retried.  lftp has shell-like command syntax.  lftp has a built in mirror feature which can download or upload a whole directory tree. To learn about many more features of lftp, see 'man lftp'."
-depends=('glibc' 'expat' 'gcc' 'ncurses' 'readline')
+depends=('glibc' 'libtasn1' 'ncurses' 'libgcrypt' 'gnutls' 'expat' 'libgpg-error' 'zlib' 'gcc' 'readline')
 url="http://lftp.yar.ru"
 backup=('etc/lftp.conf')
 source=(http://ftp.yars.free.net/pub/source/$pkgname/$pkgname-$pkgver.tar.bz2)
-md5sums=('5d39a8b250691a693470b1773b5c6bd4')
+md5sums=('84af5617bba109b18b5d5f28f55d26e9')
 
 ## Todo:
 ##   None
@@ -17,6 +17,7 @@ md5sums=('5d39a8b250691a693470b1773b5c6bd4')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.4.4 2006.04.22
 ##   rel1: upgraded to 3.4.0 2006.01.18
 ##   rel1: upgraded to 3.3.5 2005.12.05
 ##   rel1: upgraded to 3.3.3 2005.11.09
@@ -52,5 +53,7 @@ build() {
 		lftp.lsm 		\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

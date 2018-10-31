@@ -1,7 +1,14 @@
 post_install() {
-	depmod -a -e -F boot/System.map-2.4.32         2.4.32         > /dev/null 2>&1
-	depmod -a -e -F boot/System.map-2.4.32-grsec   2.4.32-grsec   > /dev/null 2>&1
-	depmod -a -e -F boot/System.map-2.6.15.5-Rubix 2.6.15.5-Rubix > /dev/null 2>&1
+
+	VVER24=2.4.32
+	GVER24=2.4.32-grsec
+	VVER26=2.6.16.20-Rubix
+	XVER26=2.6.16.20-XenRubix
+
+	for kernel in $VVER24 $GVER24 $VVER26 $XVER26; do
+		depmod -a -e -F boot/System.map-$kernel $kernel > /dev/null 2>&1
+	done
+
 }
 
 post_upgrade() {

@@ -1,17 +1,16 @@
 # Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 
-KDE=3.5.1
+KDE=3.5.3
 
 pkgname=kdetoys
-pkgver=3.5.1
+pkgver=3.5.3
 pkgrel=1
 pkgdesc="kdetoys (toys for KDE) Some toys for use with KDE such as kmoon (displays various phases of the moon), kworldwatch (displays where in the world it is light and dark depending on time), kodo (a mouse odometer which shows how far your mouse has traveled), and kteatime (alerts you when your tea ready)."
 url="http://www.kde.org"
 groups=('kde')
-depends=('glibc' 'qt' 'freetype2' 'libjpeg' 'libidn' 'pcre' 'xfsprogs' 'x11' 'fontconfig' 'expat' 'libmng'	\
-	 'gcc' 'zlib' 'libpng' 'kdelibs' 'libart_lgpl'								)
+depends=('glibc' 'mesa3d' 'fontconfig' 'expat' 'libXrender' 'zlib' 'libXau' 'acl' 'libjpeg' 'libidn' 'libXdmcp' 'libXmu' 'libmng' 'libXt' 'libXft' 'libXinerama' 'libpng' 'libXext' 'libSM' 'attr' 'libICE' 'libart_lgpl' 'qt' 'freetype2' 'libXfixes' 'libXcursor' 'libX11' 'pcre' 'gcc' 'kdelibs' 'libXrandr')
 source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
-md5sums=('d98d4f30a8aa6d43b0af06421d4d6586')
+md5sums=('dbce8029253a6151546e3016f299f4ef')
 
 ## Todo:
 ##   None
@@ -20,6 +19,9 @@ md5sums=('d98d4f30a8aa6d43b0af06421d4d6586')
 ##   None
 
 ## Changelog:
+##   rel1: upgraded to 3.5.3 2006.06.01
+##   rel2: rebuilt for acl 2006.05.08
+##   rel1: upgraded to 3.5.2 2006.03.29
 ##   rel1: Upgraded to 3.5.1 2006.01.31
 ##   rel1: Upgraded to 3.5.0 2005.12.18
 ##   rel1: Upgraded to 3.4.3 2005.10.16

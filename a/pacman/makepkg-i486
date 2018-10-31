@@ -580,12 +580,12 @@ fi
 
 # compress man pages
 msg "Compressing man pages..."
-find $startdir/pkg/{usr{,/local,/share,/X11R6},opt/*}/man -type f 2>/dev/null | while read i ; do
+find $startdir/pkg/{usr{,/local,/share,/X11R6,/X11R7},opt/*}/man -type f 2>/dev/null | while read i ; do
 	ext="${i##*.}"
 	fn="${i##*/}"
 	if [ "$ext" != "gz" -a "$ext" != "bz2" ]; then
 		# update symlinks to this manpage
-		find $startdir/pkg/{usr{,/local,/share,/X11R6},opt/*}/man -lname "$fn" 2> /dev/null | while read ln ; do
+		find $startdir/pkg/{usr{,/local,/share,/X11R6,/X11R7},opt/*}/man -lname "$fn" 2> /dev/null | while read ln ; do
 			rm -f "$ln"
 			ln -sf "${fn}.gz" "${ln}.gz"
 		done
@@ -623,13 +623,6 @@ if [ ! "`check_option NOSTRIP`" -a "$NOSTRIP" = "0" ]; then
 		-exec /usr/bin/strip '{}' \; 2>&1 \
 		| grep -v "No such file" | grep -v "format not recognized"
 fi
-
-# Rubix will remove libtool .la files for releases > 1.0
-# remove libtool (.la) files
-#if [ "`check_option NOLIBTOOL`" ]; then
-#	msg "Removing libtool .la files..."
-#	find pkg -type f -name "*.la" -exec rm -f -- '{}' \;
-#fi
 
 # get some package meta info
 builddate=`LC_ALL= ; LANG= ; date -u "+%a %b %e %H:%M:%S %Y"`

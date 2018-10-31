@@ -1,41 +1,42 @@
-# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
 # originally by:  David Cantrell     <david@slackware.com>
 #        and by:  Patrick Volkerding <volkerdi@slackware.com>
 
 # IMPORTANT: also update -Dinc_version_list in ./Configure below!
 
-DB_FILE=1.811
+DB_FILE=1.814
 
 pkgname=perl
-pkgver=5.8.7
+pkgver=5.8.8
 pkgrel=1
 pkgdesc="perl (Practical Extraction and Report Language) Larry Wall's \"Practical Extraction and Report Language\".  Perl is a language optimized for scanning arbitrary text files, extracting information from those text files, and printing reports based on that information.  It's also a good language for many system management tasks.  The language is intended to be practical (easy to use, efficient, complete) rather than beautiful (tiny, elegant, minimal)."
 url="http://www.perl.org"
-depends=('db' 'gdbm')
+depends=('glibc' 'db' 'gdbm')
 source=(http://www.cpan.org/src/5.0/$pkgname-$pkgver.tar.gz				\
 	http://search.cpan.org/CPAN/authors/id/P/PM/PMQS/DB_File-$DB_FILE.tar.gz	)
-md5sums=('dacefa1fe3c5b6d7bbc334ad94826131' \
-	 'b5fe98c944ead904ebf2afb3eff95b9f' )
+md5sums=('b8c118d4360846829beb30b02a6b91a7' \
+	 '5ae102fe172f2aaf771a8d9cae23ca3a' )
 
-#Todo:
-#None
+## Todo:
+##   None
 
-#Notes:
-#  perl does not compile with ssp
-#  nptl requires pthreads to build... so we now ship threaded perl
-#  dbd-mysql, dbi, xml-parser are now packaged separately in l/
-#  The latest DB_File is used to support sleepycat db 4.1.x
+## Notes:
+##   perl does not compile with ssp
+##   nptl requires pthreads to build... so we now ship threaded perl
+##   dbd-mysql, dbi, xml-parser are now packaged separately in l/
+##   The latest DB_File is used to support sleepycat db 4.1.x
 
-#Changelog:
-#rel1: Upgraded to 5.8.7, now perl is threaded 2005.06.12
-#rel4: Removed .packlist files 2005.05.12
-#rel3: Rebuilt without dbd-mysql, dbi, xml-parser 2005.04.25
-#rel2: Rebuilt against new db 2005.02.23
-#rel1: Initial Rubix release
+## Changelog:
+##   rel1: Upgraded to 5.8.8 2006.03.06
+##   rel1: Upgraded to 5.8.7, now perl is threaded 2005.06.12
+##   rel4: Removed .packlist files 2005.05.12
+##   rel3: Rebuilt without dbd-mysql, dbi, xml-parser 2005.04.25
+##   rel2: Rebuilt against new db 2005.02.23
+##   rel1: Initial Rubix release
 
 build() {
 
-	export CFLAGS="  -march=i486 -mtune=i686 -Os -pipe -fPIE -pie -Wa,--noexecstack"
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -Wa,--noexecstack"
 	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -Wa,--noexecstack"
 
 	cd $startdir/src/$pkgname-$pkgver
@@ -54,18 +55,18 @@ build() {
 	#   should be considered deprecated.
 	#   Instead use for example 'sudo': http://www.courtesan.com/sudo/
 
-	./Configure								\
-		-de								\
-		-Dprefix=/usr							\
-		-Dcccdlflags='-pie -fPIE'					\
-		-Dinstallprefix=/usr						\
-		-Doptimize="$CFLAGS"						\
-		-Dusethreads							\
-		-Duseithreads							\
-		-Dinc_version_list='5.8.6 5.8.5 5.8.4 5.8.3 5.8.2 5.8.1 5.8.0'	\
+	./Configure									\
+		-de									\
+		-Dprefix=/usr								\
+		-Dcccdlflags='-pie -fPIE'						\
+		-Dinstallprefix=/usr							\
+		-Doptimize="$CFLAGS"							\
+		-Dusethreads								\
+		-Duseithreads								\
+		-Dinc_version_list='5.8.7 5.8.6 5.8.5 5.8.4 5.8.3 5.8.2 5.8.1 5.8.0'	\
 		-Darchname=$CHOST
 	make		|| return 1
-	make test	|| return 1
+#	make test	|| return 1
 	make install DESTDIR=$startdir/pkg
 
 	# There are also miniperl and microperl.
@@ -75,10 +76,10 @@ build() {
 	#make microperl
 
 	cd $startdir/pkg/usr/bin
-
-	ln -sf perl$pkgver	perl
-	ln -sf c2ph		pstruct
-	ln -sf s2p		psed
+	rm perl pstruct psed
+	ln -s perl$pkgver	perl
+	ln -s c2ph		pstruct
+	ln -s s2p		psed
 
 	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
 	cd $startdir/src/$pkgname-$pkgver
@@ -96,8 +97,9 @@ build() {
 	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
 
 	cd $startdir/pkg/usr/man/man1
-	ln -sf c2ph.1		pstruct.1
-	ln -sf s2p.1		psed.1
+	rm pstruct.1 psed.1
+	ln -s c2ph.1		pstruct.1
+	ln -s s2p.1		psed.1
 
 	chown -R root.bin	$startdir/pkg/usr/bin
 	chmod 755		$startdir/pkg/usr/bin/*

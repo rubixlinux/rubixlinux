@@ -59,4 +59,6 @@ build() {
 		examples	\
 	$startdir/pkg/usr/doc/$pkgname-$pkgver
 
+	find $startdir/pkg -name *.la -exec rm {} \;
+
 }

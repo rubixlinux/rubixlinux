@@ -2,7 +2,7 @@
 
 pkgname=cyrus-sasl
 pkgver=2.1.21
-pkgrel=7
+pkgrel=8
 pkgdesc="SASL is the Simple Authentication and Security Layer, a method for adding authentication support to connection-based protocols. To use SASL, a protocol includes a command for identifying and authenticating a user to a server and for optionally negotiating protection of subsequent protocol interactions. If its use is negotiated, a security layer is inserted between the protocol and the connection."
 url="http://asg.web.cmu.edu/sasl"
 depends=('e2fsprogs' 'glibc' 'db' 'openssl' 'heimdal' 'openldap')
@@ -19,6 +19,7 @@ md5sums=('dde02db234dea892bee298390890502e' \
 ##   None
 
 ## Changelog:
+##   rel8: rebuilt against openldap 2.3 2006.03.10
 ##   rel7: rebuilt with /etc as the sysconfdir 2005.12.31
 ##   rel6: changed some build options 2005.11.04
 ##   rel5: rebuilt against heimdal 2005.10.13
@@ -31,6 +32,8 @@ md5sums=('dde02db234dea892bee298390890502e' \
 ##   rel1: Initial Rubix release
 
 build() {
+
+	export MAKEFLAGS=""
 
 	cd $startdir/src/$pkgname-$pkgver
 
@@ -69,5 +72,7 @@ build() {
 
 	mv $startdir/pkg/usr/man/cat8/saslauthd.8 $startdir/pkg/usr/man/man8
 	rmdir $startdir/pkg/usr/man/cat8
+
+	find $startdir/pkg -name *.la -exec rm {} \;
 
 }

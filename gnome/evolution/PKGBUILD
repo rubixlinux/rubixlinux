@@ -1,0 +1,69 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=evolution
+pkgver=2.6.0
+pkgrel=3
+pkgdesc="evolution - integrated mail, addressbook and calendaring functionality"
+depends=('glibc' 'libXi' 'libgnomeui' 'esound' 'gtkhtml' 'gnutls' 'libsoup' 'fontconfig' 'expat' 'openssl' 'libgnomecanvas' 'libXrender' 'gail' 'libgnomeprintui' 'zlib' 'alsa-lib' 'libXau' 'pilot-link' 'libgnomeprint' 'libjpeg' 'libgnome' 'libXdmcp' 'audiofile' 'libxml2' 'dbus' 'libbonoboui' 'openldap' 'libpng' 'libXinerama' 'libXext' 'libSM' 'orbit2' 'libglade' 'gtk+2' 'atk' 'ncurses' 'hal' 'gconf' 'libICE' 'readline' 'libart_lgpl' 'cyrus-sasl' 'libtasn1' 'freetype2' 'libXfixes' 'pango' 'cairo' 'libXcursor' 'libbonobo' 'libX11' 'libgcrypt' 'evolution-data-server' 'libgpg-error' 'glib2' 'firefox' 'gnome-keyring' 'gnome-vfs' 'libXrandr' 'popt' 'gnome-pilot' 'scrollkeeper' 'desktop-file-utils' 'hicolor-icon-theme')
+source=(ftp://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.6/$pkgname-$pkgver.tar.bz2)
+md5sums=('5c98650b2ccf3581e7cf5af3927b95d1')
+groups=('gnome')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: added scrollkeeper, desktop-file-utils and hicolor-icon-theme as deps (for install script) 2006.04.06
+##   rel2: added links to libraries in /usr/lib 2006.03.27
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+	export CFLAGS="$CFLAGS -I/usr/include/firefox/nss -I/usr/include/firefox/nspr"
+	export CXXFLAGS="$CFLAGS -I/usr/include/firefox/nss -I/usr/include/firefox/nspr"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure						\
+		--prefix=/usr					\
+		--sysconfdir=/etc				\
+		--with-openldap=yes				\
+		--enable-pilot-conduits=yes			\
+		--with-krb5=/usr				\
+		--enable-nss=yes				\
+		--enable-smime=yes				\
+		--with-nss-includes=/usr/include/firefox/nss
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		ChangeLog*	\
+		HACKING		\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS*		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	ln -s evolution-2.6 $startdir/pkg/usr/bin/evolution
+	ln -s /usr/lib/evolution/2.6/libeutil.so $startdir/pkg/usr/lib/libeutil.so
+	ln -s /usr/lib/evolution/2.6/libeutil.so $startdir/pkg/usr/lib/libeutil.so.0
+	ln -s /usr/lib/evolution/2.6/libeutil.so $startdir/pkg/usr/lib/libeutil.so.0.0.0
+	ln -s /usr/lib/evolution/2.6/libeshell.so $startdir/pkg/usr/lib/libeshell.so
+	ln -s /usr/lib/evolution/2.6/libeshell.so $startdir/pkg/usr/lib/libeshell.so.0
+	ln -s /usr/lib/evolution/2.6/libeshell.so $startdir/pkg/usr/lib/libeshell.so.0.0.0
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name *.la -exec rm {} \;
+
+}
