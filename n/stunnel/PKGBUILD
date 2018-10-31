@@ -1,0 +1,56 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=stunnel
+pkgver=4.14
+pkgrel=1
+pkgdesc="stunnel (Universal SSL tunnel) The stunnel program is designed to work as an SSL encryption wrapper between remote client and local (inetd-startable) or remote servers. The goal is to facilitate SSL encryption and authentication for non-SSL-aware programs. stunnel can be used to add SSL functionality to commonly used inetd daemons like POP-2, POP-3 and IMAP servers without any changes in the programs' code."
+url="http://www.stunnel.org"
+depends=('glibc' 'openssl' 'zlib')
+backup=('etc/stunnel/stunnel.cnf')
+source=(http://www.stunnel.org/download/$pkgname/src/$pkgname-$pkgver.tar.gz	\
+	generate-stunnel-key.sh							)
+md5sums=('0969cc4868dfd75f22792ecccc9ec555' \
+	 'ce25901fdfc86bdb7a74e8a0df8acd7d' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 4.14 2006.02.15
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	rm -r $startdir/pkg/etc/stunnel/stunnel.pem
+
+	cp tools/stunnel.cnf				$startdir/pkg/etc/stunnel/stunnel.cnf
+	cp $startdir/src/generate-stunnel-key.sh	$startdir/pkg/etc/stunnel/generate-stunnel-key.sh
+	chmod 755 					$startdir/pkg/etc/stunnel/generate-stunnel-key.sh
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mv $startdir/pkg/usr/share/doc/stunnel/* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/share/doc
+	rmdir $startdir/pkg/usr/share
+
+	mkdir -p $startdir/pkg/usr/man/pl/man8
+	mv $startdir/pkg/usr/man/man8/stunnel.pl.8 $startdir/pkg/usr/man/pl/man8/stunnel.8
+
+	mkdir -p $startdir/pkg/usr/man/fr/man8
+	mv $startdir/pkg/usr/man/man8/stunnel.fr.8 $startdir/pkg/usr/man/fr/man8/stunnel.8
+
+	rm -r $startdir/pkg/usr/var
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

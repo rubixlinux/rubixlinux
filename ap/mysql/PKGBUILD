@@ -1,0 +1,106 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=mysql
+pkgver=4.1.20
+pkgrel=1
+pkgdesc="mysql (SQL-based relational database server) MySQL is a fast, multi-threaded, multi-user, and robust SQL (Structured Query Language) database server.  It comes with a nice API which makes it easy to integrate into other applications. The home page for MySQL is http://www.mysql.com/"
+backup=(etc/rc.d/mysql)
+depends=('glibc' 'openssl' 'zlib' 'ncurses')
+url="http://www.mysql.org"
+source=(http://mysql.he.net/Downloads/MySQL-4.1/$pkgname-$pkgver.tar.gz	\
+	$pkgname							)
+md5sums=('a1dc5375f6580db5073d542200a9ad5b' \
+	 'acb4ceb5fbad11bc1e9bb435dce9cc7a' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 4.1.20 2006.06.04 *security*
+##   rel1: Upgraded to 4.1.19 2006.05.09 *security*
+##   rel1: Upgraded to 4.1.16 and updated the rc script to new format 2006.01.16
+##   rel1: Upgraded to 4.1.15 2005.12.05
+##   rel1: Upgraded to 4.1.14 2005.09.03
+##   rel1: Upgraded to 4.1.13 2005.07.29
+##   rel1: Upgraded to 4.1.12 2005.06.12
+##   rel1: Upgraded to 4.1.11 2005.05.12
+##   rel1: Upgraded to 4.1.10 and made real rc script 2005.02.23
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+	export CXX=gcc
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr					\
+		--with-mysqld-user=mysql				\
+		--with-unix-socket-path=/var/run/mysql/mysql.sock	\
+		--localstatedir=/var/lib/mysql				\
+		--enable-assembler					\
+		--with-raid						\
+		--without-debug						\
+		--enable-thread-safe-client				\
+		--without-bench						\
+		--with-extra-charsets=complex				\
+		--with-vio						\
+		--with-openssl						\
+		--program-prefix=""					\
+		--program-suffix=""					\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/etc
+	cd support-files
+	cp			\
+		my-huge.cnf	\
+		my-large.cnf	\
+		my-medium.cnf	\
+		my-small.cnf	\
+	$startdir/pkg/etc
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/Docs
+	cp	-a		\
+		COPYING*	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd Docs
+	cp	-a		\
+		INSTALL-BINARY	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/Docs
+	cd ..
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+	mkdir -p		$startdir/pkg/var/run/mysql
+	chown mysql.mysql	$startdir/pkg/var/run/mysql
+	chmod 755		$startdir/pkg/var/run/mysql
+
+	rm -r $startdir/pkg/usr/mysql-test
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/mysql $startdir/pkg/etc/rc.d/mysql
+
+	cd $startdir/pkg/usr/lib
+	ln -s mysql/libmysqlclient.so .
+	ln -s mysql/libmysqlclient.so.14 .
+	ln -s mysql/libmysqlclient_r.so .
+	ln -s mysql/libmysqlclient_r.so.14 .
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}
+

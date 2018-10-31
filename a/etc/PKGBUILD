@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=etc
+pkgver=1.0
+pkgrel=18
+pkgdesc="etc (system configuration files) System configuration files.  The /etc directory is traditionally the location where configuration files are found."
+url="http://www.rubix-os.org"
+source=($pkgname.tar.gz)
+md5sums=('f2cb9be7d984fc400638f30587941de2')
+backup=('etc/mtab'		\
+	'etc/motd'		\
+	'etc/group'		\
+	'etc/csh.login'		\
+	'etc/ld.so.conf'	\
+	'etc/profile'		\
+	'etc/inputrc'		\
+	'etc/shadow'		\
+	'etc/passwd'		\
+	'etc/printcap'		\
+	'etc/gshadow'		\
+	'etc/issue'		\
+	'etc/securetty'		\
+	'etc/shells'		\
+	'etc/issue.net'		\
+	'etc/nsswitch.conf'	\
+	'etc/profile.d/lang.csh'\
+	'etc/profile.d/lang.sh'	\
+	'var/log/lastlog'	\
+	'var/log/wtmp'		\
+	'var/run/utmp'		\
+	'etc/HOSTNAME'		)
+
+## Todo:
+##   None
+
+## Notes:
+##   /etc/{hosts,networks,services} are included in tcpip so they are no longer
+##   included here
+
+## Changelog:
+##   rel18: added mythtv user/group 2006.02.06
+##   rel17: added mythtv to necessary groups 2006.02.05
+##   rel16: added postgres user, fixed language support for sh shells 2006.01.31
+##   rel15: added the distcc user 2006.01.01
+##   rel14: added haldaemon user and to the proper groups 2005.12.18
+##   rel13: added tor user and group 2005.10.24
+##   rel12: added asterisk user and group 2005.08.12
+##   rel11: added dspam user and group with mail and daemon as group members 2005.06.11
+##   rel10: changed mailman home to /usr/mailman 2005.04.20
+##   rel9:  removed gdm group 2005.04.18
+##   rel8:  added snort user, switched most system users to /sbin/nologin 2005.04.14
+##   rel7:  added mailman user and group 2005.04.12
+##   rel6:  added named user and group 2005.04.11
+##   rel5:  added clamav user and group 2005.03.24
+##   rel4:  added messagebus user and group 2005.03.16
+##   rel3:  added ntpd user and group 2005.03.09
+##   rel1:  Initial Rubix release
+
+build() {
+
+	cd $startdir/pkg
+
+	tar zxpvf $startdir/src/etc.tar.gz
+
+}

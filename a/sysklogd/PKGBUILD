@@ -1,0 +1,100 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=sysklogd
+pkgver=1.4.1
+pkgrel=5
+pkgdesc="sysklogd (Linux system logging utilities) Dr. Greg Wettstein and Stephen Tweedie's syslogd/klogd. This package contains a modified version of syslogd for the Linux environment.  An additional utility, klogd, is included which allows kernel logging to be directed through the syslogd facility. Syslogd and klogd are started when your system boots."
+url="http://www.infodrom.org/projects/sysklogd"
+depends=('logrotate')
+source=(http://www.infodrom.org/projects/$pkgname/download/$pkgname-$pkgver.tar.gz	\
+	$pkgname-$pkgver-owl-syslogd-crunch_list.diff					\
+	syslog.conf									\
+	syslog										\
+	rc.syslog									\
+	terminated.diff									\
+	sysklogd-1.4.1-kernel_headers-1.patch						)
+md5sums=('d214aa40beabf7bdb0c9b3c64432c774' \
+	 '2f04b7f08897bb6aa8aac969d6a24dbb' \
+	 '0dd9b9fb7311959fac9c221f2ece250b' \
+	 '38e43fc8b9c622175a78ead69085144b' \
+	 '33eef2a0706f10165575a1b4005bd721' \
+	 '2558b062eb48a03d4795b3768f7853d2' \
+	 '290ef10e5fe52676899da43cb8dd2914' )
+backup=('etc/logrotate.d/syslog'	\
+	'etc/syslog.conf'		\
+	'etc/rc.d/syslog'		\
+	'var/log/cron'			\
+	'var/log/debug'			\
+	'var/log/maillog'		\
+	'var/log/messages'		\
+	'var/log/secure'		\
+	'var/log/spooler'		\
+	'var/log/syslog'		)
+
+## Todo:
+##   explain patch
+
+## Notes:
+##   the terminated patch fixes a race condition that can cause syslogd to kill itself
+
+## Changelog:
+##   rel5: updated rc script to new format 2006.01.17
+##   rel4: added option to watch the log device for chrooted bind 2005.04.11
+##   rel3: added terminated patch and updated rc script a bit 2005.03.01
+##   rel1: Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/man/man5
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/var/log
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/etc/logrotate.d
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver-owl-syslogd-crunch_list.diff	|| return 1
+	patch -p1 < $startdir/src/terminated.diff				|| return 1
+	patch -p1 < $startdir/src/sysklogd-1.4.1-kernel_headers-1.patch		|| return 1
+
+	make		|| return 1
+	make syslog_tst	|| return 1
+
+	cp klogd	$startdir/pkg/usr/sbin
+	cp syslog_tst	$startdir/pkg/usr/sbin
+	cp syslogd	$startdir/pkg/usr/sbin
+
+	for page in klogd.8 sysklogd.8 ; do
+		cp $page $startdir/pkg/usr/man/man8
+	done
+
+	cp syslog.conf.5 $startdir/pkg/usr/man/man5
+
+	cp	-a		\
+		ANNOUNCE	\
+		CHANGES		\
+		COPYING		\
+		INSTALL		\
+		MANIFEST	\
+		NEWS		\
+		README.1st	\
+		README.linux	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cp $startdir/src/rc.syslog	$startdir/pkg/etc/rc.d/syslog
+	cp $startdir/src/syslog.conf	$startdir/pkg/etc
+	cp $startdir/src/syslog		$startdir/pkg/etc/logrotate.d
+
+	cd $startdir/pkg/usr/man/man8
+	ln -s sysklogd.8 syslogd.8
+
+	cd $startdir/pkg/var/log
+	touch cron debug maillog messages secure spooler syslog
+	chmod 640 *
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

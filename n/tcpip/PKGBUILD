@@ -1,0 +1,1034 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+TCPW=7.6
+ICMP=1.11
+NETT=1.60
+NKIT=0.17
+TFTP=0.41
+BRCTL=1.0.6
+VLAN=1.9
+
+pkgname=tcpip
+pkgver=1.0
+pkgrel=11
+pkgdesc="tcpip (TCP/IP networking programs and support files) This is a set of standard TCP/IP utilities for Linux.  Some of these were written from scratch and some were ported from various sources such as BSD.  Some of the people who helped write and/or port this code include:  H. Peter Anvin,  Donald J. Becker,  Alan Cox, David A. Holland,  Fred N. van Kempen,  Olaf Kirch, H.J. Lu, David Miller,  Florian  La Roche,  Mark Shand,  Rick Sladkey, Johannes Stille,  Linus Torvalds,  Wietse Venema, and Orest Zborowski."
+url="http://www.rubix-os.org"
+depends=('glibc' 'sysfsutils' 'ncurses' 'readline' 'libtermcap')
+backup=('etc/hosts'		\
+	'etc/hosts.deny'	\
+	'etc/hosts.equiv'	\
+	'etc/networks'		\
+	'etc/nntpserver'	\
+	'etc/resolv.conf'	\
+	'etc/services'		\
+	'etc/host.conf'		\
+	'etc/hosts.allow'	\
+	'etc/protocols'		\
+	'etc/rc.d/network'	)
+source=(ftp://ftp.porcupine.org/pub/security/tcp_wrappers_$TCPW.tar.gz				\
+	tcp_wrappers-$TCPW-bug11881.patch							\
+	tcp_wrappers-$TCPW-bug17795.patch							\
+	tcp_wrappers-$TCPW-bug17847.patch							\
+	tcp_wrappers-$TCPW-casesens.patch							\
+	tcp_wrappers-$TCPW-docu.patch								\
+	tcp_wrappers-$TCPW-fixgethostbyname.patch						\
+	tcp_wrappers-$TCPW-shared.patch								\
+	tcp_wrappers-$TCPW-sig.patch								\
+	tcp_wrappers-$TCPW-slackconfig.patch							\
+	tcp_wrappers-$TCPW-strerror.patch							\
+	tcp_wrappers.ume-ipv6.patch								\
+	tcp_wrappers.usagi-ipv6.patch								\
+	tcpw7.2-config.patch									\
+	tcpw7.2-setenv.patch									\
+	tcpw$TCPW-netgroup.patch								\
+	icmpinfo-$ICMP.tar.gz									\
+	icmpinfo-1.11.diff									\
+	icmpinfo-1.11.diff2									\
+	http://www.tazenda.demon.co.uk/phil/net-tools/net-tools-$NETT.tar.bz2			\
+	net-tools.diff										\
+	netdate.tar.gz										\
+	netdate.diff										\
+	netdate.diff2										\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-base-$NKIT.tar.gz		\
+	netkit-base.ping.diff									\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/biff+comsat-$NKIT.tar.gz		\
+	biff+comsat-$NKIT.diff									\
+	biff+comsat.offset.diff									\
+	biff+comsat.badutmp.diff								\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/bsd-finger-$NKIT.tar.gz		\
+	bsd-finger-$NKIT.diff									\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-bootparamd-$NKIT.tar.gz	\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-ftp-$NKIT.tar.gz		\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-ntalk-$NKIT.tar.gz		\
+	netkit-ntalk-$NKIT.diff									\
+	ntalk-$NKIT-slackware-alt-talkd.patch							\
+	netkit-ntalk-0.11.diff									\
+	netkit-ntalk-0.11.tar.gz								\
+	netkit-ntalk-0.11.Makefile.diff								\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-routed-$NKIT.tar.gz		\
+	routed.18.candidate.final.patch								\
+	netkit-routed-$NKIT.diff								\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-rsh-$NKIT.tar.gz		\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-rusers-$NKIT.tar.gz		\
+	netkit-rusers-$NKIT.diff								\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-rwall-$NKIT.tar.gz		\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-rwho-$NKIT.tar.gz		\
+	netkit-rwho-$NKIT.diff									\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-telnet-$NKIT.tar.gz		\
+	netkit-telnet-$NKIT.diff								\
+	netkit-telnet-$NKIT-ayt.patch								\
+	telnet-OpenBSD-20020321.tar.gz								\
+	telnet-OpenBSD-20020321.diff								\
+	http://www.kernel.org/pub/software/network/tftp/tftp-hpa-$TFTP.tar.gz			\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netkit-timed-$NKIT.tar.gz		\
+	netkit-timed-$NKIT.diff									\
+	ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/netwrite-$NKIT.tar.gz		\
+	netwrite-$NKIT.diff									\
+	ipmask.c										\
+	mini-inews.diff										\
+	mini-inews.tar.gz									\
+	iputils-ss021109-try.tar.bz2								\
+	ethtool-3.tar.gz									\
+	http://dl.sourceforge.net/sourceforge/bridge/bridge-utils-$BRCTL.tar.gz			\
+	http://ftp.pieskovisko.sk/linux/net/vlan.$VLAN.tar.gz					\
+	etc.tar.gz										\
+	network											\
+	telnet-OpenBSD-014_telnet.diff								\
+	prism54.fw										\
+	net-tools_$NETT-17.diff									)
+md5sums=('e6fa25f71226d090f34de3f6b122fb5a' \
+	 'e7ac7ae271703eacf175d597d329e11a' \
+	 '232f641b075a185ce2ff1562c4084c39' \
+	 '184dae9744f3443116eaed4dc3ad93df' \
+	 '81513bf018a963f8677c791e12edf59a' \
+	 '386048ccd3a5075f475f0caba6d8b2cf' \
+	 '97d4d81faaecf0958eeb52c45df71e34' \
+	 '6ac1ce80801253f387da164594e3a3a9' \
+	 '374b8179b8d5c71979008c6a775d658e' \
+	 '6c07281d85290e0050a9676a20fffa46' \
+	 '801292cacf14a92e2784b925e72a1db1' \
+	 'f147601556687a405b0a6028d9ccf0f9' \
+	 '91ad8fe4efcbef317a50a15827a2df6e' \
+	 'd7844f7d51122dbfc7d2f0533c47e455' \
+	 'eea1d4328e2f105e78e79999ec317c1b' \
+	 '7d5dc810dfab89513eff14e14ad59c2b' \
+	 '76955979aa0c4a7a40fb09128cbb9d80' \
+	 '22a1f526861613bee2be4a5fc2198c23' \
+	 '725739dc891557fd5f4089fc74f90a70' \
+	 '888774accab40217dde927e21979c165' \
+	 'b4d40e9606c57cbd153bc9b88661af5d' \
+	 '5a78bc0c51bf5e746a22bd9511b6f11e' \
+	 '3065eb09d481ffc3835b79554c442694' \
+	 '65e0e271d68d59f0af3afd67a5577674' \
+	 '1f0193358e92559ec0f598b09ccbc0ec' \
+	 'b96731313dcd96c5777f3002fa4975d5' \
+	 '0e366384b0ffc7d4f748713a6359e089' \
+	 'b7c13dbf274680927bb29df3a91ccb10' \
+	 'd9daae9d8740dc7c12f0ed85c28d59db' \
+	 'eaf79e6ddb27263f1b153a01ff775d7e' \
+	 '52bf281aac8814bf56cdc92f7661ee75' \
+	 '2dfa2a3ff9e3bc4217296a5480bddc8a' \
+	 '00d211115b11aec2e214b701fe72f397' \
+	 '94441610c9b86ef45c4c6ec609444060' \
+	 'e3c57208f8644ae206dab5e236daf7b3' \
+	 '15cf674fdaf01a6172b0430f99b566ce' \
+	 'a3cd5a522717873d610fa09d2fa5ad09' \
+	 '5b07b6266a22d60b07d486a5c7037c3a' \
+	 '3d2473e6550103aa837c70d7a6ca9e2c' \
+	 '26cdc687be8c2c0e38f526aca451f722' \
+	 '3a9507876db23109be6d1f41ced5570a' \
+	 '7f4db9d996ead75381b9a2637a169651' \
+	 '6fada64314fefb1606114f18019d2f5a' \
+	 '65f5f28e2fe22d9ad8b17bb9a10df096' \
+	 'dc99a80b9fde2ab427c874f88f1c1602' \
+	 '02e506e8b7a48b9bff9364007e926f4a' \
+	 'c7a85262fc9911e0574ce5706ce69369' \
+	 '0f71620d45d472f89134ba0d74242e75' \
+	 'abd625aa9bf1aa747e22419431832008' \
+	 'd6beabaaf53fe6e382c42ce3faa05a36' \
+	 '07ac63b45f750d5b44681de630e76afc' \
+	 '8c51d5353483024ca3386664a6d35622' \
+	 '7364df1042a7877651ed33f7ec62e095' \
+	 '1f3d128531fd76de6ad1812c7b3c7077' \
+	 'fc8fdc3025da2927859abb5f027409d1' \
+	 '1bffb4db753d9e5be227e444cf119bfe' \
+	 'f2c238af54580f65dcde26f9207ba920' \
+	 '880eab87ceca40bbec409fd74404fa09' \
+	 '512d0f767f7bb9439b90113ad057b988' \
+	 'b5c0a7ca246bb93bbbcf717edc5e4ba0' \
+	 '5fdd02605f73c9e0ad8b19b27c6f6367' \
+	 '814c17ebc9dbb94d6733c1584a30e8d0' \
+	 'dd10ef3d76480990a2174d2bb0daddaf' \
+	 'b4e71f7fa2629250677eefcb338442c5' \
+	 '9b7dc52656f5cbec846a7ba3299f73bd' \
+	 '5f0c6060b33956fb16e11a15467dd394' \
+	 '4f7c87d7b4c15df9d210c17e85360742' \
+	 'f282e456d23304439b3330b26b68a001' \
+	 '95f8d11d22df75889d7d78f4165c0881' \
+	 '8bd4310971772a486b9784c77f8a6df9' \
+	 '9c8cdade672ff9414bf1035e0d4df35d' )
+
+## Todo:
+##   None
+
+##Notes:
+##   domainname, dnsdomainname, hostname, nisdomainname and ypdomainname are
+##     commented out since they are included in util-linux
+
+## Changelog:
+##   rel11: upgraded tftp-hpa to 0.41, applied debian's net-tool patch 2006.02.15
+##   rel10: fixed a nasty problem with udev bringing up an interface before
+##          / was remounted read-write. 2006.01.23
+##   rel9:  updated network rc script to new format 2006.01.16
+##   rel8:  fixed small bug in bridges stuff 2005.12.02
+##   rel7:  updated the default /etc/hosts for better kerberos support 2005.11.05
+##   rel6:  added support for bridges in rc script 2005.10.29
+##   rel5:  added prism54 firmware 2005.09.25
+##   rel4:  fixed telnet, added brctl and vlan 2005.09.16
+##   rel3:  upgraded to ethtool-3, fixed telnet overflow issues 2005.08.15
+##          http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2005-0468
+##          http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2005-0469
+##   rel1:  Initial Rubix Release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	mkdir -p $startdir/pkg/bin
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/include
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/man/man3
+	mkdir -p $startdir/pkg/usr/man/man5
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/doc/tcp_wrappers_$TCPW
+	mkdir -p $startdir/pkg/usr/doc/icmpinfo-$ICMP
+	mkdir -p $startdir/pkg/usr/doc/net-tools-$NETT
+	mkdir -p $startdir/pkg/usr/doc/netkit-base-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/biff+comsat-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/bsd-finger-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-bootparamd-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-ftp-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-ntalk-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-routed-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-rsh-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-rusers-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-rwall-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-rwho-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netkit-telnet-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/tftp-hpa-$TFTP
+	mkdir -p $startdir/pkg/usr/doc/netkit-timed-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/netwrite-$NKIT
+	mkdir -p $startdir/pkg/usr/doc/iputils-ss021109-try
+	mkdir -p $startdir/pkg/usr/doc/ethtool-3
+
+	echo "+==================+"
+	echo "| tcp_wrappers_$TCPW |"
+	echo "+==================+"
+
+	cd $startdir/src/tcp_wrappers_$TCPW
+
+	patch -p1 < $startdir/src/tcpw7.2-config.patch				|| return 1
+	patch -p1 < $startdir/src/tcpw7.2-setenv.patch				|| return 1
+	patch -p1 < $startdir/src/tcpw7.6-netgroup.patch			|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-bug11881.patch		|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-bug17795.patch		|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-bug17847.patch		|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-fixgethostbyname.patch	|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-docu.patch			|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-casesens.patch		|| return 1
+	patch -p0 < $startdir/src/tcp_wrappers.usagi-ipv6.patch			|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers.ume-ipv6.patch			|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-shared.patch			|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-sig.patch			|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-strerror.patch		|| return 1
+	patch -p1 < $startdir/src/tcp_wrappers-7.6-slackconfig.patch		|| return 1
+
+	make REAL_DAEMON_DIR=/usr/sbin linux || return 1
+
+	cp libwrap.a		$startdir/pkg/usr/lib
+	cp tcpd.h		$startdir/pkg/usr/include
+	cp safe_finger		$startdir/pkg/usr/sbin
+	cp tcpd			$startdir/pkg/usr/sbin
+	cp tcpdchk		$startdir/pkg/usr/sbin
+	cp tcpdmatch		$startdir/pkg/usr/sbin
+	cp try-from		$startdir/pkg/usr/sbin
+	cp hosts_access.3	$startdir/pkg/usr/man/man3
+	cp hosts_access.5	$startdir/pkg/usr/man/man5
+	cp hosts_options.5	$startdir/pkg/usr/man/man5
+	cp tcpd.8		$startdir/pkg/usr/man/man8
+	cp tcpdchk.8		$startdir/pkg/usr/man/man8
+	cp tcpdmatch.8		$startdir/pkg/usr/man/man8
+
+	cp	-a		\
+		BLURB		\
+		CHANGES		\
+		DISCLAIMER	\
+		README		\
+		README.NIS	\
+	$startdir/pkg/usr/doc/tcp_wrappers_$TCPW
+
+	chmod 644 $startdir/pkg/usr/doc/tcp_wrappers_$TCPW/*
+
+	echo "+===============+"
+	echo "| icmpinfo-$ICMP |"
+	echo "+===============+"
+
+	cd $startdir/src/icmpinfo-$ICMP
+
+	patch -p1 < $startdir/src/icmpinfo-1.11.diff	|| return 1
+	patch -p1 < $startdir/src/icmpinfo-1.11.diff2	|| return 1
+
+	make || return 1
+
+	cp icmpinfo $startdir/pkg/usr/sbin
+
+	cp icmpinfo.man $startdir/pkg/usr/man/man1/icmpinfo.1
+
+	cp	-a		\
+		CHANGES		\
+		CHECKSUMS.asc	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/icmpinfo-$ICMP
+
+	chmod 644 $startdir/pkg/usr/doc/icmpinfo-$ICMP/*
+
+	echo "+================+"
+	echo "| net-tools-$NETT |"
+	echo "+================+"
+
+	cd $startdir/src/net-tools-$NETT
+
+	patch -p1 < $startdir/src/net-tools_$NETT-17.diff	|| return 1
+	patch -p1 < $startdir/src/net-tools.diff		|| return 1
+
+	cp	-a		\
+		README		\
+		README.ipv6	\
+	$startdir/pkg/usr/doc/net-tools-$NETT
+
+	chmod 644 $startdir/pkg/usr/doc/net-tools-$NETT/*
+
+	HAVE_IP_TOOLS=1 HAVE_MII=1 make || return 1
+
+	cp arp		$startdir/pkg/sbin
+	cp ifconfig	$startdir/pkg/sbin
+	cp rarp		$startdir/pkg/sbin
+	cp route	$startdir/pkg/sbin
+#	cp hostname	$startdir/pkg/bin
+	cp mii-tool	$startdir/pkg/sbin
+	cp nameif	$startdir/pkg/sbin
+	cp netstat	$startdir/pkg/bin
+	cp plipconfig	$startdir/pkg/sbin
+	cp slattach	$startdir/pkg/usr/sbin
+	cp ipmaddr	$startdir/pkg/sbin
+	cp iptunnel	$startdir/pkg/sbin
+
+	cd man/en_US
+
+#	for page in		\
+#		dnsdomainname.1	\
+#		domainname.1	\
+#		hostname.1	\
+#		nisdomainname.1	\
+#		ypdomainname.1
+#	do
+#		cp $page $startdir/pkg/usr/man/man1
+#	done
+
+	cp ethers.5 $startdir/pkg/usr/man/man5
+
+	for page in		\
+		arp.8		\
+		ifconfig.8	\
+		mii-tool.8	\
+		nameif.8	\
+		netstat.8	\
+		rarp.8		\
+		route.8		\
+		slattach.8	\
+		plipconfig.8
+	do
+		cp $page $startdir/pkg/usr/man/man8
+	done
+
+	echo "+=========+"
+	echo "| netdate |"
+	echo "+=========+"
+
+	cd $startdir/src/netdate
+
+	patch -p1 < $startdir/src/netdate.diff	|| return 1
+	patch -p1 < $startdir/src/netdate.diff2	|| return 1
+
+	make || return 1
+
+	cp netdate	$startdir/pkg/usr/sbin
+	cp netdate.8	$startdir/pkg/usr/man/man8
+
+	echo "+==================+"
+	echo "| netkit-base-$NKIT |"
+	echo "+==================+"
+
+	cd $startdir/src/netkit-base-$NKIT
+
+	patch -p1 < $startdir/src/netkit-base.ping.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd ping
+
+	cp ping $startdir/pkg/bin
+
+	cp ping.8 $startdir/pkg/usr/man/man8
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-base-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-base-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-base-$NKIT/*
+
+	echo "+==================+"
+	echo "| biff+comsat-$NKIT |"
+	echo "+==================+"
+
+	cd $startdir/src/biff+comsat-$NKIT
+
+	patch -p1 < $startdir/src/biff+comsat-$NKIT.diff	|| return 1
+	patch -p1 < $startdir/src/biff+comsat.offset.diff	|| return 1
+	patch -p1 < $startdir/src/biff+comsat.badutmp.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd biff
+
+	cp biff		$startdir/pkg/usr/bin
+	cp biff.1	$startdir/pkg/usr/man/man1
+
+	cd ../comsat
+
+	cp comsat	$startdir/pkg/usr/sbin/in.comsat
+	cp comsat.8	$startdir/pkg/usr/man/man8/in.comsat.8
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/biff+comsat-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/biff+comsat-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/biff+comsat-$NKIT/*
+
+	echo "+=================+"
+	echo "| bsd-finger-$NKIT |"
+	echo "+=================+"
+
+	cd $startdir/src/bsd-finger-$NKIT
+
+	patch -p1 < $startdir/src/bsd-finger-$NKIT.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd finger
+
+	cp finger	$startdir/pkg/usr/bin
+	cp finger.1	$startdir/pkg/usr/man/man1
+
+	cd ../fingerd
+
+	cp fingerd	$startdir/pkg/usr/sbin/in.fingerd
+	cp fingerd.8	$startdir/pkg/usr/man/man8/in.fingerd.8
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/bsd-finger-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/bsd-finger-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/bsd-finger-$NKIT/*
+
+	echo "+========================+"
+	echo "| netkit-bootparamd-$NKIT |"
+	echo "+========================+"
+
+	cd $startdir/src/netkit-bootparamd-$NKIT
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd rpc.bootparamd
+
+	cp bootparamd	$startdir/pkg/usr/sbin/rpc.bootparamd
+	cp callbootd	$startdir/pkg/usr/bin
+	cp bootparamd.8	$startdir/pkg/usr/man/man8/rpc.bootparamd.8
+
+	cp -a README $startdir/pkg/usr/doc/netkit-bootparamd-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-bootparamd-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-bootparamd-$NKIT/*
+
+	echo "+=================+"
+	echo "| netkit-ftp-$NKIT |"
+	echo "+=================+"
+
+	cd $startdir/src/netkit-ftp-$NKIT
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd ftp
+
+	cp ftp		$startdir/pkg/bin
+	cp ftp.1	$startdir/pkg/usr/man/man1
+	cp netrc.5	$startdir/pkg/usr/man/man5
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-ftp-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-ftp-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-ftp-$NKIT/*
+
+	echo "+===================+"
+	echo "| netkit-ntalk-$NKIT |"
+	echo "+===================+"
+
+	cd $startdir/src/netkit-ntalk-$NKIT
+
+	patch -p1 < $startdir/src/netkit-ntalk-$NKIT.diff		|| return 1
+	patch -p1 < $startdir/src/ntalk-$NKIT-slackware-alt-talkd.patch	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd talk
+
+	cp talk		$startdir/pkg/usr/bin
+	cp talk.1	$startdir/pkg/usr/man/man1
+
+	cd ../talkd
+
+	cp talkd	$startdir/pkg/usr/sbin/in.talkd
+	cp talkd.8	$startdir/pkg/usr/man/man8/in.talkd.8
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-ntalk-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-ntalk-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-ntalk-$NKIT/*
+
+	# Include old version of 'talk', which works better with
+	# 8-bit character sets:
+
+	echo "+===================+"
+	echo "| netkit-ntalk-0.11 |"
+	echo "+===================+"
+
+	cd $startdir/src/netkit-ntalk-0.11
+
+	patch -p0 < $startdir/src/netkit-ntalk-0.11.diff		|| return 1
+	patch -p1 < $startdir/src/netkit-ntalk-0.11.Makefile.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd talk
+
+	cp talk $startdir/pkg/usr/bin/talk-0.11
+
+	echo "+====================+"
+	echo "| netkit-routed-$NKIT |"
+	echo "+====================+"
+
+	cd $startdir/src/netkit-routed-$NKIT
+
+	patch -p1 < $startdir/src/routed.18.candidate.final.patch	|| return 1
+	patch -p1 < $startdir/src/netkit-routed-$NKIT.diff		|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cp routed/routed	$startdir/pkg/usr/sbin
+	cp routed/routed.8	$startdir/pkg/usr/man/man8
+	cp ripquery/ripquery	$startdir/pkg/usr/sbin
+	cp ripquery/ripquery.8	$startdir/pkg/usr/man/man8
+
+	cp -a README $startdir/pkg/usr/doc/netkit-routed-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-routed-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-routed-$NKIT/*
+
+	echo "+=================+"
+	echo "| netkit-rsh-$NKIT |"
+	echo "+=================+"
+
+	cd $startdir/src/netkit-rsh-$NKIT
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd rsh
+
+	cp rsh		$startdir/pkg/usr/bin
+	cp rsh.1	$startdir/pkg/usr/man/man1
+
+	cd ../rshd
+
+	cp rshd		$startdir/pkg/usr/sbin/in.rshd
+	cp rshd.8	$startdir/pkg/usr/man/man8/in.rshd.8
+
+	cd ../rcp
+
+	cp rcp		$startdir/pkg/usr/bin
+	cp rcp.1	$startdir/pkg/usr/man/man1
+
+	cd ../rexecd
+
+	cp rexecd	$startdir/pkg/usr/sbin/in.rexecd
+	cp rexecd.8	$startdir/pkg/usr/man/man8/in.rexecd.8
+
+	cd ../rlogin
+
+	cp rlogin	$startdir/pkg/usr/bin
+	cp rlogin.1	$startdir/pkg/usr/man/man1
+
+	cd ../rlogind
+
+	cp rlogind	$startdir/pkg/usr/sbin/in.rlogind
+	cp rlogind.8	$startdir/pkg/usr/man/man8/in.rlogind.8
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-rsh-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-rsh-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-rsh-$NKIT/*
+
+	echo "+====================+"
+	echo "| netkit-rusers-$NKIT |"
+	echo "+====================+"
+
+	cd $startdir/src/netkit-rusers-$NKIT
+
+	patch -p1 < $startdir/src/netkit-rusers-$NKIT.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd rpc.rusersd
+
+	cp rusersd		$startdir/pkg/usr/sbin/rpc.rusersd
+	cp rpc.rusersd.8	$startdir/pkg/usr/man/man8
+
+	cd ../rusers
+
+	cp rusers	$startdir/pkg/usr/bin
+	cp rusers.1	$startdir/pkg/usr/man/man1
+
+	cd ../rup
+
+	cp rup		$startdir/pkg/usr/bin
+	cp rup.1	$startdir/pkg/usr/man/man1
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-rusers-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-rusers-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-rusers-$NKIT/*
+
+	echo "+===================+"
+	echo "| netkit-rwall-$NKIT |"
+	echo "+===================+"
+
+	cd $startdir/src/netkit-rwall-$NKIT
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd rpc.rwalld
+
+	cp rwalld	$startdir/pkg/usr/sbin/rpc.rwalld
+	cp rpc.rwalld.8	$startdir/pkg/usr/man/man8
+
+	cd ../rwall
+
+	cp rwall	$startdir/pkg/usr/bin
+	cp rwall.1	$startdir/pkg/usr/man/man1
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-rwall-$NKIT
+	chown root.root $startdir/pkg/usr/doc/netkit-rwall-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-rwall-$NKIT/*
+
+	echo "+==================+"
+	echo "| netkit-rwho-$NKIT |"
+	echo "+==================+"
+
+	cd $startdir/src/netkit-rwho-$NKIT
+
+	patch -p1 < $startdir/src/netkit-rwho-$NKIT.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd rwho
+
+	cp rwho		$startdir/pkg/usr/bin
+	cp rwho.1	$startdir/pkg/usr/man/man1
+
+	cd ../rwhod
+
+	cp rwhod	$startdir/pkg/usr/sbin
+	cp rwhod.8	$startdir/pkg/usr/man/man8
+
+	cd ../ruptime
+
+	cp ruptime	$startdir/pkg/usr/bin
+	cp ruptime.1	$startdir/pkg/usr/man/man1
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-rwho-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-rwho-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-rwho-$NKIT/*
+
+	echo "+====================+"
+	echo "| netkit-telnet-$NKIT |"
+	echo "+====================+"
+
+	cd $startdir/src/netkit-telnet-$NKIT
+
+	patch -p1 < $startdir/src/netkit-telnet-$NKIT.diff	|| return 1
+	patch -p1 < $startdir/src/netkit-telnet-$NKIT-ayt.patch	|| return 1
+
+	./configure --prefix=/usr
+
+	cd telnetd
+
+	make || return 1
+
+	cp telnetd	$startdir/pkg/usr/sbin/in.telnetd
+	cp telnetd.8	$startdir/pkg/usr/man/man8/in.telnetd.8
+
+	cd ..
+
+	# The OpenBSD version of the telnet client is superior.
+
+	mv telnet telnet-netkit
+
+	tar xzf $startdir/src/telnet-OpenBSD-20020321.tar.gz
+
+	patch -p1 < $startdir/src/telnet-OpenBSD-20020321.diff		|| return 1
+	patch -p1 < $startdir/src/telnet-OpenBSD-014_telnet.diff	|| return 1
+
+	cd telnet
+
+	make || return 1
+
+	cp telnet	$startdir/pkg/bin
+	cp telnet.1	$startdir/pkg/usr/man/man1
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-telnet-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-telnet-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-telnet-$NKIT/*
+
+	echo "+===============+"
+	echo "| tftp-hpa-$TFTP |"
+	echo "+===============+"
+
+	cd $startdir/src/tftp-hpa-$TFTP
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd tftp
+
+	cp tftp		$startdir/pkg/usr/bin
+	cp tftp.1	$startdir/pkg/usr/man/man1
+
+	cd ../tftpd
+
+	cp tftpd	$startdir/pkg/usr/sbin/in.tftpd
+	cp tftpd.8	$startdir/pkg/usr/man/man8/in.tftpd.8
+
+	cd ..
+
+	cp	-a		\
+		CHANGES		\
+		INSTALL		\
+		INSTALL.tftp	\
+		README		\
+		README.security	\
+	$startdir/pkg/usr/doc/tftp-hpa-$TFTP
+
+	chown root.root $startdir/pkg/usr/doc/tftp-hpa-$TFTP/*
+
+	chmod 644 $startdir/pkg/usr/doc/tftp-hpa-$TFTP/*
+
+	echo "+===================+"
+	echo "| netkit-timed-$NKIT |"
+	echo "+===================+"
+
+	cd $startdir/src/netkit-timed-$NKIT
+
+	patch -p1 < $startdir/src/netkit-timed-$NKIT.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd timed/timed
+
+	cp timed	$startdir/pkg/usr/sbin/in.timed
+	cp timed.8	$startdir/pkg/usr/man/man8/in.timed.8
+
+	cd ../timedc
+
+	cp timedc	$startdir/pkg/usr/sbin
+	cp timedc.8	$startdir/pkg/usr/man/man8
+
+	cd ../..
+
+	cp -a README $startdir/pkg/usr/doc/netkit-timed-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netkit-timed-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netkit-timed-$NKIT/*
+
+	echo "+===============+"
+	echo "| netwrite-$NKIT |"
+	echo "+===============+"
+
+	cd $startdir/src/netwrite-$NKIT
+
+	patch -p1 < $startdir/src/netwrite-$NKIT.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	cd writed
+
+	cp writed	$startdir/pkg/usr/sbin/in.writed
+	cp writed.8	$startdir/pkg/usr/man/man8/in.writed.8
+
+	cd ..
+
+	cp -a README $startdir/pkg/usr/doc/netwrite-$NKIT
+
+	chown root.root $startdir/pkg/usr/doc/netwrite-$NKIT/*
+
+	chmod 644 $startdir/pkg/usr/doc/netwrite-$NKIT/*
+
+	echo "+========+"
+	echo "| ipmask |"
+	echo "+========+"
+
+	cd $startdir/src
+
+	cc -s -O2 -o ipmask ipmask.c || return 1
+
+	cp ipmask $startdir/pkg/bin
+
+	chown root.bin $startdir/pkg/bin/ipmask
+
+	chmod 755 $startdir/pkg/bin/ipmask
+
+	echo "+============+"
+	echo "| mini-inews |"
+	echo "+============+"
+
+	cd $startdir/src/inews
+
+	patch -p1 < $startdir/src/mini-inews.diff	|| return 1
+
+	make || return 1
+
+	cp inews $startdir/pkg/usr/bin/inews-nntp
+
+	echo "+=========+"
+	echo "| iputils |"
+	echo "+=========+"
+
+	cd $startdir/src/iputils/libipsec
+	ln -s ../include-glibc .
+	cd ..
+	make -i || return 1
+
+	cp arping	$startdir/pkg/sbin
+	cp clockdiff	$startdir/pkg/usr/sbin
+
+	# Replace old ping...
+	cp ping		$startdir/pkg/bin
+	cp ping6	$startdir/pkg/bin
+	cp rarpd	$startdir/pkg/usr/sbin
+	cp rdisc	$startdir/pkg/usr/sbin
+	cp tracepath	$startdir/pkg/usr/bin
+	cp tracepath6	$startdir/pkg/usr/bin
+	cp traceroute6	$startdir/pkg/usr/bin
+
+	cd doc
+	for file in		\
+		arping		\
+		clockdiff	\
+		ping		\
+		rarpd		\
+		rdisc		\
+		tracepath	\
+		traceroute6
+	do
+		cp $file.8 $startdir/pkg/usr/man/man8
+	done
+
+	cd $startdir/pkg/usr/man/man8
+
+	ln -sf ping.8.gz	ping6.8.gz
+	ln -sf tracepath.8.gz	tracepath6.8.gz
+
+	cd $startdir/src/iputils
+
+	cp -a RELNOTES $startdir/pkg/usr/doc/iputils-ss021109-try
+
+	echo "+=========+"
+	echo "| ethtool |"
+	echo "+=========+"
+
+	cd $startdir/src/ethtool-3
+
+	./configure --prefix=/usr
+
+	make || return 1
+
+	make install DESTDIR=$startdir/pkg
+
+	chown root.bin $startdir/pkg/usr/sbin/ethtool
+
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/ethtool-3
+
+	echo "+==============+"
+	echo "| bridge-utils |"
+	echo "+==============+"
+
+	cd $startdir/src/bridge-utils-$BRCTL
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mv $startdir/pkg/usr/sbin/brctl $startdir/pkg/sbin/brctl
+
+	mkdir -p $startdir/pkg/usr/doc/bridge-utils-$BRCTL
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		README	\
+		THANKS	\
+		TODO	\
+		doc	\
+	$startdir/pkg/usr/doc/bridge-utils-$BRCTL
+
+	cd $startdir/pkg/usr/doc/bridge-utils-$BRCTL/doc
+	rm Makefile Makefile.in RPM-GPG-KEY brctl.8
+
+	echo "+======+"
+	echo "| vlan |"
+	echo "+======+"
+
+	cd $startdir/src/vlan
+
+	make clean
+	make vconfig || return 1
+
+	cp vconfig $startdir/pkg/sbin
+
+	cp vconfig.8 $startdir/pkg/usr/man/man8
+
+	mkdir $startdir/pkg/usr/doc/vlan-$VLAN
+	cp	-a		\
+		README		\
+		howto.html	\
+		vlan.html	\
+	$startdir/pkg/usr/doc/vlan-$VLAN
+
+	mkdir -p $startdir/pkg/var/spool/rwho
+	mkdir -p $startdir/pkg/etc/rc.d
+
+	cp -a $startdir/src/etc		$startdir/pkg
+	cp -a $startdir/src/network	$startdir/pkg/etc/rc.d
+
+	cd $startdir/pkg/usr/sbin
+
+	ln -sf in.talkd in.ntalkd
+
+	cd $startdir/pkg/usr/bin
+
+	ln -sf talk ntalk
+	ln -sf inews-nntp inews
+
+	cd $startdir/pkg/bin
+
+#	ln -sf hostname dnsdomainname
+#	ln -sf hostname nisdomainname
+#	ln -sf hostname ypdomainname
+
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/sbin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg/usr/doc -type f -exec chmod 644 {} \;
+	chmod 644 $startdir/pkg/usr/man/*/*
+	chmod 644 $startdir/pkg/usr/include/*
+
+	cd $startdir/pkg
+	chmod 4755 bin/ping*
+	chmod 4755 usr/bin/rcp
+	chmod 4755 usr/bin/rsh
+	chmod 4755 usr/bin/traceroute6
+	chmod 4755 usr/bin/rlogin
+
+	mkdir -p			$startdir/pkg/lib/firmware
+	cp $startdir/src/prism54.fw	$startdir/pkg/lib/firmware/isl3890
+	cp $startdir/src/prism54.fw	$startdir/pkg/lib/firmware/isl3877
+
+}

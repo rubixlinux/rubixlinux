@@ -1,0 +1,181 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+BUILD_TRANSSET=yes
+BUILD_XCOMPMGR=yes
+
+pkgname=x11
+pkgver=6.9.0
+pkgrel=4
+pkgdesc="x11 This is the xorg X11 package and it provides everything required to run X on Linux."
+url="http://www.x.org"
+depends=('glibc' 'freetype2' 'gpm' 'ncurses' 'fontconfig' 'expat' 'utempter' 'zlib' 'gcc' 'libpng')
+backup=('etc/X11/xdm/Xsession'		\
+	'etc/X11/xdm/xdm-config'	\
+	'etc/X11/xdm/Xservers'		)
+source=(http://xorg.freedesktop.org/releases/X11R$pkgver/src-single/X11R$pkgver-src.tar.bz2	\
+	http://xorg.freedesktop.org/releases/X11R6.9.0/patches/x11r6.9.0-geteuid.diff		\
+	http://xorg.freedesktop.org/releases/X11R6.9.0/patches/x11r6.9.0-mitri.diff		\
+	http://www.probo.com/timr/s3ssrc.zip							\
+	host.def										\
+	site.def.diff										\
+	Xlib.h.diff										\
+	xorgconfig.diff										\
+	x11.startwithblackscreen.diff								\
+	linux8x16.pcf										\
+	linux8x8.pcf										\
+	README.Xmodmap										\
+	Xsession										\
+	Xsetup_0										\
+	transset.tar.gz										\
+	xcompmgr.tar.gz										\
+	linux.cf.zlib.diff									\
+	xdm											)
+md5sums=('52ad69832db5c36c7041f90625ed4598' \
+	 'de85e59b8906f76a52ec9162ec6c0b63' \
+	 'd666925bfe3d76156c399091578579ae' \
+	 '1328b070343ac79c5ed4c613a1113754' \
+	 '26b9ed8dd5cc8a8447e264bc27280fe6' \
+	 'b40a50ade6b61498522fb0fa72b49cec' \
+	 '618273aaa1a7ef6116fdb33be9004579' \
+	 '5798e68375ad7a535fbd4d74aacf2ce1' \
+	 '3aac5749d080ed6709f7425154d5c6d8' \
+	 '627c46bc4a19db0400f1d597b8f8485c' \
+	 'bb589035994b34f059d45c723f80aa33' \
+	 '4e5de863ef37e1db897a3878ac17f09a' \
+	 '1bfdbe9a55cac407d2e6f7d900435704' \
+	 'b094146488544efb51ef61b4ccf43209' \
+	 '19634e1250282bfbf012af2b3d2d32f5' \
+	 '228a27f1014b60b1726a6e33cd188dbc' \
+	 '93c04f27ba151e9cde991624b859d2a5' \
+	 '4bcf5bfd413b8d4b4bfd49965ecb76a5' )
+
+## Todo:
+##   None
+
+## Notes:
+##   xorg builds with pie and SSP, but doesnt run, so we disable them
+##   This is a 2 step build:
+##     First build and install x11 without transset and xcompmgr
+##     Then build everything
+
+## Changelog:
+##   rel4: rebuilt with security patch 2006.05.02 *security*
+##   rel2: rebuilt with xterm and updated rc script for xdm to new format 2006.01.16
+##   rel1: upgraded to 6.9.0 2005.12.21
+##   rel3: added pixmap overflow patch 2005.09.18
+##   rel2: Fixed r128 module 2005.08.14
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+
+	cd $startdir/src/xc
+
+	patch -p1 < $startdir/src/site.def.diff			|| return 1
+	patch -p1 < $startdir/src/Xlib.h.diff			|| return 1
+	patch -p1 < $startdir/src/linux.cf.zlib.diff		|| return 1
+	patch -p1 < $startdir/src/xorgconfig.diff		|| return 1
+	patch -p1 < $startdir/src/x11.startwithblackscreen.diff	|| return 1
+	patch -p0 < $startdir/src/x11r6.9.0-geteuid.diff	|| return 1
+	patch -p0 < $startdir/src/x11r6.9.0-mitri.diff		|| return 1
+
+	find . -type f -name configure -exec chmod 755 {} \;
+	find . -type f -name mkinstalldirs -exec chmod 755 {} \;
+
+	cp $startdir/src/host.def config/cf
+
+	mkdir -p $startdir/pkg/usr/lib/pkgconfig $startdir/pkg/usr/X11R6/lib
+	cd $startdir/pkg/usr/X11R6/lib
+	ln -s ../../lib/pkgconfig .
+	cd $startdir/src/xc
+
+	make World CDEBUGFLAGS="$CFLAGS" || return 1
+	make install DESTDIR=$startdir/pkg
+	make install.man DESTDIR=$startdir/pkg
+
+	rm -r	$startdir/pkg/usr/X11R6/include/X11/Xprint*
+	rm	$startdir/pkg/usr/X11R6/lib/libXprint*.a
+	rm	$startdir/pkg/usr/X11R6/man/man7/Xprint*
+
+	mkdir -p $startdir/pkg/usr/X11R6/lib/X11/fonts/misc
+	cp $startdir/src/linux8x16.pcf	$startdir/pkg/usr/X11R6/lib/X11/fonts/misc/linux8x16.pcf
+	cp $startdir/src/linux8x8.pcf	$startdir/pkg/usr/X11R6/lib/X11/fonts/misc/linux8x8.pcf
+	gzip -9 $startdir/pkg/usr/X11R6/lib/X11/fonts/misc/linux8x16.pcf
+	gzip -9 $startdir/pkg/usr/X11R6/lib/X11/fonts/misc/linux8x8.pcf
+
+	mkdir -p $startdir/pkg/etc/X11/xinit
+	cp $startdir/src/README.Xmodmap $startdir/pkg/etc/X11/xinit/README.Xmodmap
+
+	chown root.bin $startdir/pkg/usr/X11R6/bin/Xorg
+	chmod 4755 $startdir/pkg/usr/X11R6/bin/Xorg
+
+	cp -a $startdir/pkg/etc/X11/xdm/Xsession	$startdir/pkg/etc/X11/xdm/Xsession.orig
+	cp -a $startdir/pkg/etc/X11/xdm/Xsetup_0	$startdir/pkg/etc/X11/xdm/Xsetup_0.orig
+
+	cp $startdir/src/Xsession	$startdir/pkg/etc/X11/xdm
+	cp $startdir/src/Xsetup_0	$startdir/pkg/etc/X11/xdm
+
+	cd $startdir/pkg/usr/X11R6/lib/X11/fonts/misc
+	mkfontdir -e /usr/X11R6/lib/X11/fonts/encodings -e /usr/X11R6/lib/X11/fonts/encodings/large .
+	cd $startdir/src/xc
+
+	mv $startdir/pkg/etc/X11/xinit/xinitrc $startdir/pkg/etc/X11/xinit/xinitrc.twm
+	chmod 755 $startdir/pkg/etc/X11/xinit/xinitrc.twm
+
+	mkdir s3switch
+	cd s3switch
+	unzip $startdir/src/s3ssrc.zip
+	make || return 1
+	cp s3switch	$startdir/pkg/usr/X11R6/bin
+	chmod 755	$startdir/pkg/usr/X11R6/bin/s3switch
+	chown root.bin	$startdir/pkg/usr/X11R6/bin/s3switch
+	cp s3switch.1x	$startdir/pkg/usr/X11R6/man/man1
+
+	if [ "$BUILD_TRANSSET" = "yes" ]; then build_transset; fi
+
+	if [ "$BUILD_XCOMPMGR" = "yes" ]; then build_xcompmgr; fi
+
+	find $startdir/pkg/usr -type f -name fonts.cache-1 -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	rm $startdir/pkg/usr/X11R6/lib/X11/fonts/local/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/xdm $startdir/pkg/etc/rc.d
+
+	chmod 4755 $startdir/pkg/usr/X11R6/bin/Xorg
+
+}
+
+build_transset() {
+
+	cd $startdir/src/transset
+
+	make || return 1
+
+	cp transset     $startdir/pkg/usr/X11R6/bin
+	chmod 755       $startdir/pkg/usr/X11R6/bin/transset
+	chown root.bin  $startdir/pkg/usr/X11R6/bin/transset
+
+}
+
+build_xcompmgr() {
+
+	cd $startdir/src/xcompmgr
+
+	sh autogen.sh
+	./configure --prefix=/usr/X11R6
+	make || return 1
+
+	cp xcompmgr     $startdir/pkg/usr/X11R6/bin
+	chmod 755       $startdir/pkg/usr/X11R6/bin/xcompmgr
+	chown root.bin  $startdir/pkg/usr/X11R6/bin/xcompmgr
+
+	cp xcompmgr.1   $startdir/pkg/usr/X11R6/man/man1
+
+}

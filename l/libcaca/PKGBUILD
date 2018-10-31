@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libcaca
+pkgver=0.9
+pkgrel=1
+pkgdesc="libcaca (Colour AsCii Art library) The libcaca library is a graphics library that outputs text instead of pixels, so that it can work on older video cards or text terminals. It is not unlike the famous AAlib library. Sam Hocevar is the main author of libcaca."
+depends=('slang' 'x11')
+source=(http://sam.zoy.org/projects/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname.diff.gz						)
+url="http://sam.zoy.org/projects/libcaca"
+md5sums=('95a0a89fbd147f6610176fab66d0dd7c' \
+	 'f97a0448c120bf62dadf4225aaaeb2e2' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -type d -exec chmod 755 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--disable-imlib2	\
+		--enable-slang		\
+		--enable-ncurses	\
+		--enable-x11
+	patch -p1 < $startdir/src/$pkgname.diff
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm -r $startdir/pkg/usr/man/man3 $startdir/pkg/usr/share/doc/libcaca-dev/ps
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/doc/libcaca-dev $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a COPYING $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

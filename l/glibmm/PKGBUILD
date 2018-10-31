@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=glibmm
+pkgver=2.8.0
+pkgrel=1
+pkgdesc="glibmm is a C++ API for parts of glib that are useful for C++."
+url="http://www.gtkmm.org"
+depends=('glibc' 'libsigc++' 'glib2' 'gcc')
+source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.8/$pkgname-$pkgver.tar.bz2)
+md5sums=('e1823b926e01db09aacf3da69234e3c5')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		CHANGES		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/pkg/usr/share/doc
+	tar cjf $startdir/pkg/usr/doc/$pkgname-$pkgver/docs.tar.bz2 *
+
+	cd $startdir
+	rm -r $startdir/pkg/usr/share/doc
+
+}

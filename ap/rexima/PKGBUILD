@@ -1,0 +1,36 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=rexima
+pkgver=1.4
+pkgrel=1
+pkgdesc="rexima (console audio mixer) Rexima is a curses-based interactive audio mixer. It can also be used from the command-line.  It's designed to be small, fast, and straightforward.  It also offers a command line mode so you can script mixer settings. Rexima was written by Russell Marks."
+url="http://rus.members.beeb.net/rexima.html"
+source=(ftp://ftp.ibiblio.org/pub/Linux/apps/sound/mixers/$pkgname-$pkgver.tar.gz)
+md5sums=('333a4db26409b9cca9b9e96ddf42f44c')
+depends=('glibc' 'gpm' 'ncurses')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make || return 1
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp rexima		$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/rexima
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+	cp rexima.1	$startdir/pkg/usr/man/man1
+	chmod 644	$startdir/pkg/usr/man/man1/rexima.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		README		\
+		ChangeLog	\
+		NEWS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

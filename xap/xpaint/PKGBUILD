@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=xpaint
+pkgver=2.7.8.1
+pkgrel=1
+pkgdesc="xpaint (simple X paint program) XPaint is a versatile bitmap/pixmap editing tool with a feature set similar to MacPaint. The short features list: Brushes, Spray paint, Pencil, Lines, Arcs, Pattern Fill, Text, Boxes, Circles, Polygons. Works on multiple images simultaneously. Cut/Copy/Paste between all active images. Fatbits/Zoom on the image windows."
+url="http://sf-xpaint.sourceforge.net"
+depends=('glibc' 'x11' 'libtiff' 'libjpeg' 'zlib' 'libpng')
+source=(http://dl.sourceforge.net/sourceforge/sf-$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('e608680bd362531231af521f0df377ae')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	SHAREDIR=/usr/X11R6/share/xpaint xmkmf -a
+	make xaw SHAREDIR=/usr/X11R6/share/xpaint || return 1
+	make install SHAREDIR=/usr/X11R6/share/xpaint DESTDIR=$startdir/pkg
+	make install.man SHAREDIR=/usr/X11R6/share/xpaint DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		README		\
+		README.PNG	\
+		README.old	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd bitmaps
+
+	mkdir -p $startdir/pkg/usr/X11R6/include/X11/bitmaps
+	find . -name "*.xbm" -exec cp {} $startdir/pkg/usr/X11R6/include/X11/bitmaps \;
+
+	mkdir -p $startdir/pkg/usr/X11R6/include/X11/pixmaps
+	find . -name "*.xpm" -exec cp {} $startdir/pkg/usr/X11R6/include/X11/pixmaps \;
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+	chmod 644 $startdir/pkg/etc/X11/app-defaults/XPaint
+	chmod 644 $startdir/pkg/usr/X11R6/lib/X11/doc/html/xpaint.1.html
+	chmod 644 $startdir/pkg/usr/X11R6/man/man1/xpaint.1x
+
+}

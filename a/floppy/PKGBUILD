@@ -1,0 +1,101 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+MTOOLS=3.9.9
+SUBVER=20040228
+
+pkgname=floppy
+pkgver=5.4
+pkgrel=1
+pkgdesc="floppy (floppy disk utilities) Contains fdutils-5.4, tools to test and format floppy disks; and mtools-3.9.8, a collection of utilities for using DOS/Windows floppy disks with Linux."
+url="http://fdutils.linux.lu"
+source=(http://fdutils.linux.lu/fdutils-$pkgver.tar.gz		\
+	http://fdutils.linux.lu/fdutils-$pkgver-$SUBVER.diff.gz	\
+	http://mtools.linux.lu/mtools-$MTOOLS.tar.gz		\
+	fdutils.mediaprm.diff.gz				\
+	mtools.conf.gz						)
+md5sums=('17c1df04b1e524078ee52825a5ef5e56' \
+	 '2a5fcf53056eb8c8c441529cecaadf00' \
+	 '3e68b857b4e1f3a6521d1dfefbd30a36' \
+	 'ca3ecb0fdd513d1e89ad5bbd28840ee1' \
+	 'a5885c6314fbd1abee5352c1ea0443a1' )
+depends=('glibc')
+backup=('etc/mediaprm'		\
+	'etc/mtools.conf'	)
+
+#Todo:
+#None
+
+#Notes:
+#x11 is not a dependency because most of these programs run fine with out x
+#setfdprm is included in util-linux
+
+#Changelog:
+#Initial rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr
+	mkdir -p $startdir/pkg/etc
+
+	cd $startdir/src/fdutils-$pkgver
+
+	patch -p1 < $startdir/src/fdutils-$pkgver-$SUBVER.diff
+	patch -p1 < $startdir/src/fdutils.mediaprm.diff
+
+	./configure $CHOST --prefix=/usr --sysconfdir=/etc
+	make prefix=$startdir/pkg/usr sysconfdir=$startdir/pkg/etc install
+
+	mkdir -p $startdir/pkg/usr/doc/fdutils-$pkgver
+	cp	-a		\
+		COPYING		\
+		CREDITS		\
+		Changelog	\
+		INSTALL		\
+		doc/FAQ.html	\
+		doc/README	\
+	$startdir/pkg/usr/doc/fdutils-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/fdutils-$pkgver/*
+
+	cd $startdir/src/mtools-$MTOOLS
+
+	./configure $CHOST --prefix=/usr --sysconfdir=/etc
+
+	cp $startdir/src/mtools.conf $startdir/pkg/etc
+
+	make prefix=$startdir/pkg/usr sysconfdir=$startdir/pkg/etc install
+
+	mkdir -p $startdir/pkg/usr/doc/mtools-$MTOOLS
+	cp	-a		\
+		COPYING		\
+		Changelog	\
+		INSTALL		\
+		README		\
+		Release.notes	\
+	$startdir/pkg/usr/doc/mtools-$MTOOLS
+	chmod 644 $startdir/pkg/usr/doc/mtools-$MTOOLS/*
+
+	rm $startdir/pkg/usr/bin/MAKEFLOPPIES
+	rm $startdir/pkg/usr/bin/lz
+	rm $startdir/pkg/usr/bin/mcheck
+	rm $startdir/pkg/usr/bin/mcomp
+	rm $startdir/pkg/usr/bin/mxtar
+	rm $startdir/pkg/usr/bin/tgz
+	rm $startdir/pkg/usr/bin/uz
+	rm $startdir/pkg/usr/man/man1/makefloppies.1
+
+	cd $startdir/pkg/usr/bin
+	ln -s mtools mread
+
+	rmdir $startdir/pkg/usr/man/man8
+
+	find $startdir/pkg/usr/bin -type l -exec chown root.bin {} \;
+
+	rm $startdir/pkg/usr/bin/setfdprm
+
+	chown root.bin $startdir/pkg/usr/bin/mkmanifest
+	chown root.bin $startdir/pkg/usr/bin/floppyd
+	chown root.bin $startdir/pkg/usr/bin/floppyd_installtest
+	chown root.bin $startdir/pkg/usr/bin/mtools
+	chown root.bin $startdir/pkg/usr/bin
+
+}

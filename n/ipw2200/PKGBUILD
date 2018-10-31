@@ -1,0 +1,68 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+FW=2.4
+
+pkgname=ipw2200
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="ipw2200 - support for the Intel PRO/Wireless 2200BG and 2915ABG Network Connection miniPCI adapters."
+url="http://ipw2200.sourceforge.net"
+install=$pkgname.install
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tgz	\
+	ipw2200-fw-$FW.tgz							)
+depends=('ieee80211' 'wireless_tools')
+md5sums=('be5b9815994e54c463ffd795ddd527e6' \
+	 'a5bc066d23900852a04711c5d33987d4' )
+
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.1.0, built for 2.6.15.5 2006.03.03
+##   rel4: rebuilt for 2.6.15.4 2006.02.12
+##   rel3: rebuilt for 2.6.15.3 2006.02.07
+##   rel2: rebuilt for 2.6.15.2 2006.01.31
+##   rel1: upgraded to 1.0.10, built for 2.6.15.1 2006.01.20
+##   rel4: rebuilt for 2.6.15 (rel3 was only used internally) 2006.01.10
+##   rel2: rebuilt for 2.6.14.2-Rubix 2005.11.12
+##   rel1: upgraded to 1.0.8 2005.10.27
+##   rel2: added patch to allow dhcp to work 2005.09.27
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make IEEE80211_INC=/usr/include KSRC=/usr/src/linux-$vver26 || return 1
+
+	mkdir -p	$startdir/pkg/lib/modules/$vver26/kernel/drivers/net/wireless/$pkgname
+	cp *.ko		$startdir/pkg/lib/modules/$vver26/kernel/drivers/net/wireless/$pkgname
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		FILES		\
+		GIT_SHA1	\
+		INSTALL		\
+		ISSUES		\
+		LICENSE		\
+		README.ipw2200	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src
+
+	mkdir -p	$startdir/pkg/lib/firmware
+	cp *.fw		$startdir/pkg/lib/firmware
+
+	cp LICENSE $startdir/pkg/usr/doc/$pkgname-$pkgver/LICENSE-firmware
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find  $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
+
+}

@@ -1,0 +1,130 @@
+#!/bin/bash
+#
+# Start/stop the Bluetooth daemons
+#
+
+# Start of hcid (allowed values are "true" and "false")
+HCID_ENABLE=true
+
+# Config file for hcid
+HCID_CONFIG="/etc/bluetooth/hcid.conf"
+
+# Start sdpd (allowed values are "true" and "false")
+SDPD_ENABLE=true
+
+# Start hidd (allowed values are "true" and "false")
+HIDD_ENABLE=true
+
+# Arguments to hidd
+HIDD_OPTIONS=""
+
+# Run hid2hci (allowed values are "true" and "false")
+HID2HCI_ENABLE=false
+
+# Bind rfcomm devices (allowed values are "true" and "false")
+RFCOMM_ENABLE=true
+
+# Config file for rfcomm
+RFCOMM_CONFIG="/etc/bluetooth/rfcomm.conf"
+
+# Start dund (allowed values are "true" and "false")
+DUND_ENABLE=false
+
+# Arguments to dund
+DUND_OPTIONS="--listen --persist"
+
+# Start pand (allowed values are "true" and "false")
+PAND_ENABLE=false
+
+# Arguments to pand
+PAND_OPTIONS="--listen --role NAP"
+
+##########################################################
+## You should not need to edit anything below this line ##
+##########################################################
+
+HCID_NAME=hcid
+SDPD_NAME=sdpd
+HIDD_NAME=hidd
+HID2HCI_NAME=hid2hci
+RFCOMM_NAME=rfcomm
+PAND_NAME=pand
+DUND_NAME=dund
+
+HCID_EXEC="`which $HCID_NAME || true`"
+SDPD_EXEC="`which $SDPD_NAME || true`"
+HIDD_EXEC="`which $HIDD_NAME || true`"
+HID2HCI_EXEC="`which $HID2HCI_NAME || true`"
+RFCOMM_EXEC="`which $RFCOMM_NAME || true`"
+PAND_EXEC="`which $PAND_NAME || true`"
+DUND_EXEC="`which $DUND_NAME || true`"
+
+HCID_CONFIG="/etc/bluetooth/hcid.conf"
+RFCOMM_CONFIG="/etc/bluetooth/rfcomm.conf"
+
+. /etc/rubixlib
+case "$1" in
+  start)
+	if $HCID_ENABLE && [ -x "$HCID_EXEC" -a -f "$HCID_CONFIG" ] ; then
+		start_daemon hcid $HCID_EXEC -f $HCID_CONFIG
+	fi
+	if $SDPD_ENABLE && [ -x "$SDPD_EXEC" ] ; then
+		start_daemon sdpd $SDPD_EXEC
+	fi
+	if $HIDD_ENABLE && [ -x "$HIDD_EXEC" ] ; then
+		start_daemon hidd $HIDD_EXEC $HIDD_OPTIONS --server || true
+	fi
+	if $HID2HCI_ENABLE && [ -x "$HID2HCI_EXEC" ] ; then
+		start_daemon hid2hci $HID2HCI_EXEC --tohci || true
+	fi
+	if $RFCOMM_ENABLE && [ -x "$RFCOMM_EXEC" -a -f "$RFCOMM_CONFIG" ] ; then
+		start_daemon rfcomm $RFCOMM_EXEC -f $RFCOMM_CONFIG bind all || true
+	fi
+	if $DUND_ENABLE && [ -x "$DUND_EXEC" -a -n "$DUND_OPTIONS" ] ; then
+		start_daemon dund $DUND_EXEC $DUND_OPTIONS
+	fi
+	if $PAND_ENABLE && [ -x "$PAND_EXEC" -a -n "$PAND_OPTIONS" ] ; then
+		start_daemon pand $PAND_EXEC $PAND_OPTIONS
+	fi
+	;;
+  stop)
+	if $PAND_ENABLE && [ -x "$PAND_EXEC" -a -n "$PAND_OPTIONS" ] ; then
+		stop_daemon pand $PAND_EXEC
+	fi
+	if $DUND_ENABLE && [ -x "$DUND_EXEC" -a -n "$DUND_OPTIONS" ] ; then
+		stop_daemon dund $DUND_EXEC
+	fi
+	if $RFCOMM_ENABLE && [ -x "$RFCOMM_EXEC" -a -f "$RFCOMM_CONFIG" ] ; then
+		stop_daemon rfcomm $RFCOMM_EXEC
+	fi
+	if $HID2HCI_ENABLE && [ -x "$HID2HCI_EXEC" ] ; then
+		stop_daemon hid2hci $HID2HCI_EXEC
+	fi
+	if $HIDD_ENABLE && [ -x "$HIDD_EXEC" ] ; then
+		stop_daemon hidd $HIDD_EXEC
+	fi
+	if $SDPD_ENABLE && [ -x "$SDPD_EXEC" ] ; then
+		stop_daemon sdpd $SDPD_EXEC
+	fi
+	if $HCID_ENABLE && [ -x "$HCID_EXEC" -a -f "$HCID_CONFIG" ] ; then
+		stop_daemon hcid $HCID_EXEC
+	fi
+	;;
+  restart)
+	$0 stop
+	sleep 2
+	$0 start
+	;;
+  status)
+	daemon_status hcid $HCID_EXEC
+	daemon_status sdpd $SDPD_EXEC
+	daemon_status hidd $HIDD_EXEC
+	daemon_status hid2hci $HID2HCI_EXEC
+	daemon_status rfcomm $RFCOMM_EXEC
+	daemon_status dund $DUND_EXEC
+	daemon_status pand $PAND_EXEC
+	;;
+  *)
+	stat_err "usage: $0 {start|stop|restart|status}"
+	;;
+esac

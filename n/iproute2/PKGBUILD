@@ -1,0 +1,58 @@
+# Maintainer: Judd Vinet <jvinet@zeroflux.org>
+
+pkgname=iproute2
+pkgver=051007
+pkgrel=1
+pkgdesc="iproute2 (IP routing utilities) These are tools used to administer many advanced IP routing features in the kernel.  See Configure.help in the kernel documentation (search for iproute2) for more information on which kernel options these tools are used with. These utilities were written by Alexey Kuznetsov.  The current maintainer of iproute2 is Stephen Hemminger."
+url="http://linux-net.osdl.org/index.php/Iproute2"
+depends=('glibc' 'db')
+source=(http://developer.osdl.org/dev/$pkgname/download/$pkgname-$pkgver.tar.gz	\
+	$pkgname.dbpath.diff.gz							)
+md5sums=('53f47d46f50eff9ed8c6fa2ac2b41a80' \
+	 'efe4341e1907600f945f815706cdd0e5' )
+backup=('etc/iproute2/rt_dsfield'	\
+	'etc/iproute2/rt_protos'	\
+	'etc/iproute2/rt_realms'	\
+	'etc/iproute2/rt_scopes'	\
+	'etc/iproute2/rt_tables'	)
+
+#Todo:
+#explain patch
+#figure out if the make error causes probs
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 051007 2005.10.26
+#rel2: Fixed symlink 2005.09.16
+#rel1: Upgraded to 2.6.11-050330 2005.08.05
+#rel2: Rebuilt against new db 2005.02.23
+#rel1: Initial rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/man/man8
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.dbpath.diff || return 1
+
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/sbin
+
+	cd $startdir/pkg/usr/man/man8
+	ln -sf tc-pbfifo.8 tc-bfifo.8
+	ln -sf tc-pbfifo.8 tc-pfifo.8
+	cd $startdir/src/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a RE* $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/var/lib/arpd
+
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+
+}

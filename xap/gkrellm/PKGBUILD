@@ -1,0 +1,75 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+COUNTDOWN=0.1.1
+
+pkgname=gkrellm
+pkgver=2.2.7
+pkgrel=1
+pkgdesc="gkrellm (GNU Krell Monitors) GKrellM charts SMP CPU, load, Disk, and all active net interfaces automatically. An on/off button and online timer for the PPP interface is provided. Monitors for memory and swap usage, file system, internet connections, APM laptop battery, mbox style mailboxes, and cpu temps. Also includes an uptime monitor, hostname label, and clock/calendar. Bill Wilson is the author of GKrellM."
+depends=('glibc' 'freetype2' 'gtk+2' 'pango' 'atk' 'fontconfig' 'x11' 'expat' 'openssl' 'glib2' 'zlib')
+source=(http://members.dslextreme.com/users/billw/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	http://www.cise.ufl.edu/~jcjones/src/$pkgname-countdown-$COUNTDOWN.tar.gz	\
+	gkrellm.theme.defaults.diff.gz							)
+url="http://www.gkrellm.net"
+md5sums=('6ff47bc8e66ba88f42932365a947f9f3' \
+	 'e087f0d50c7e5369b0b387bf9a9fad55' \
+	 '5972d2250b68b72a769a307b633a25f2' )
+
+#Todo:
+#None
+
+#Notes:
+#This is a 2 step build
+#  1. comment out the countdown plugin, build, install
+#  2. uncomment plugin, build, install, distribute
+#The patch is from Slackware, here is Pat's note:
+# Increase the default width slightly, and don't use the text
+# shadow effect by default (this seems better with Pango font
+# rendering)
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/gkrellm.theme.defaults.diff
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	make					\
+		INSTALLDIR=/usr/bin		\
+		INCLUDEDIR=/usr/include		\
+		MANDIR=/usr/man/man1		\
+		LOCALEDIR=/usr/share/locale	\
+		PKGCONFIGDIR=/usr/lib/pkgconfig
+	make install						\
+		INSTALLDIR=$startdir/pkg/usr/bin		\
+		INCLUDEDIR=$startdir/pkg/usr/include		\
+		MANDIR=$startdir/pkg/usr/man/man1		\
+		LOCALEDIR=$startdir/pkg/usr/share/locale	\
+		PKGCONFIGDIR=$startdir/pkg/usr/lib/pkgconfig
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/lib/gkrellm2/plugins
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYRIGHT	\
+		CREDITS		\
+		INSTALL		\
+		README		\
+		Themes.html	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/gkrellm-countdown
+	make
+	cp gkrellm-countdown.so $startdir/pkg/usr/lib/gkrellm2/plugins
+	mkdir -p $startdir/pkg/usr/doc/gkrellm-countdown-$COUNTDOWN
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+	$startdir/pkg/usr/doc/gkrellm-countdown-$COUNTDOWN
+
+}

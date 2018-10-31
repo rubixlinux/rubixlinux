@@ -1,0 +1,64 @@
+#!/bin/bash
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/alsactl
+
+. /etc/rubixlib
+
+load_alsa_mixer() {
+	if [ -r /etc/asound.state ]; then
+		$PROG restore
+	else
+		stat_err "ALSA warning:  No mixer settings found in /etc/asound.state."
+		stat_err "  Sound may be muted.  Use 'alsamixer' to unmute your sound card,"
+		stat_err "  and then 'alsactl store' to save the default ALSA mixer settings"
+		stat_err "  to be loaded at boot."
+	fi
+}
+
+load_alsa_oss_modules() {
+	if ! cat /proc/modules | tr _ - | grep -wq snd-pcm-oss ; then
+		stat_busy "loading oss compatibility modules"
+		modprobe snd-pcm-oss
+		modprobe snd-mixer-oss
+		modprobe snd-seq-oss
+		stat_done
+	fi
+}
+
+load_modules() {
+	DRIVERS=`modprobe -c | grep -E "^[[:space:]]*alias[[:space:]]+snd-card-[[:digit:]]" | awk '{ print $3 }'`
+	if [ ! "$DRIVERS" = "" ]; then
+		stat_busy "$SCRIPT: loading kernel modules"
+		for module in $DRIVERS; do
+			modprobe $module
+		done
+		stat_done
+	fi
+}
+
+case "$1" in
+	start)
+		if [ -d /proc/asound ]; then
+			start_daemon $SCRIPT load_alsa_mixer
+			load_alsa_oss_modules
+		else
+			load_modules
+			$0 start
+		fi
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG store
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+		;;
+esac

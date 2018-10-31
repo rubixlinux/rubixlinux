@@ -1,0 +1,13 @@
+--- ./webui/cgi-bin/dspam.cgi.orig	2005-10-19 19:54:05.000000000 -0600
++++ ./webui/cgi-bin/dspam.cgi	2005-10-19 19:54:30.000000000 -0600
+@@ -195,8 +195,8 @@
+     }
+     close (LINES);
+ 
+-    $end = $all_lines - (($history_site-1) * $CONFIG{'HISTORY_PER_SITE'});
+-    $begin = $end - $CONFIG{'HISTORY_PER_SITE'} + 1 ;
++    $end = $all_lines - (($history_site-1) * $CONFIG{'HISTORY_PER_PAGE'});
++    $begin = $end - $CONFIG{'HISTORY_PER_PAGE'} + 1 ;
+ 
+     if ($begin < 0) {
+       $begin = 1;

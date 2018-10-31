@@ -1,0 +1,10 @@
+## This simply runs X as the mythtv user
+## Edit the ~mythtv/.xinitrc file to control what is started here
+## By default, mythfrontend is run
+
+. /etc/rubixlib
+
+printh1 "starting mythtv"
+printsep
+
+/bin/su - mythtv -c "PATH=$PATH:/usr/X11R6/bin && startx"

@@ -1,0 +1,120 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+SHORTVER=0.9.8
+
+pkgname=openssl
+pkgver=0.9.8a
+pkgrel=1
+pkgdesc="openssl (Secure Sockets Layer toolkit) The OpenSSL certificate management tool and the shared libraries that provide various encryption and decryption algorithms and protocols. This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org).  This product includes cryptographic software written by Eric Young (eay@cryptsoft.com).  This product includes software written by Tim Hudson (tjh@cryptsoft.com)."
+url="http://www.openssl.org"
+depends=('glibc')
+source=(http://www.openssl.org/source/$pkgname-$pkgver.tar.gz	\
+	openssl.opts.diff.gz					)
+md5sums=('1d16c727c10185e4d694f87f5e424ee1' \
+	 'e5026e55e7b01fad7e8dd88aa49bb3ac' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.9.8a 2005.10.17
+##   rel2: rebuilt with fixed CFLAGS 2005.09.04
+##   rel1: upgraded to 0.9.8 2005.09.03
+##   rel1: upgraded to 0.9.7g 2005.06.12
+##   rel2: rebuilt with new stackexec flag 2005.03.04
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/openssl.opts.diff || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		CHANGES		\
+		CHANGES.SSLeay	\
+		FAQ		\
+		INSTALL		\
+		INSTALL.MacOS	\
+		INSTALL.VMS	\
+		INSTALL.W32	\
+		LICENSE		\
+		NEWS		\
+		README		\
+		README.ENGINE	\
+		doc		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type d -exec chmod 755 {} \;
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+	# These are the known patent issues with OpenSSL:
+	# name   #         expires
+	# MDC-2: 4,908,861 13/03/2007, not included.
+	# IDEA:  5,214,703 25/05/2010, not included.
+	# RC5:   5,724,428 03/03/2015, not included.
+
+	./config			\
+		--prefix=/usr		\
+		--openssldir=/etc/ssl	\
+		no-mdc2			\
+		no-idea			\
+		no-rc5			\
+		shared
+	make depend || return 1
+	make || return 1
+	make INSTALL_PREFIX=$startdir/pkg install
+
+	cd $startdir/pkg/usr/lib
+
+	rm libssl.so
+	ln -s libssl.so.$SHORTVER	libssl.so.0
+	ln -s libssl.so.0		libssl.so
+
+	rm libcrypto.so
+	ln -s libcrypto.so.$SHORTVER	libcrypto.so.0
+	ln -s libcrypto.so.0		libcrypto.so
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/etc/ssl/man $startdir/pkg/usr
+	cd $startdir/pkg/usr/man/man1
+	mv passwd.1 ssl_passwd.1
+	cd ../man3
+	mv rand.3 ssl_rand.3
+
+	cd $startdir/pkg
+
+	chmod 755 usr/lib/pkgconfig
+
+	find $startdir/pkg/usr/lib -perm 0555 -exec chmod 0755 {} \;
+
+}
+
+# This build script is derived from the Slackware build script:
+#
+# Copyright 2000 BSDi, Inc. Concord, CA, USA
+# Copyright 2001, 2002 Slackware Linux, Inc.  Concord, CA, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

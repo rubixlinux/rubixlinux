@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libgpg-error
+pkgver=1.0
+pkgrel=1
+pkgdesc="Libgpg-error is a small library that defines common error values for all GnuPG components. Among these are GPG, GPGSM, GPGME, GPG-Agent, libgcrypt, Libksba, DirMngr, Pinentry, SmartCard Daemon and possibly more in the future."
+url="http://www.gnupg.org"
+depends=('glibc')
+source=(ftp://ftp.gnupg.org/gcrypt/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('ff409db977e4a4897aa09ea420a28a2f')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make
+	make prefix=$startdir/pkg/usr install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

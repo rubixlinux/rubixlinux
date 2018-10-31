@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=audiofile
+pkgver=0.2.6
+pkgrel=1
+pkgdesc="audiofile (audio support library) Audiofile is a library to handle various audio file formats, and is used by the esound daemon.  You can also use it to develop your own audiofile applications."
+depends=('glibc')
+source=(http://www.68k.org/~michael/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('9c1049876cd51c0f1b12c2886cce4d42')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --sysconfdir=/etc $CHOST
+	make
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		TODO		\
+		README		\
+		ChangeLog	\
+		docs/*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

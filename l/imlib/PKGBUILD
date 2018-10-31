@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=imlib
+pkgver=1.9.15
+pkgrel=1
+pkgdesc="Imlib is a display depth-independent image loading and rendering library.  Imlib is designed to simplify and speed up the process of loading images and obtaining X Window System drawables.  Imlib provides many simple manipulation routines which can be used for common operations."
+depends=('gtk+' 'libjpeg' 'libtiff' 'libungif')
+source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.9/$pkgname-$pkgver.tar.bz2)
+md5sums=('7db987e6c52e4daf70d7d0f471238eae')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		doc		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm $startdir/pkg/usr/doc/$pkgname-$pkgver/doc/Makefile*
+
+}

@@ -1,0 +1,36 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libmad
+pkgver=0.15.1b
+pkgrel=1
+pkgdesc="libmad (high-quality MPEG audio library) MAD (libmad) is a high-quality MPEG audio decoder.  It currently supports MPEG-1 and the MPEG-2 extension to Lower Sampling Frequencies, as well as the so-called MPEG 2.5 format.  All three audio layers (Layer I, Layer II, and Layer III a.k.a. MP3) are fully implemented.  Because MAD provides full 24-bit PCM output, applications using MAD are able to produce high quality audio. MAD is distributed under the terms of the GPL. MAD (libmad) was written by Robert Leslie."
+depends=('glibc')
+source=(ftp://ftp.mars.org/pub/mpeg/$pkgname-$pkgver.tar.gz)
+url="http://www.underbit.com/products/mad"
+md5sums=('1be543bc30c56fb6bea1d7bf6a64e66c')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--disable-debugging	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		COPYING		\
+		COPYRIGHT	\
+		CREDITS		\
+		README		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

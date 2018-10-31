@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=netpipes
+pkgver=4.2
+pkgrel=1
+pkgdesc="netpipes Robert Forsman's netpipes package makes TCP/IP streams usable in shell scripts.  It can also simplify client/server code by allowing the programmer to skip all the tedious programming bits related to sockets and concentrate on writing a filter/service.  Here's an example of what you can do with 'faucet' and 'hose', two netpipes commands: server$ faucet 3000 -out tar cf - . client$ hose server 3000 -in tar xvf -"
+source=(http://web.purplefrog.com/~thoth/netpipes/ftp/$pkgname-$pkgver-export.tar.gz)
+md5sums=('36f7b3120e00c9c74cb6619334de419f')
+depends=('glibc')
+url="http://web.purplefrog.com/~thoth/netpipes/netpipes.html"
+
+build() {
+
+	cd $startdir/src
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver-export
+	cp	-a	\
+		COPYING	\
+		README	\
+		*.html	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver-export
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver-export/*
+
+	make
+
+	mkdir -p $startdir/pkg/usr/bin
+	for file in		\
+		encapsulate	\
+		faucet		\
+		getpeername	\
+		hose		\
+		sockdown	\
+		timelimit
+	do
+		cp $file $startdir/pkg/usr/bin
+	done
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	for file in		\
+		encapsulate	\
+		faucet		\
+		getpeername	\
+		hose		\
+		sockdown	\
+		timelimit
+	do
+		cp $file.1 $startdir/pkg/usr/man/man1/
+	done
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

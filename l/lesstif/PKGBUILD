@@ -1,0 +1,59 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=lesstif
+pkgver=0.94.4
+pkgrel=1
+pkgdesc="lesstif (a free replacement for OSF/Motif(R)) LessTif is the Hungry Programmers' (www.hungry.com) free clone of Motif(R). It aims to be source compatible with OSF/Motif(R) meaning that the same source code should compile with both and work exactly the same.  This package contains the libraries and header files to be able to run and compile Motif applications, along with the lesstif version of mwm, the Motif window manager."
+depends=('x11')
+url="http://www.lesstif.org"
+install=$pkgname.install
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('3096ca456c0bc299d895974d307c82d8')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.94.4 2005.06.13
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure				\
+		--enable-shared			\
+		--enable-static			\
+		--enable-build-21		\
+		--enable-build-Xlt		\
+		--enable-build-Xbae		\
+		--enable-xbae-24bit		\
+		--enable-xbae-row-heights	\
+		--disable-debug			\
+		--prefix=/usr/X11R6		\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc
+	cd $startdir/pkg/usr/doc
+	ln -sf /usr/X11R6/LessTif $pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	mkdir -p $startdir/pkg/etc/X11
+	mv $startdir/pkg/usr/X11R6/lib/X11/* $startdir/pkg/etc/X11
+	ln -s ../../../../etc/X11/mwm $startdir/pkg/usr/X11R6/lib/X11/mvm
+
+	mkdir -p $startdir/pkg/usr/X11R6/lib/X11/config
+	cp -a $startdir/pkg/usr/X11R6/lib/LessTif/config/* $startdir/pkg/usr/X11R6/lib/X11/config
+	mv $startdir/pkg/usr/X11R6/lib/X11/config/host.def $startdir/pkg/usr/X11R6/lib/X11/config/host.def-$pkgname
+
+}

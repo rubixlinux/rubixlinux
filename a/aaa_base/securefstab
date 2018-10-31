@@ -1,0 +1,102 @@
+#!/bin/bash
+
+if [ "$UID" != 0 ]; then
+	echo
+	echo "You must be root to run securefstab!"
+	echo
+	exit 1
+fi
+
+diffchange() {
+	diff -u $FSTAB $FSTAB.new > /dev/null 2>&1
+        if [ "$?" != 0 ]; then
+		echo "The following change is about to be made to your fstab:"
+		echo
+		diff -u $FSTAB $FSTAB.new
+		echo
+		echo -n "Do you want to continue? [N\y] "
+		read cont
+		echo
+		if [ "$cont" != "y" -a "$cont" != "Y" ]; then
+			echo "Skipping Change..."
+		else
+			echo "Applying change..."
+			mv $FSTAB.new $FSTAB
+		fi
+		echo
+	fi
+}
+
+FSTAB=/etc/fstab
+
+chmod 644 $FSTAB
+chown root.root $FSTAB
+
+echo
+echo "If you have a /var partition and are running bind in a chroot at /var/named,"
+echo "either make a new partition at /var/named that does not have \"nodev\" in"
+echo "the fstab, or remove the \"nodev\" option from the /var partition."
+echo
+echo "Press Enter to continue."
+read temp
+
+## clean up the fstab...
+sed -i 's/[[:blank:]]\+/ /g' $FSTAB
+
+## backup the cleaned fstab...
+cp -a $FSTAB $FSTAB.bak
+
+## now lets work on a copy of the fstab...
+cp -a $FSTAB $FSTAB.new
+
+## change / options to "rw"
+sed -i 's/\([[:graph:]]\+ \/ [[:graph:]]\+\) [[:graph:]]\+ \([[:graph:]]\+ [[:graph:]]\)\+/\1 rw \2/g' $FSTAB.new
+
+diffchange
+
+## now lets work on a copy of the fstab...
+cp -a $FSTAB $FSTAB.new
+
+## change /boot options to "rw,nodev,nosuid,noexec"
+sed -i 's/\([[:graph:]]\+ \/boot [[:graph:]]\+\) [[:graph:]]\+ \([[:graph:]]\+ [[:graph:]]\)\+/\1 rw,nodev,nosuid,noexec \2/g' $FSTAB.new
+
+diffchange
+
+## now lets work on a copy of the fstab...
+cp -a $FSTAB $FSTAB.new
+
+## change /tmp options to "rw,nosuid"
+sed -i 's/\([[:graph:]]\+ \/tmp [[:graph:]]\+\) [[:graph:]]\+ \([[:graph:]]\+ [[:graph:]]\)\+/\1 rw,nosuid \2/g' $FSTAB.new
+
+diffchange
+
+## now lets work on a copy of the fstab...
+cp -a $FSTAB $FSTAB.new
+
+## change /var options to "rw,nodev,nosuid,noexec"
+sed -i 's/\([[:graph:]]\+ \/var [[:graph:]]\+\) [[:graph:]]\+ \([[:graph:]]\+ [[:graph:]]\)\+/\1 rw,nodev,nosuid,noexec \2/g' $FSTAB.new
+
+diffchange
+
+## now lets work on a copy of the fstab...
+cp -a $FSTAB $FSTAB.new
+
+## change /home options to "rw,nodev,nosuid"
+sed -i 's/\([[:graph:]]\+ \/home [[:graph:]]\+\) [[:graph:]]\+ \([[:graph:]]\+ [[:graph:]]\)\+/\1 rw,nodev,nosuid \2/g' $FSTAB.new
+
+diffchange
+
+diff -u $FSTAB.bak $FSTAB > /dev/null 2>&1
+if [ "$?" != 0 ]; then
+	echo "Here are all the changes made to your fstab:"
+	echo
+	diff -u $FSTAB.bak $FSTAB
+	echo
+	echo "Your original fstab has been saved as $FSTAB.bak"
+	echo
+else
+	echo "No changes made to your fstab."
+	echo
+fi
+
+rm -f $FSTAB.new

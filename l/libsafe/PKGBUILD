@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+SRCPKG=2.0-16
+
+pkgname=libsafe
+pkgver=2.0.16
+pkgrel=1
+pkgdesc="libsafe The libsafe library protects a process against the exploitation of buffer overflow vulnerabilities in process stacks and against format string exploits.  Libsafe works with any existing pre-compiled executable and can be used transparently, even on a system-wide basis. The method intercepts all calls to library functions that are known to be vulnerable.  Libsafe has been shown to detect several known attacks and can potentially prevent yet unknown attacks.  Experiments indicate that the performance overhead of libsafe is negligible."
+source=(http://www.research.avayalabs.com/project/libsafe/src/$pkgname-$SRCPKG.tgz)
+url="http://www.research.avayalabs.com/project/libsafe"
+install=$pkgname.install
+depends=('glibc')
+md5sums=('6b7b6e6df84d4afb469ccc66d04fc24d')
+
+build() {
+
+	cd $startdir/src/$pkgname-$SRCPKG
+
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	make
+
+	mkdir -p $startdir/pkg/lib
+	cp src/libsafe.so.$pkgver	$startdir/pkg/lib/libsafe.so.$pkgver
+	chmod 755			$startdir/pkg/lib/libsafe.so.$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		ChangeLog		\
+		EMAIL_NOTIFICATION	\
+		INSTALL			\
+		README			\
+		doc			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	cp doc/libsafe.8 $startdir/pkg/usr/man/man8
+
+	cd $startdir/pkg/lib
+	ln -sf libsafe.so.$pkgver libsafe.so.2
+
+}

@@ -1,0 +1,340 @@
+#!/bin/bash
+
+FSTAB=/etc/fstab
+
+if [ "$UID" != 0 ]; then
+	echo
+	echo "You must be root to run encryptfs!"
+	echo
+	exit 1
+fi
+
+usage() {
+	echo
+	echo "Usage: encryptfs [options]"
+	echo
+	echo -e "Option\t\tMeaning"
+	echo -e " -?\t\tShow this message"
+	echo -e " -h [dev]\tEncrypt /home device [dev]"
+	echo -e " -s [dev]\tEncrypt swap device [dev]"
+	echo -e " -t [dev]\tEncrypt /tmp device [dev]"
+	echo
+}
+
+wantcontinue() {
+	echo -n "Do you want to continue? [N\y] "
+	read cont
+	if [ "$cont" != "y" -a "$cont" != "Y" ]; then
+		echo "Exiting."
+		echo
+		exit 0
+	fi
+}
+
+warning() {
+	echo "WARNING!!!"
+	echo
+	echo "This utility should only be used on partitions that do not currently have important data."
+	echo
+	echo "This utility DESTROYS all data on the partition it encrypts and can DESTROY the integrity of your operating system."
+	echo "DO NOT USE THIS UTILITY IF YOU DONT KNOW WHAT YOU ARE DOING!!!"
+	echo
+	echo "If you continue, you will DESTROY all data on $OPTARG"
+	echo
+	echo "You might want to make a copy of your fstab and save it in a safe place."
+	echo
+
+	wantcontinue
+}
+
+pickloop() {
+
+	LOOP=0
+	for used in `grep -ow \/dev\/loop. $FSTAB.new | grep -o \[0-9\] | sort`
+	do
+		if [ "$used" == "$LOOP" ]; then
+			LOOP=`expr $LOOP + 1`
+			if [ "$LOOP" -gt "7" ]; then
+				echo
+				echo "All loop devices in use. Can not Continue!"
+				echo
+				exit 1
+			fi
+		fi
+	done
+
+	LOOP="/dev/loop$LOOP"
+
+}
+
+encrypt_home() {
+
+	echo
+	echo "You are about to encrypt your /home partition"
+	echo "Press Enter to continue."
+	read temp
+
+	warning
+
+	grep swap $FSTAB | grep encryption > /dev/null 2>&1
+	if [ "$?" != 0 ]; then
+		echo
+		echo "Your swap is not encrypted!"
+		echo "You must have an encrypted swap before an encrypted /home"
+		echo
+		return 1
+	fi
+
+	## check that the device was already /home and warn the user if else
+	grep $OPTARG $FSTAB | grep '/home' > /dev/null 2>&1
+	if [ "$?" != 0 ]; then
+		echo
+		echo "$OPTARG was not previously mounted at /home. This is ok, but you might want to triple check that you are working on the partition you think you are..."
+		echo
+		wantcontinue
+	fi
+
+	echo
+	echo "You may use an existing key or create a new one. Either way enter the location of the key on the next line."
+	echo "Remember that you probably want the key somewhere on the root partition if you are going to mount this partition at boot time."
+	echo
+	echo -n "Please enter the location of your keyfile: [/etc/home.key] "
+	read KEYFILE
+	if [ "$KEYFILE" == "" ]; then
+		KEYFILE=/etc/home.key
+	fi
+
+	if [ ! -r $KEYFILE ];then
+		echo
+		echo -n "$KEYFILE is not readable do you need to create a new one? [Y/n] "
+		read ans
+		if [ "$ans" == "Y" -o "$ans" == "y" -o "$ans" == "" ]; then
+			echo
+			echo "About to generate keyfile..."
+			echo "You will be prompted for a password."
+			echo "You will need this password every time you mount this partition."
+			echo "After entering a password /dev/random is accessed and can take an indefinite amount of time if the kernel's random entropy pool is empty."
+			echo "You should move the mouse around, type randomly and do other console work to speed up the generation of this key."
+			echo "Press Enter to continue."
+			read temp
+			head -c 2925 /dev/random | uuencode -m - | head -n 66 | tail -n 65 | gpg --symmetric -a > $KEYFILE
+			chmod 400 $KEYFILE
+		else
+			echo
+			echo "Can not continue without a working keyfile!"
+			echo
+			return 1
+		fi
+	fi
+
+	## remove the existing device line from fstab
+	grep -v $OPTARG $FSTAB > $FSTAB.new
+
+	## using this new temp fstab, lets pick the lowest available loop device
+	pickloop
+
+	## add the new /home line to the fstab
+	echo -e "$OPTARG /home ext2 rw,nodev,nosuid,noauto,loop=$LOOP,encryption=AES128,gpgkey=$KEYFILE 0 0" >> $FSTAB.new
+
+	echo 
+	diff -u $FSTAB $FSTAB.new > /dev/null 2>&1
+	if [ "$?" == 0 ]; then
+		echo "No change to your fstab is necessary."
+		echo "Press Enter to continue."
+		read temp
+	else
+		echo "The following changes will be made to your fstab:"
+		echo
+		diff -u $FSTAB $FSTAB.new
+		echo
+		wantcontinue
+		echo
+		grep $OPTARG /proc/mounts > /dev/null 2>&1
+		if [ "$?" == 0 ]; then
+			echo "Unmounting $OPTARG"
+			umount $OPTARG
+		fi
+		echo "Installing new fstab..."
+		mv $FSTAB.new $FSTAB
+		echo
+	fi
+
+	echo "About to make IRREVERSIBLE changes to $OPTARG!"
+	wantcontinue
+
+	echo
+	echo "Filling $OPTARG with random looking data... (this may take a while)"
+	head -c 15 /dev/urandom | uuencode -m - | head -n 2 | tail -n 1 | losetup -p 0 -e AES128 $LOOP $OPTARG
+	dd if=/dev/zero of=$LOOP bs=4k conv=notrunc 2>/dev/null
+ 	losetup -d $LOOP
+
+	echo "Setting up ext2 filesystem on $OPTARG... Enter the password you used to make the key."
+	losetup -F $LOOP
+	mkfs -t ext2 $LOOP
+	losetup -d $LOOP
+
+	echo "Mounting $OPTARG..."
+	mount $OPTARG
+
+	echo
+	echo "Your /home partition is now encrypted!"
+	echo
+	echo "/home will NOT be automatically mounted at boot."
+	echo "You can mount this by hand, or set up the commands in /etc/rc.local"
+	echo "This way the system will be able to boot without requiring a person"
+	echo "to be on the console to enter the password."
+	echo
+	echo "Press Enter to continue."
+	read temp
+
+}
+
+encrypt_swap() {
+
+	echo
+	echo "You are about to encrypt your swap partition"
+	echo "Press Enter to continue."
+	read temp
+
+	warning
+
+	## check that the device was already a swap and warn the user if else
+	grep $OPTARG $FSTAB | grep swap > /dev/null 2>&1
+	if [ "$?" != 0 ]; then
+		echo
+		echo "$OPTARG was not previously a swap. This is ok, but you might want to triple check that you are working on the partition you think you are..."
+		echo
+		wantcontinue
+	fi
+
+	## remove the existing device line from fstab
+	grep -v $OPTARG $FSTAB > $FSTAB.new
+
+	## using this new temp fstab, lets pick the lowest available loop device
+	pickloop
+
+	## add the new swap line to the fstab
+	echo -e "$OPTARG swap swap loop=$LOOP,encryption=AES128 0 0" >> $FSTAB.new
+
+	echo
+	diff -u $FSTAB $FSTAB.new > /dev/null 2>&1
+	if [ "$?" == 0 ]; then
+		echo "No change to your fstab is necessary."
+		echo "Press Enter to continue."
+		read temp
+	else
+		echo "The following changes will be made to your fstab:"
+		echo
+		diff -u $FSTAB $FSTAB.new
+		echo
+		wantcontinue
+		echo
+		echo "Disabling all swap devices..."
+		swapoff -a
+		echo "Installing new fstab..."
+		mv $FSTAB.new $FSTAB
+		echo
+	fi
+
+	echo "About to make IRREVERSIBLE changes to $OPTARG!"
+	wantcontinue
+
+	echo
+	echo "Erasing all data on $OPTARG... (this may take a while)"
+	dd if=/dev/zero of=$OPTARG bs=64k conv=notrunc
+
+	echo "Creating encrypted swap on $OPTARG..."
+	mkswap $OPTARG
+
+	echo "Enabling all swap devices..."
+	swapon -a
+
+	rm -rf /var/log/ksymoops
+
+	echo
+	echo "Your swap is now encrypted!"
+	echo "Press Enter to continue."
+	read temp
+
+}
+
+encrypt_tmp() {
+
+	echo
+	echo "You are about to encrypt your /tmp partition"
+	echo "Press Enter to continue."
+	read temp
+
+	warning
+
+	## check that the device was already /tmp and warn the user if else
+	grep $OPTARG $FSTAB | grep '/tmp' > /dev/null 2>&1
+	if [ "$?" != 0 ]; then
+		echo
+		echo "$OPTARG was not previously mounted at /tmp. This is ok, but you might want to triple check that you are working on the partition you think you are..."
+		echo
+		wantcontinue
+	fi
+
+	## remove the existing device line from fstab
+	grep -v $OPTARG $FSTAB > $FSTAB.new
+
+	## using this new temp fstab, lets pick the lowest available loop device
+	pickloop
+
+	## add the new /tmp line to the fstab
+	echo -e "$OPTARG /tmp ext2 rw,nodev,nosuid,loop=$LOOP,encryption=AES128,phash=random/1777 0 0" >> $FSTAB.new
+
+	echo
+	diff -u $FSTAB $FSTAB.new > /dev/null 2>&1
+	if [ "$?" == 0 ]; then
+		echo "No change to your fstab is necessary."
+		echo "Press Enter to continue."
+		read temp
+	else
+		echo "The following changes will be made to your fstab:"
+		echo
+		diff -u $FSTAB $FSTAB.new
+		echo
+		wantcontinue
+		echo
+		grep $OPTARG /proc/mounts > /dev/null 2>&1
+		if [ "$?" == 0 ]; then
+			echo "Unmounting $OPTARG"
+			umount $OPTARG
+		fi
+		echo "Installing new fstab..."
+		mv $FSTAB.new $FSTAB
+		echo
+	fi
+
+	echo "About to make IRREVERSIBLE changes to $OPTARG!"
+	wantcontinue
+
+	echo
+	echo "Mounting $OPTARG..."
+	mount $OPTARG
+
+	echo
+        echo "Your /tmp partition is now encrypted!"
+        echo "Press Enter to continue."
+        read temp
+
+}
+
+while getopts "h:s:t:?" flag
+do
+	if [ "$flag" == "h" ]; then
+		encrypt_home
+	elif [ "$flag" == "s" ]; then
+		encrypt_swap
+	elif [ "$flag" == "t" ]; then
+		encrypt_tmp
+	elif [ "$flag" == "?" ]; then
+		usage
+	fi
+done
+
+if [ $# == 0 ]; then
+	usage
+fi

@@ -1,0 +1,103 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=quota
+pkgver=3.12
+pkgrel=1
+pkgdesc="quota (Linux disk quota utilities) An implementation of the diskquota system for the Linux operating system to keep those greedy users from gobbling up 100% of the hard drive space.  Works with ext2, ext3, reiserfs, and xfs filesystems. This system is based on the Melbourne quota system by Robert Elz. Edvard Tuinder and Marco van Wieringen ported this code to Linux. Jan Kara added support for the new Linux quota format and the XFS filesystem."
+url="http://sourceforge.net/projects/linuxquota"
+depends=(e2fsprogs)
+source=(http://dl.sourceforge.net/sourceforge/linuxquota/$pkgname-$pkgver.tar.gz)
+md5sums=('d69870f4a9732ed2fe072952ee7f1462')
+
+#Todo:
+#Rebuild with sgml-tools
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release 2005.04.22
+
+build() {
+
+	cd $startdir/src/$pkgname-tools
+
+	find . -perm 2755 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make
+	make mo
+
+	mkdir -p	$startdir/pkg/sbin
+	cp convertquota	$startdir/pkg/sbin
+	cp quotacheck	$startdir/pkg/sbin
+	cp quotaon	$startdir/pkg/sbin
+
+	cd $startdir/pkg/sbin
+	ln -sf quotaon quotaoff
+	cd $startdir/src/$pkgname-tools
+
+	chmod 755		$startdir/pkg/sbin/*
+	chown -R root.bin	$startdir/pkg/sbin
+	mkdir -p		$startdir/pkg/usr/sbin
+
+	for file in		\
+		edquota		\
+		repquota	\
+		warnquota	\
+		quotastats	\
+		setquota	\
+		quot		\
+		xqmstats	\
+		rpc.rquotad
+	do
+		cp $file $startdir/pkg/usr/sbin
+	done
+
+	chmod 755		$startdir/pkg/usr/sbin/*
+	chown -R root.bin	$startdir/pkg/usr/sbin
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp quota		$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+#	mkdir -p	$startdir/pkg/usr/include/rpcsvc
+#	cp rquota.h	$startdir/pkg/usr/include/rpcsvc
+#	cp rquota.x	$startdir/pkg/usr/include/rpcsvc
+
+	mkdir -p		$startdir/pkg/etc
+	cp warnquota.conf	$startdir/pkg/etc/warnquota.conf-sample
+
+	mkdir -p $startdir/pkg/usr/man/man{1,2,3,8}
+	for page in *.1 ; do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+	for page in *.2 ; do
+		cp $page $startdir/pkg/usr/man/man2
+	done
+	for page in *.3 ; do
+		cp $page $startdir/pkg/usr/man/man3
+	done
+	for page in *.8 ; do
+		cp $page $startdir/pkg/usr/man/man8
+	done
+
+	mkdir -p $startdir/pkg/usr/share/locale/pl/LC_MESSAGES
+	cp po/pl.mo $startdir/pkg/usr/share/locale/pl/LC_MESSAGES/quota.mo
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		Changelog	\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd doc
+	sgml2txt quotadoc.sgml
+	sgml2html -s 0 quotadoc.sgml
+	cp quotadoc.txt		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp quotadoc.html	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -name CVS -type d | xargs rm -rf
+
+}

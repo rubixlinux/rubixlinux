@@ -1,0 +1,42 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=slang
+pkgver=1.4.9
+pkgrel=1
+pkgdesc="slang S-Lang is an interpreted language that was designed from the start to be easily embedded into a program to provide it with a powerful extension language.  S-Lang is also a programmer's library that permits a programmer to develop sophisticated platform-independent software.  In addition to providing the S-Lang extension language, the library provides facilities for screen management, keymaps, and low-level terminal I/O."
+source=(ftp://space.mit.edu/pub/davis/slang/v1.4/$pkgname-$pkgver.tar.gz	\
+	ftp://space.mit.edu/pub/davis/slang/v1.4/$pkgname-1.4.8-doc.tar.gz	)
+url="http://space.mit.edu/~davis/slang"
+depends=('glibc')
+md5sums=('c73aa62b2d1b215ca55a7337daa3f543' \
+	 'ee548d2757c8c064a0ff7c4fa2955405' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure		\
+		--prefix=/usr	\
+		--includedir=/usr/include/slang
+	make
+	make install DESTDIR=$startdir/pkg
+	make elf
+	make install-elf DESTDIR=$startdir/pkg
+
+	rm -r $startdir/pkg/usr/doc/slang
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		COPY*		\
+		README		\
+		UPGRADE.txt	\
+		changes.txt	\
+		doc/text	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 755 $startdir/pkg/usr/lib/libslang.so.$pkgver
+
+	cp -a $startdir/src/doc/html $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

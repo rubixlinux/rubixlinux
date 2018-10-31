@@ -1,0 +1,93 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pcmcia-cs
+pkgver=3.2.8
+pkgrel=7
+pkgdesc="pcmcia-cs (laptop card support) Card Services for Linux is a complete PCMCIA support package.  It includes a set of loadable kernel modules that implement a version of the PCMCIA Card Services applications program interface, a set of client drivers for specific cards, and a card manager daemon that can respond to card insertion and removal events, loading and unloading drivers on demand.  It supports ``hot swapping'' of PCMCIA cards, so cards can be inserted and ejected at any time."
+url="http://pcmcia-cs.sourceforge.net"
+depends=('glibc' 'pcmciautils')
+backup=('etc/rc.d/pcmcia'		\
+	'etc/pcmcia/config.opts'	\
+	'etc/pcmcia/ftl.opts'		\
+	'etc/pcmcia/ide.opts'		\
+	'etc/pcmcia/ieee1394.opts'	\
+	'etc/pcmcia/memory.opts'	\
+	'etc/pcmcia/network.opts'	\
+	'etc/pcmcia/parport.opts'	\
+	'etc/pcmcia/scsi.opts'		\
+	'etc/pcmcia/serial.opts'	\
+	'etc/pcmcia/wireless.opts'	)
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz	\
+	config.opts.diff							\
+	pcmcia-cs.dhcpcd.diff							\
+	pcmcia									)
+md5sums=('0d6d65be8896eff081aee996049afaa5' \
+	 '16690b988e44c0ca4cb52470535e3ba1' \
+	 '6dc53b33367b512253b8a1a009fb4ea7' \
+	 '11d7020adecdd53f5fab04e0d73a12a2' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel7: removed stat_info from rc script 2006.01.17
+##   rel6: updated rc script to new format 2006.01.16
+##   rel5: fixed rc script so that cardmgr is not run for 2.6 kernels, added pcmciautils as a dep 2005.12.17
+##   rel4: Fixed some more problems with include port in config.opts 2005.10.28
+##           still building from 2.4 kernels, but this may change...
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/pcmcia-cs.dhcpcd.diff
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		BUGS			\
+		COPYING			\
+		LICENSE			\
+		MAINTAINERS		\
+		doc/PCMCIA-HOWTO	\
+		doc/PCMCIA-PROG		\
+		README*			\
+		SUPPORTED.CARDS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	make clean
+	./Configure				\
+		--noapm				\
+		--nopnp				\
+		--nox11				\
+		--trust				\
+		--kernel=/usr/src/linux24	\
+		--noprompt			\
+		--current			\
+		--bsd
+	make all || return 1
+	make install PREFIX=$startdir/pkg
+
+	chmod 0755 $startdir/pkg/sbin/*
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	rm $startdir/pkg/etc/rc.d/rc.pcmcia
+	cp $startdir/src/pcmcia $startdir/pkg/etc/rc.d
+
+	cd $startdir/pkg
+	patch -p1 < $startdir/src/config.opts.diff
+	cd $startdir/src/$pkgname-$pkgver
+
+	find $startdir/pkg/etc -perm 0555 -exec chmod 0755 {} \;
+	find $startdir/pkg/etc -perm 0444 -exec chmod 0644 {} \;
+
+	chmod 0644 $startdir/pkg/usr/man/man?/*
+	chown -R root.bin $startdir/pkg/sbin
+
+	rm $startdir/pkg/etc/modules.conf
+
+}

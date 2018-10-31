@@ -1,0 +1,63 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=sed
+pkgver=4.1.4
+pkgrel=2
+pkgdesc="sed (stream editor) This is the GNU version of sed, a stream editor.  A stream editor is used to perform basic text transformations on an input stream (a file or input from a pipeline).  It is sed's ability to filter text in a pipeline which distinguishes it from other types of editors. sed is a required package (it is needed by many system scripts)."
+url="http://www.gnu.org/software/sed"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('2a62ceadcb571d2dac006f81df5ddb48')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: fixed doc in /usr/share/doc 2005.10.18
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/bin
+
+	mv $startdir/pkg/usr/bin/sed $startdir/pkg/bin
+
+	cd $startdir/pkg/usr/bin
+	ln -sf /bin/sed .
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	cp	-a		\
+		AUTHORS		\
+		BUGS		\
+		COPYING*	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		README.boot	\
+		THANKS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/share/doc/* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rmdir $startdir/pkg/usr/share/doc
+
+	rm $startdir/pkg/usr/info/dir
+
+}

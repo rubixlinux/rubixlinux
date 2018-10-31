@@ -1,0 +1,40 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mpg123
+pkgver=0.59r
+pkgrel=1
+pkgdesc="mpg123 (a command-line mp3 player) (full?) MPEG 1.0/2.0, Layer 1,2 and 3 support (Layer-3 realtime only with a 'fast' machine).  Since April 97, 128kbit j-stereo should work on a 486DX4-120.  With 2:1 down-sampling or using the downmix-mode even a 486DX2-66 should play such a stream in realtime!"
+depends=('glibc')
+source=(http://www.mpg123.de/mpg123/mpg123-0.59r.tar.gz)
+md5sums=('95df59ad1651dd2346d49fafc83747e7')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make linux
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp mpg123		$startdir/pkg/usr/bin
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	mkdir -p		$startdir/pkg/usr/man/man1
+	cp mpg123.1		$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BENCHMARKING	\
+		BUGS		\
+		CHANGES		\
+		COPYING		\
+		INSTALL		\
+		JUKEBOX		\
+		README		\
+		README.WIN32	\
+		README.remote	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 600 -exec chmod 644 {} \;
+
+}

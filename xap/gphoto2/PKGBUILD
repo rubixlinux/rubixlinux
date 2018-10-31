@@ -1,0 +1,86 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gphoto2
+pkgver=2.1.6
+pkgrel=2
+pkgdesc="gPhoto2 is a free, redistributable, ready to use set of digital camera software applications for Unix-like systems, written by a whole team of dedicated volunteers around the world. It supports more than 600 cameras. gPhoto2 runs on a large range of UNIX-like operating system, including Linux, FreeBSD, NetBSD, etc. gPhoto is provided by major Linux distributions like Debian GNU/Linux, Gentoo, RedHat Linux, SUSE Linux, Mandriva, etc. gPhoto2 is freely available and distributed under the terms of the GNU LGPL."
+url="http://www.gphoto.org"
+source=(http://dl.sourceforge.net/gphoto/$pkgname-$pkgver.tar.gz	\
+	http://dl.sourceforge.net/gphoto/lib$pkgname-$pkgver.tar.gz	)
+md5sums=('2de2bcc62599b8a7337b54b0a067c50b' \
+	 '1938cbd9718595fd419907bf2f7c3195' )
+depends=('ncurses' 'glibc' 'libjpeg' 'gpm' 'x11' 'libusb' 'libexif' 'aalib' 'readline' 'popt')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: fixed docs in /usr/share/doc 2005.10.18
+##   rel1: initial rubix release
+
+build() {
+
+	makelibgphoto2 || return 1
+	makegphoto2 || return 1
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}
+
+
+makelibgphoto2() {
+
+	cd $startdir/src/lib$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--with-drivers=all
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/doc/lib$pkgname		$startdir/pkg/usr/doc/lib$pkgname-$pkgver
+	mv $startdir/pkg/usr/share/doc/lib${pkgname}_port	$startdir/pkg/usr/doc/lib$pkgname-$pkgver
+	rmdir $startdir/pkg/usr/share/doc
+
+	mkdir -p $startdir/pkg/usr/doc/lib$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		CHANGES		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		MAINTAINERS	\
+		NEWS		\
+		README		\
+		TESTERS		\
+	$startdir/pkg/usr/doc/lib$pkgname-$pkgver
+
+}
+
+makegphoto2() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

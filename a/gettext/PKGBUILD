@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gettext
+pkgver=0.14.5
+pkgrel=1
+pkgdesc="gettext The GNU gettext package contains "gettext" and "ngettext", programs that are used to internationalize the messages given by shell scripts."
+url="http://www.gnu.org/software/gettext"
+depends=('gcc')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('e2f6581626a22a0de66dce1d81d00de3')
+
+#Todo:
+#None
+
+#Notes:
+# This note is from the arch PKGBUILD
+# NOTE: To properly build this, you'll need to (1) build it, (2) upgrade it
+#       with pacman, then (3) build it again.
+#
+#       This is because some executables (/usr/bin/msgcat) link to the OLD
+#       version of libgettextlib.so.  Building twice fixes this.
+
+#Changelog:
+#rel1: Upgraded to 0.14.5 2005.06.13
+#rel1: Upgraded to 0.14.4 2005.05.12
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	cd gettext-runtime
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+	rm $startdir/pkg/usr/info/dir
+
+	cd $startdir/pkg/usr/share
+	mv man ..
+	mv doc ..
+
+	cd $startdir/pkg/usr/doc
+	mkdir $pkgname-$pkgver
+	mv gettext/csharpdoc gettext/javadoc1 gettext/javadoc2 libasprintf $pkgname-$pkgver
+	rm -r gettext
+	cd $pkgname-$pkgver
+	ln -sf /usr/share/gettext/ABOUT-NLS .
+
+	cd $startdir/src/$pkgname-$pkgver/gettext-runtime
+	cp	-a			\
+		AUTHORS			\
+		BUGS			\
+		intl/COPYING.LIB-2.0	\
+		intl/COPYING.LIB-2.1	\
+		INSTALL			\
+		NEWS			\
+		README			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

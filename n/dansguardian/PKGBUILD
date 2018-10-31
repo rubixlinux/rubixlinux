@@ -1,0 +1,75 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=dansguardian
+pkgver=2.8.0.6
+pkgrel=2
+pkgdesc="dansguardian filters the actual content of pages based on many methods including phrase matching, PICS filtering and URL filtering. It does not purely filter based on a banned list of sites like lesser totally commercial filters."
+url="http://dansguardian.org"
+depends=('glibc' 'gcc' 'squid' 'zlib')
+backup=('etc/dansguardian/bannedextensionlist'	\
+	'etc/dansguardian/bannediplist'		\
+	'etc/dansguardian/bannedmimetypelist'	\
+	'etc/dansguardian/bannedphraselist'	\
+	'etc/dansguardian/bannedregexpurllist'	\
+	'etc/dansguardian/bannedsitelist'	\
+	'etc/dansguardian/bannedurllist'	\
+	'etc/dansguardian/banneduserlist'	\
+	'etc/dansguardian/contentregexplist'	\
+	'etc/dansguardian/dansguardian.conf'	\
+	'etc/dansguardian/dansguardianf1.conf'	\
+	'etc/dansguardian/exceptioniplist'	\
+	'etc/dansguardian/exceptionphraselist'	\
+	'etc/dansguardian/exceptionsitelist'	\
+	'etc/dansguardian/exceptionurllist'	\
+	'etc/dansguardian/exceptionuserlist'	\
+	'etc/dansguardian/filtergroupslist'	\
+	'etc/dansguardian/greysitelist'		\
+	'etc/dansguardian/greyurllist'		\
+	'etc/dansguardian/pics'			\
+	'etc/dansguardian/weightedphraselist'	)
+source=(http://usmirror.dansguardian.org/downloads/2/Stable/$pkgname-$pkgver.source.tar.gz	\
+	dansguardian										)
+md5sums=('aa619607198f37a528dbb65e4a503beb' \
+	 '6a9c1535f981bcb609d91142414ea639' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.15
+##   rel1: upgraded to 2.8.0.6 2005.08.19
+##   rel2: added longer wait in rc script 2005.06.15
+##   rel1: Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/etc/logrotate.d
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --cgidir=/etc/dansguardian/cgi-bin/
+	make || return 1
+	make INSTALLPREFIX=$startdir/pkg install
+
+	rm -r $startdir/pkg/etc/rc.d
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		INSTALL		\
+		LICENSE		\
+		README		\
+		UPGRADING	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 755 $startdir/pkg/etc/dansguardian/logrotation
+	chmod 755 $startdir/pkg/etc/dansguardian/cgi-bin/dansguardian.pl
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

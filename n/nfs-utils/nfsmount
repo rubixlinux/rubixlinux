@@ -1,0 +1,34 @@
+#!/bin/bash
+
+SCRIPT=`basename $0`
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		if [ ! -f /var/run/daemons/portmap ]; then
+			stat_err "error! portmap is not running!"
+			exit 1
+		fi
+		start_daemon $SCRIPT /sbin/mount -a -t nfs
+		;;
+	stop)
+		stop_daemon $SCRIPT /sbin/umount -a -t nfs
+		sleep 1
+		NFSMOUNTS=`/sbin/mount -t nfs`
+		if [ ! -z "$NFSMOUNTS" ]; then
+			stat_err "error! an nfs share is still mounted!"
+			exit 1
+		fi
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT
+		mount -t nfs
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

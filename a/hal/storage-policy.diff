@@ -1,0 +1,12 @@
+--- hal-0.5.5.1/fdi/policy/10osvendor/10-storage-policy.fdi.orig	2005-12-18 12:07:36.000000000 -0700
++++ hal-0.5.5.1/fdi/policy/10osvendor/10-storage-policy.fdi	2005-12-18 12:08:01.000000000 -0700
+@@ -10,7 +10,8 @@
+       <merge key="storage.policy.default.managed_keyword.primary" type="string">managed</merge>
+       <merge key="storage.policy.default.managed_keyword.secondary" type="string">kudzu</merge>
+       <merge key="storage.policy.default.mount_option.noauto" type="bool">true</merge>
+-      <merge key="storage.policy.default.mount_option.pamconsole" type="bool">true</merge>
++      <merge key="storage.policy.default.mount_option.pamconsole" type="bool">false</merge>
++      <merge key="storage.policy.default.mount_option.user" type="bool">true</merge>
+       <merge key="storage.policy.default.mount_option.exec" type="bool">true</merge>
+     </match>
+   </device>

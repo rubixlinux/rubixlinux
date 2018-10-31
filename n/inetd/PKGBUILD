@@ -1,0 +1,56 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=inetd
+pkgver=1.79s
+pkgrel=3
+pkgdesc="inetd (Internet super-server) This is a program to listen for connections on certain Internet sockets and invokes a program to service the request.  Essentially, inetd allows running one daemon to invoke several others, reducing load on the system.  Many of the network services are run through inetd, so you'll probably need it. This version of inetd was ported from OpenBSD."
+depends=('glibc')
+backup=('etc/rc.d/inetd'	\
+	'etc/inetd.conf'	)
+source=($pkgname-OpenBSD-$pkgver.tar.gz	\
+	$pkgname-OpenBSD-$pkgver.diff	\
+	$pkgname.loopingdos.diff	\
+	README				\
+	$pkgname.conf			\
+	rc.$pkgname			)
+md5sums=('8e5aee8a0f95cf0cf84b95633a37315d' \
+	 'b917b8b64e5d028c3d6601fc2a0f10b6' \
+	 '6460805b1df3e65104cddd938f181080' \
+	 '22099ed12dc0c310211d296b6e722796' \
+	 '8742f341ba1ec4a65daad9df438789ad' \
+	 'f7d48f321ae6f320d8a292adb95ede26' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: updated rc script to new format 2006.01.16
+##   rel2: fixed backup of rc script 2005.09.29
+##   rel1: initial rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/sbin
+
+	cd $startdir/src/$pkgname
+
+	patch -p1 < $startdir/src/$pkgname-OpenBSD-$pkgver.diff	|| return 1
+	patch -p1 < $startdir/src/$pkgname.loopingdos.diff	|| return 1
+
+	make || return 1
+
+	cp $pkgname	$startdir/pkg/usr/sbin
+	cp $pkgname.8	$startdir/pkg/usr/man/man8
+	cp $startdir/src/README		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp $startdir/src/$pkgname.conf	$startdir/pkg/etc
+	cp $startdir/src/rc.$pkgname	$startdir/pkg/etc/rc.d/$pkgname
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

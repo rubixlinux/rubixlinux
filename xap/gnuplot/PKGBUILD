@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnuplot
+pkgver=4.0.0
+pkgrel=1
+pkgdesc="Gnuplot  is a portable command-line driven interactive data and function plotting utility for UNIX, IBM OS/2, MS Windows, DOS, Macintosh, VMS, Atari and many other platforms."
+depends=('glibc' 'freetype2' 'libjpeg' 'gd' 'x11' 'fontconfig' 'expat' 'zlib' 'libpng')
+source=(ftp://ftp.gnuplot.info/pub/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://www.gnuplot.info"
+md5sums=('66258443d9f93cc4f46b147dac33e63a')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure				\
+		--prefix=/usr			\
+		--with-png			\
+		--datadir=/usr/share/gnuplot	\
+		--with-readline
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS		\
+		ChangeLog	\
+		CodeStyle	\
+		Copyright	\
+		FAQ		\
+		INSTALL*	\
+		NEWS		\
+		PATCHLEVEL	\
+		PGPKEYS		\
+		PORTING		\
+		README*		\
+		TODO		\
+		VERSION		\
+		demo		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 755 $startdir/pkg/usr/doc/$pkgname-$pkgver/demo
+	rm -f $startdir/pkg/usr/doc/$pkgname-$pkgver/demo/Make*
+
+	rm $startdir/pkg/usr/info/dir
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

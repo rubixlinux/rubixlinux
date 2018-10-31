@@ -1,0 +1,67 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=kernel24-source
+pkgver=2.4.32
+pkgrel=1
+url="http://www.kernel.org"
+pkgdesc="kernel24-source (Linux kernel source) Source code for Linus Torvalds' Linux kernel. This is the complete and unmodified source code for the Linux kernel."
+source=(ftp://ftp.kernel.org/pub/linux/kernel/v2.4/linux-$pkgver.tar.bz2	\
+	config.gz								)
+md5sums=('38f4d0830e95a20f4bfed17622d5557c' \
+	 '04c94df958b1f91eaf39a86102786a8a' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.4.32 2005.11.17
+##   rel2: rebuilt with new config 2005.11.13
+##   rel1: upgraded to 2.4.31 2005.06.18
+##   rel3: this is no longer the default kernel so the /usr/src/linux 
+##         symlink is no longer included 2005.05.16
+##   rel2: added /usr/src/linux24 symlink 2005.05.15
+##   rel1: upgraded to 2.4.30 2005.04.13
+##   rel2: rebuilt with new config without i2c 2005.03.08
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src
+
+	cp -a linux-$pkgver linux-$pkgver.orig
+
+	cp config linux-$pkgver/.config
+
+	cd linux-$pkgver
+
+	make oldconfig	|| return 1
+	make dep	|| return 1
+	make bzImage	|| return 1
+	make clean	|| return 1
+
+	cd drivers/net/hamradio/soundmodem
+	rm *
+	cp -a $startdir/src/linux-$pkgver.orig/drivers/net/hamradio/soundmodem/* .
+
+	cd $startdir/src/linux-$pkgver/scripts
+	rm -r *
+	cp -a $startdir/src/linux-$pkgver.orig/scripts/* .
+
+	cd $startdir/src/linux-$pkgver
+	rm .version .config.old .hdepend
+
+	find . -name ".depend" | xargs rm
+
+	mkdir -p $startdir/pkg/usr/src
+	cd $startdir/pkg/usr/src
+	cp -a $startdir/src/linux-$pkgver .
+
+	find $startdir/pkg -perm 0664 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0775 -exec chmod 0755 {} \;
+
+	ln -s linux-$pkgver $startdir/pkg/usr/src/linux24
+
+}

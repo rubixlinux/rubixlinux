@@ -1,0 +1,12 @@
+--- hal-0.5.5.1/hald/linux2/blockdev.c.orig	2005-12-18 11:18:33.000000000 -0700
++++ hal-0.5.5.1/hald/linux2/blockdev.c	2005-12-18 11:20:05.000000000 -0700
+@@ -827,7 +827,8 @@
+ 
+ 			/* These magic values are documented in the kernel source */
+ 			switch (type) {
+-			case 0:	/* Disk */
++			case 0:	 /* Disk */
++			case 14: /* Simple Direct Access Device, set it to disk */
+ 				hal_device_property_set_string (d, "storage.drive_type", "disk");
+ 				break;
+ 

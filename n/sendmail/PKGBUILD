@@ -1,0 +1,244 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=sendmail
+pkgver=8.13.6
+pkgrel=1
+pkgdesc="sendmail (mail transfer agent) Eric Allman's mail transport agent. The _Unix System Administration Handbook_ calls sendmail 'The most complex and complete mail delivery system in common use...' Ready-made configuration files are included for systems connected by TCP/IP (with or without a nameserver) and for systems using UUCP. The procmail package is required to handle local mail delivery."
+url="http://www.sendmail.org"
+depends=('glibc' 'openssl' 'db' 'cyrus-sasl')
+source=(ftp://ftp.sendmail.org/pub/$pkgname/$pkgname.$pkgver.tar.gz	\
+	site.config.m4							\
+	linux.uucp.mc							\
+	$pkgname-slackware-tls.mc					\
+	$pkgname-slackware.mc						\
+	faq.txt								\
+	Build								\
+	$pkgname							\
+	README.linux							\
+	rubix-localhost.mc						\
+	etc.tar.gz							\
+	$pkgname-slackware-tls-sasl.mc					)
+md5sums=('484cca51f74b5e562b3cf119ceb2f900' \
+	 '7cca372ab8e098250d5f505a4c0f86ec' \
+	 '2fdc9e4d0953e13ea7369730bab77148' \
+	 '29139df6222e8cd50a8fbbe8d99e9f74' \
+	 'efa5321ac16b8178287ff172daf035b1' \
+	 'cf453c7fdc7fec73dbd567cbd368f2ca' \
+	 '3b79224f72cd3db0c947d08bf3e599fc' \
+	 '395463266a27de1d98969c445d04f7fa' \
+	 '3396fd440a52149120f1547fe21276d6' \
+	 'e641495451de8e7704a8f300b9822575' \
+	 'ac3a204af2c33dcf831c99d256e63220' \
+	 'bdc9fd6a58f21839dd0798d039751a27' )
+backup=(etc/mail/Makefile		\
+	etc/mail/access.db		\
+	etc/mail/access			\
+	etc/mail/aliases.db		\
+	etc/mail/aliases		\
+	etc/mail/domaintable.db		\
+	etc/mail/domaintable		\
+	etc/mail/local-host-names	\
+	etc/mail/mailertable.db		\
+	etc/mail/mailertable		\
+	etc/mail/$pkgname.cf		\
+	etc/mail/statistics		\
+	etc/mail/submit.cf		\
+	etc/mail/trusted-users		\
+	etc/mail/virtusertable.db	\
+	etc/mail/virtusertable		\
+	etc/rc.d/rc.$pkgname		)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 8.13.6 *security* 2006.03.23
+##   rel4: fixed permission problem on /usr/share/sendmail 2006.01.21
+##   rel3: removed stat_info from rc script 2006.01.17
+##   rel2: updated rc script to new format 2006.01.16
+##   rel1: upgraded to 8.13.5
+##   rel3: rebuilt for new openssl 2005.09.04
+##   rel1: cleaned up the site.config.m4 2005.08.05
+##   rel1: upgraded to 8.13.4 and added more secure default sendmail.mc/cf 2005.05.21
+##   rel1: initial rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/etc/mail
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/libmilter
+	mkdir -p $startdir/pkg/usr/include/libmilter
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/man/man5
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/share/$pkgname/cf
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/var/spool/clientmqueue
+	mkdir -p $startdir/pkg/var/spool/mqueue
+
+	OSCPU="`uname -srm | tr ' ' '.'`"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	cp $startdir/src/site.config.m4 devtools/Site
+
+	cd cf/cf
+
+	cp $startdir/src/*.mc .
+
+	cp linux.uucp.mc config.mc
+	sh Build config.cf
+	mv config.cf $startdir/pkg/usr/share/$pkgname/linux.uucp.cf
+
+	cp $pkgname-slackware.mc config.mc
+	sh Build config.cf
+	mv config.cf $startdir/pkg/usr/share/$pkgname/$pkgname-slackware.cf
+
+	cp $pkgname-slackware-tls.mc config.mc
+	sh Build config.cf
+	mv config.cf $startdir/pkg/usr/share/$pkgname/$pkgname-slackware-tls.cf
+
+	cp $pkgname-slackware-tls-sasl.mc config.mc
+	sh Build config.cf
+	mv config.cf $startdir/pkg/usr/share/$pkgname/$pkgname-slackware-tls-sasl.cf
+
+	cp rubix-localhost.mc config.mc
+	sh Build config.cf
+	mv config.cf $startdir/pkg/usr/share/$pkgname/rubix-localhost.cf
+
+	cp $startdir/pkg/usr/share/$pkgname/rubix-localhost.cf	$startdir/pkg/etc/mail/$pkgname.cf
+	cp submit.cf						$startdir/pkg/etc/mail
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make O="$CFLAGS" || return 1
+
+	cp $pkgname/mailq.1		$startdir/pkg/usr/man/man1
+	cp $pkgname/newaliases.1	$startdir/pkg/usr/man/man1
+
+	cp $startdir/src/faq.txt $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		FAQ		\
+		INSTALL		\
+		KNOWNBUGS	\
+		LICENSE		\
+		PGPKEYS		\
+		README		\
+		RELEASE_NOTES	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cd doc
+	cp -a op $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cd ..
+
+	cd obj.$OSCPU/$pkgname
+	cp $pkgname			$startdir/pkg/usr/sbin
+	cp aliases.5			$startdir/pkg/usr/man/man5
+	cp $pkgname.8			$startdir/pkg/usr/man/man8
+	cp statistics			$startdir/pkg/etc/mail
+	cp ../../$pkgname/helpfile	$startdir/pkg/etc/mail
+
+	cd ../makemap
+	cp makemap	$startdir/pkg/usr/sbin
+	cp makemap.8	$startdir/pkg/usr/man/man8
+
+	cd ../mailstats
+	cp mailstats	$startdir/pkg/usr/sbin
+	cp mailstats.8	$startdir/pkg/usr/man/man8
+
+	cd ../praliases
+	cp praliases	$startdir/pkg/usr/bin
+	cp praliases.8	$startdir/pkg/usr/man/man8
+
+	cd ../rmail
+	cp rmail	$startdir/pkg/usr/bin
+	cp rmail.8	$startdir/pkg/usr/man/man8
+
+	cd ../smrsh
+	cp smrsh	$startdir/pkg/usr/sbin
+	cp smrsh.8	$startdir/pkg/usr/man/man8
+
+	cd ../mail.local
+	cp mail.local	$startdir/pkg/usr/sbin
+	cp mail.local.8	$startdir/pkg/usr/man/man8
+
+	cd ../vacation
+	cp vacation	$startdir/pkg/usr/bin/vacation
+	cp vacation.1	$startdir/pkg/usr/man/man1/vacation.1
+
+	cd ../editmap
+	cp editmap	$startdir/pkg/usr/sbin/editmap
+	cp editmap.8	$startdir/pkg/usr/man/man8/editmap.8
+
+	cd $startdir/src/$pkgname-$pkgver/libmilter
+	./Build
+	cd ..
+
+	cp -a include/libmilter/mfapi.h		$startdir/pkg/usr/include/libmilter
+	cp -a include/libmilter/mfdef.h		$startdir/pkg/usr/include/libmilter
+	cp -a obj.*/libmilter/libmilter.a	$startdir/pkg/usr/lib
+
+	chmod 644 $startdir/pkg/usr/lib/libmilter.a $startdir/pkg/usr/include/libmilter/*
+
+	cp -a libmilter/README $startdir/pkg/usr/doc/$pkgname-$pkgver/libmilter
+
+	cd $startdir/pkg
+	cd usr/share/$pkgname/cf
+	cp -a $startdir/src/$pkgname-$pkgver/cf/README .
+	cp -a $startdir/src/README.linux .
+	cp -a $startdir/src/README.linux ..
+	for dir in cf domain feature hack m4 mailer ostype sh siteconfig ; do
+	  cp -a $startdir/src/$pkgname-$pkgver/cf/$dir .
+	done
+	cp -a $startdir/pkg/usr/share/$pkgname/cf/cf/Build	$startdir/pkg/usr/share/$pkgname/cf/cf/Build.orig
+	cp $startdir/src/Build					$startdir/pkg/usr/share/$pkgname/cf/cf/Build
+
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	cp -a $startdir/src/etc/mail/* $startdir/pkg/etc/mail
+
+	cd $startdir/pkg/usr/bin
+	ln -s /usr/sbin/$pkgname newaliases
+	ln -s /usr/sbin/$pkgname mailq
+	ln -s /usr/sbin/$pkgname hoststat
+	ln -s /usr/sbin/$pkgname purgestat
+	ln -s /usr/sbin/$pkgname $pkgname
+
+	cd $startdir/pkg/usr/lib
+	ln -s /usr/sbin/$pkgname $pkgname
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+	chmod 644 $startdir/pkg/usr/share/$pkgname/*.cf
+	chmod 644 $startdir/pkg/etc/mail/*.cf
+	chown root:smmsp $startdir/pkg/usr/sbin/$pkgname
+	chmod 2755 $startdir/pkg/usr/sbin/$pkgname
+	chown smmsp:smmsp $startdir/pkg/var/spool/clientmqueue
+	chmod 770 $startdir/pkg/var/spool/clientmqueue
+	chmod 700 $startdir/pkg/var/spool/mqueue
+	chmod 644 $startdir/pkg/etc/mail/*
+
+	cd $startdir/pkg/etc/mail
+	chmod	640		\
+		access		\
+		access.db	\
+		aliases.db	\
+		domaintable.db	\
+		mailertable.db	\
+		virtusertable.db
+
+}

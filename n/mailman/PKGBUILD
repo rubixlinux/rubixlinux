@@ -1,0 +1,77 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=mailman
+pkgver=2.1.8
+pkgrel=1
+pkgdesc="Mailman is free software for managing electronic mail discussion and e-newsletter lists. Mailman is integrated with the web, making it easy for users to manage their accounts and for list owners to administer their lists. Mailman supports built-in archiving, automatic bounce processing, content filtering, digest delivery, spam filters, and more."
+url="http://www.list.org"
+install=$pkgname.install
+depends=('python' 'apache' 'sendmail')
+backup=(usr/mailman/Mailman/mm_cfg.py)
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tgz	\
+	Makefile.in.diff							\
+	$pkgname								)
+md5sums=('b9308ea3ffe8dd447458338408d46bd6' \
+	 'f923a094ebe6d7921fc67efba8ee13bd' \
+	 'ab69ff7eae3413a1b8b64bc2e833c417' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.1.8 2006.04.17 *security*
+##   rel1: upgraded to 2.1.7, updated rc script to new format 2006.01.16
+##   rel1: upgraded to 2.1.6 2005.06.12
+##   rel3: moved completely to /usr/mailman, I dont like suid stuff in var! 2004.04.20
+##   rel2: moved to /usr/mailman, keeping /var/mailman as the "var prefix" 2005.04.17
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+	patch -p1 < $startdir/src/Makefile.in.diff || return 1
+
+	mkdir -p $startdir/pkg/usr/mailman
+	chown root.mailman $startdir/pkg/usr/mailman
+	chmod 2775 $startdir/pkg/usr/mailman
+
+	./configure				\
+		--with-cgi-id=nobody		\
+		--with-mail-gid=daemon		\
+		--with-cgi-extension=".cgi"	\
+		--without-permcheck		\
+		--with-var-prefix=/usr/mailman	\
+		--prefix=/usr/mailman
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chmod 2775 $startdir/pkg/usr/mailman/messages/* $startdir/pkg/usr/mailman/templates/*
+	chmod 2770 $startdir/pkg/usr/mailman/archives/private
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ACKNOWLEDGMENTS	\
+		BUGS		\
+		FAQ		\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		STYLEGUIDE.txt	\
+		TODO		\
+		UPGRADING	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd admin
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 666 -exec chmod 644 {} \;
+	tar czpf docs.tar.gz www
+	cp docs.tar.gz $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+}

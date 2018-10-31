@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-libxml-perl
+pkgver=0.08
+pkgrel=1
+pkgdesc="perl-libxml-perl A Collection of Perl modules for working with XML."
+depends=('perl-xml-parser')
+source=(http://search.cpan.org/CPAN/authors/id/K/KM/KMACLEOD/libxml-perl-$pkgver.tar.gz)
+md5sums=('0ed5fbdda53d1301ddaed88db10503bb')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/libxml-perl-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/libxml-perl-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/libxml-perl-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/libxml-perl-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=tix
+pkgver=8.4.0
+pkgrel=1
+pkgdesc="tix (an extension to the Tk toolkit) Tix, which stands for Tk Interface Extension, is an extension library for Tcl/Tk. Tix adds many new widgets, image types and other commands that allows you to create compelling Tcl/Tk-based GUI applications. With these new widgets, your applications will look great and interact with your users in intuitive ways."
+depends=('glibc' 'x11' 'tcl' 'tk')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://tix.sourceforge.net"
+md5sums=('7fcd84a1a6e27e432cb07284b7a34317')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 8.4.12 2005.12.21
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT.*		\
+		README.*	\
+		license.terms	\
+		docs/FAQ.*	\
+		docs/Files.*	\
+		docs/Release*	\
+		docs/html	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --enable-shared
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 775 -exec chmod 755 {} \;
+
+	rmdir $startdir/pkg/usr/bin
+
+}

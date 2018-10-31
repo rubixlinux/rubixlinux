@@ -1,0 +1,85 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=hfsutils
+pkgver=3.2.6
+pkgrel=1
+pkgdesc="hfsutils is a collection of tools for reading and writing Macintosh HFS volumes. These utilities can manipulate HFS volumes on nearly any medium.  Since hfs and xhfs are linked with Tcl/Tk shared libraries, the hfsutils package is included here in the TCL software series. hfsutils was written by Robert Leslie <rob@mars.org>"
+depends=('glibc' 'x11' 'tcl' 'tk')
+source=(ftp://ftp.mars.org/pub/hfs/$pkgname-$pkgver.tar.gz	\
+	$pkgname.errno.diff.gz					)
+md5sums=('fa572afd6da969e25c1455f728750ec4' \
+	 '8c1ec5dabc0609aae000099fd9b31195' )
+url="http://www.mars.org/home/rob/proj/hfs"
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 8.4.11 2005.08.08
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.errno.diff || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		COPYING		\
+		COPYRIGHT	\
+		CREDITS		\
+		INSTALL		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	./configure		\
+		--prefix=/usr	\
+		--with-tcl	\
+		--with-tk	\
+		--enable-devlibs
+	make || return 1
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/include
+	make prefix=$startdir/pkg/usr install
+
+	cd $startdir/pkg/usr/bin
+	rm hattrib
+	ln -s hmount hattrib
+	rm hcd
+	ln -s hmount hcd
+	rm hcopy
+	ln -s hmount hcopy
+	rm hdel
+	ln -s hmount hdel
+	rm hdir
+	ln -s hmount hdir
+	rm hformat
+	ln -s hmount hformat
+	rm hls
+	ln -s hmount hls
+	rm hmkdir
+	ln -s hmount hmkdir
+	rm hpwd
+	ln -s hmount hpwd
+	rm hrename
+	ln -s hmount hrename
+	rm hrmdir
+	ln -s hmount hrmdir
+	rm humount
+	ln -s hmount humount
+	rm hvol
+	ln -s hmount hvol
+
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

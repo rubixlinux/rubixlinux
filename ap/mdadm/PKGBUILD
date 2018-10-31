@@ -1,0 +1,66 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mdadm
+pkgver=2.1
+pkgrel=1
+pkgdesc="mdadm (manage RAID arrays) mdadm is a utility program for creating, managing, and monitoring Linux MD (Software RAID) devices.  Unlike the older raidtools package, mdadm is a single program (which should make it easier to use). mdadm was written by Neil Brown.  Development of mdadm is sponsored by CSE@UNSW (The School of Computer Science and Engineering at The University of New South Wales)."
+url="http://www.cse.unsw.edu.au/~neilb/source/mdadm"
+backup=('etc/mdadm.conf')
+source=(http://www.cse.unsw.edu.au/~neilb/source/$pkgname/$pkgname-$pkgver.tgz	\
+	$pkgname.static.small.diff.gz						)
+md5sums=('5c57921c3c48eb973716cc21d94a5dc9' \
+	 '0952cb892967bcb39f73cf8da04073ca' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.1 2005.09.18
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.static.small.diff || return 1
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	make clean
+	make || return 1
+	mkdir -p $startdir/pkg/sbin
+
+	cp mdadm		$startdir/pkg/sbin
+	chmod 755		$startdir/pkg/sbin
+	chown -R root.bin	$startdir/pkg/sbin
+
+	mkdir -p $startdir/pkg/etc
+	cp mdadm.conf-example $startdir/pkg/etc/mdadm.conf
+
+	mkdir -p $startdir/pkg/usr/man/man{4,5,8}
+	cp md.4		$startdir/pkg/usr/man/man4
+	cp mdadm.conf.5	$startdir/pkg/usr/man/man5
+	cp mdadm.8	$startdir/pkg/usr/man/man8
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		ANNOUNCE-$pkgver	\
+		COPYING			\
+		ChangeLog		\
+		INSTALL			\
+		TODO			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

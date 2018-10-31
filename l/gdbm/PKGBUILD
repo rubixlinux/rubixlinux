@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gdbm
+pkgver=1.8.3
+pkgrel=1
+pkgdesc="gdbm (GNU database routines) GNU dbm is a set of database routines that work similar to the standard UNIX dbm routines."
+depends=('glibc')
+url="http://www.gnu.org/software/gdbm/gdbm.html"
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('1d1b1d5c0245b1c00aff92da751e9aa1')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 700 -exec chmod 755 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+
+	make
+	make install INSTALL_ROOT=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.root $startdir/pkg
+
+}

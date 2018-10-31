@@ -1,0 +1,51 @@
+#!/bin/bash
+
+START_FRESHCLAM="yes"
+START_CLAMD="yes"
+START_MILTER="yes"
+
+FRESHCLAM_OPTS="-c 12"
+MILTER_OPTS="--max-children=2 --timeout=0 --local --outgoing --pidfile=/var/run/clamav/clmilter.pid local:/var/run/clamav/clmilter.sock"
+
+FRESHCLAM=/usr/bin/freshclam
+CLAMD=/usr/sbin/clamd
+MILTER=/usr/sbin/clamav-milter
+SCRIPT=`basename $0`
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		if [ "$START_FRESHCLAM" == "yes" ]; then
+			start_daemon freshclam $FRESHCLAM -p /var/run/clamav/freshclam.pid -d $FRESHCLAM_OPTS || exit $?
+		fi
+		if [ "$START_CLAMD" == "yes" ]; then
+			start_daemon $SCRIPT $CLAMD || exit $?
+		fi
+		if [ "$START_MILTER" == "yes" ]; then
+			start_daemon clamav-milter $MILTER $MILTER_OPTS || exit $?
+		fi
+		;;
+	stop)
+		if [ "$START_MILTER" == "yes" ]; then
+			stop_daemon clamav-milter $MILTER
+		fi
+		if [ "$START_CLAMD" == "yes" ]; then
+			stop_daemon $SCRIPT $CLAMD
+		fi
+		if [ "$START_FRESHCLAM" == "yes" ]; then
+			stop_daemon freshclam $FRESHCLAM
+		fi
+		;;
+	restart)
+		$0 stop
+		sleep 5
+		$0 start
+		;;
+	status)
+		daemon_status freshclam $FRESHCLAM
+		daemon_status $SCRIPT $CLAMD
+		daemon_status clamav-milter $MILTER
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

@@ -1,0 +1,62 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=kbd
+pkgver=1.12
+pkgrel=2
+pkgdesc="Keytable files and keyboard utilities"
+url="ftp://ftp.win.tue.nl/pub/linux-local/utils/kbd/"
+depends=('glibc')
+source=(ftp://ftp.win.tue.nl/pub/linux-local/utils/$pkgname/$pkgname-$pkgver.tar.gz	\
+	extraf.tgz									\
+	nl.euro.diff									)
+md5sums=('7892c7010512a9bc6697a295c921da25' \
+	 'e4cc9c9111b1cde3c875599dafa4b21b' \
+	 'f54c9cd6b1f6c5e5631d538abf8c1896' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added unicyr fonts 2006.02.02
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/pkg
+	tar zxpf $startdir/src/extraf.tgz
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+
+	patch -p1 < $startdir/src/nl.euro.diff
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cd $startdir/pkg/usr/bin
+	ln -s ../../bin/loadkeys .
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/openvt
+	cp	-a	\
+		CHANGES	\
+		COPYING	\
+		CREDITS	\
+		README	\
+		doc/*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a openvt/README* $startdir/pkg/usr/doc/$pkgname-$pkgver/openvt
+	rm $startdir/pkg/usr/doc/$pkgname-$pkgver/kbd.FAQ.sgml
+
+	chown -R root:bin $startdir/pkg/bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+
+}

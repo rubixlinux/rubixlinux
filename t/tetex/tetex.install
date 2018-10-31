@@ -1,0 +1,36 @@
+post_install() {
+
+	PATH=/usr/sbin:/sbin:/usr/bin:/bin:/usr/share/texmf/bin
+
+	texconfig-sys init					> /dev/null 2>&1
+	texconfig-sys confall					> /dev/null 2>&1
+	texconfig-sys dvips paper letter			> /dev/null 2>&1
+	texconfig-sys xdvi us					> /dev/null 2>&1
+	texconfig-sys mode ljfour				> /dev/null 2>&1
+#	texconfig-sys xdvi a4					> /dev/null 2>&1
+	texconfig-sys dvips mode ljfour				> /dev/null 2>&1
+#	texconfig-sys dvips paper A4				> /dev/null 2>&1
+	texconfig-sys dvips printcmd -				> /dev/null 2>&1
+	texconfig-sys dvips add bjc600 				> /dev/null 2>&1
+	texconfig-sys dvips add stcolor				> /dev/null 2>&1
+	texconfig-sys dvips add deskjet				> /dev/null 2>&1
+	texconfig-sys dvips add ljet4				> /dev/null 2>&1
+	texconfig-sys dvips -P bjc600  mode canonbjc		> /dev/null 2>&1
+	texconfig-sys dvips -P stcolor mode epstylus		> /dev/null 2>&1
+	texconfig-sys dvips -P deskjet mode deskjet		> /dev/null 2>&1
+	texconfig-sys dvips -P ljet4   mode ljfour		> /dev/null 2>&1
+	texconfig-sys font options appendonlydir varfonts	> /dev/null 2>&1
+	texconfig-sys font ro					> /dev/null 2>&1
+	texconfig-sys rehash					> /dev/null 2>&1
+
+}
+
+post_upgrade() {
+
+	post_install
+
+}
+
+op=$1
+shift
+$op $*

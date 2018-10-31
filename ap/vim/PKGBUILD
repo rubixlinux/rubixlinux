@@ -1,0 +1,136 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+CTAGS=5.5.4
+DIRVER=64
+SHORTVER=6.4
+
+pkgname=vim
+pkgver=6.4.007
+pkgrel=3
+pkgdesc="vim (Vi IMproved) Vim is an almost compatible version of the UNIX editor vi.  Many new features have been added:  multi level undo, command line history,  filename completion, block operations, and more."
+url="http://www.vim.org"
+## depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'gpm' 'ncurses' 'fontconfig' 'x11' 'expat' 'glib2' 'zlib' 'libpng')
+depends=('glibc' 'gpm' 'ncurses')
+install=vim.install
+backup=('etc/vimrc')
+source=(ftp://ftp.vim.org/pub/$pkgname/unix/$pkgname-$SHORTVER.tar.bz2		\
+	ftp://ftp.vim.org/pub/$pkgname/extra/$pkgname-$SHORTVER-lang.tar.gz	\
+	http://dl.sourceforge.net/sourceforge/ctags/ctags-$CTAGS.tar.gz		\
+	ftp://ftp.vim.org/pub/$pkgname/patches/$SHORTVER/$SHORTVER.002		\
+	ftp://ftp.vim.org/pub/$pkgname/patches/$SHORTVER/$SHORTVER.003		\
+	ftp://ftp.vim.org/pub/$pkgname/patches/$SHORTVER/$SHORTVER.004		\
+	ftp://ftp.vim.org/pub/$pkgname/patches/$SHORTVER/$SHORTVER.005		\
+	ftp://ftp.vim.org/pub/$pkgname/patches/$SHORTVER/$SHORTVER.006		\
+	ftp://ftp.vim.org/pub/$pkgname/patches/$SHORTVER/$SHORTVER.007		)
+md5sums=('774c14d93ce58674b3b2c880edd12d77' \
+	 '3cca6128fe5439e89d3828b5e708bddb' \
+	 'a84124caadd4103270e0b84596ecfe83' \
+	 'ac408535c97031cb8351b771c1723dcb' \
+	 '591a6164c46792f7b41039e979148514' \
+	 '89de2693da138c37adfd10fdce957758' \
+	 '362dd6214af5cf5436bd616f148d22f1' \
+	 '82a1ca21cec39b3624036247f4f40fdc' \
+	 '253152bc93743b464f08f9f5d831fe52' )
+
+## Todo:
+##   None
+
+## Notes:
+##   gvim is now included, but the dependencies only reflect the
+##     non-X version. see the commented depends line above for the
+##     true dependencies
+
+## Changelog:
+##   rel3: added /etc/vimrc to the backup file list 2006.02.22
+##   rel2: rebuilt without acl support and with a default vimrc 2006.02.16
+##   rel1: upgraded to 6.4.007, fixed dependencies 2006.02.14
+##   rel1: upgraded to 6.4.006 2006.01.21
+##   rel1: upgraded to 6.4.004 2005.12.06
+##   rel1: upgraded to 6.4.000
+##   rel3: upgraded to patch release 86 2005.08.15
+##   rel2: upgraded to patch release 76 (current patchlevel is 78, but the extra two are not for unix) 2005.06.24
+##   rel1: Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/ctags-$CTAGS
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp ctags $startdir/pkg/usr/bin
+	chmod 755 $startdir/pkg/usr/bin/ctags
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp ctags.1 $startdir/pkg/usr/man/man1/ctags.1
+
+	mkdir -p $startdir/pkg/usr/doc/ctags-$CTAGS
+	cp	-a		\
+		COPYING		\
+		EXTENDING.html	\
+		FAQ		\
+		INSTALL		\
+		INSTALL.oth	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/ctags-$CTAGS
+	chmod 644 $startdir/pkg/usr/doc/ctags-$CTAGS/*
+
+	cd $startdir/src/$pkgname$DIRVER
+
+	for patch in $startdir/src/$SHORTVER.???; do
+		echo $patch
+		patch -p0 < $patch || return 1
+	done
+
+	./configure			\
+		--prefix=/usr		\
+		--without-x		\
+		--disable-gui		\
+		--with-features=big	\
+		--disable-acl		\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	make distclean
+	./configure			\
+		--prefix=/usr		\
+		--with-x		\
+		--enable-gui=gtk2	\
+		--with-features=big	\
+		--disable-acl		\
+		$CHOST
+	make || return 1
+	cp src/vim $startdir/pkg/usr/bin/gvim
+
+	rm $startdir/pkg/usr/man/man1/{ex,rview,rvim,view}.1
+	cd $startdir/pkg/usr/man/man1
+	ln -s vim.1 ex.1
+	ln -s vim.1 rview.1
+	ln -s vim.1 rvim.1
+	ln -s vim.1 view.1
+
+	cd $startdir/pkg/usr/bin
+	ln -s vim  eview
+	ln -s vim  evim
+	ln -s gvim gview
+	ln -s gvim gvimdiff
+	ln -s gvim rgview
+	ln -s gvim rgvim
+
+	cd $startdir/src/$pkgname$DIRVER
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a README.txt $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f | xargs chmod 644
+
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver
+	ln -s /usr/share/vim/vim$DIRVER doc
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/etc
+	cp $startdir/pkg/usr/doc/$pkgname-$pkgver/doc/vimrc_example.vim $startdir/pkg/etc/vimrc
+
+}

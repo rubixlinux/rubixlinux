@@ -1,0 +1,106 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+KSOVER=2.4.11
+
+pkgname=binutils
+pkgver=2.16.1
+pkgrel=1
+pkgdesc="binutils (GNU binary development tools) Binutils is a collection of binary utilities.  It includes "as" (the portable GNU assembler), "ld" (the GNU linker), and other utilities for creating and working with binary programs. These utilities are REQUIRED to compile C, C++, Objective-C, Fortran, and most other programming languages."
+url="http://www.kernel.org/pub/linux/devel/binutils"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.bz2					\
+	http://pax.grsecurity.net/$pkgname-2.16-pt-pax-flags-200506102235.patch			\
+	http://www.kernel.org/pub/linux/utils/kernel/ksymoops/v2.4/ksymoops-$KSOVER.tar.bz2	\
+	ksymoops.dynamic.bfd.diff.gz								)
+md5sums=('6a9d529efb285071dad10e1f3d2b2967' \
+	 '77b01de398daf439bbee1fcb4b211d6d' \
+	 '4a8249e182a5dbc75e566d162e9f3314' \
+	 '03fae7e5afcf339ac4ea09a92222b968' )
+
+#Todo:
+#None
+
+#Notes:
+#The patch adds PT_PAX_FLAGS program header support to binutils/ld, the old ELF header 
+#  marking scheme (EI_PAX) has been deprecated. note that this binutils also has support for 
+#  -z relro and -z now, their use is highly encouraged.
+
+#Changelog:
+#rel1: Upgraded to 2.16.1 2005.09.30
+#rel2: Upgraded keymoops to 2.4.11 2005.05.12
+#rel1: Upgraded to ksymoops 2.4.10 (2005.1.2)
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/binutils-2.16-pt-pax-flags-200506102235.patch || return 1
+
+	./configure							\
+		--prefix=/usr						\
+		--enable-shared 					\
+		--enable-targets=$CHOST,$CHOST-gnulibc1,$CHOST-gnuaout	\
+		--enable-64-bit-bfd					\
+		$CHOST
+
+	make clean
+	make tooldir=$startdir/pkg/usr || return 1
+	make info || return 1
+
+	make prefix=$startdir/pkg/usr tooldir=$startdir/pkg/usr install
+
+	cp -a include/libiberty.h $startdir/pkg/usr/include/libiberty.h
+	chmod 644 $startdir/pkg/usr/include/libiberty.h
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a COPYING* README* $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/bin
+	mv strings strings-GNU
+
+	cd $startdir/pkg/usr/man/man1
+	mv strings.1 strings-GNU.1
+
+	mkdir -p $startdir/pkg/usr/$CHOST/lib
+	cd $startdir/pkg/usr/$CHOST/lib
+	ln -sf /usr/lib/ldscripts .
+
+	mkdir -p $startdir/pkg/usr/$CHOST/bin
+	cd $startdir/pkg/usr/$CHOST/bin
+	ln -sf /usr/bin/ar ar
+	ln -sf /usr/bin/as as
+	ln -sf /usr/bin/ld ld
+	ln -sf /usr/bin/nm nm
+	ln -sf /usr/bin/strip strip
+	ln -sf /usr/bin/ranlib ranlib
+
+	cd $startdir/pkg/usr/man/man1
+	rm -f dlltool.1 windres.1
+
+	cd $startdir/src/ksymoops-$KSOVER
+
+	patch -p1 < $startdir/src/ksymoops.dynamic.bfd.diff || return 1
+	make || return 1
+
+	cp ksymoops $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	cp ksymoops.8 $startdir/pkg/usr/man/man8
+
+	mkdir -p $startdir/pkg/usr/doc/ksymoops-$KSOVER
+	cp	-a		\
+		COPYING		\
+		Changelog	\
+		INSTALL		\
+		README*		\
+	$startdir/pkg/usr/doc/ksymoops-$KSOVER
+
+	rm $startdir/pkg/usr/info/dir
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	#we want to keep the standards.info from autoconf instead
+	rm $startdir/pkg/usr/info/standards.info
+
+}

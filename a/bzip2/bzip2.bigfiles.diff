@@ -1,0 +1,11 @@
+--- ./Makefile-libbz2_so.orig	2004-10-17 12:32:13.000000000 -0500
++++ ./Makefile-libbz2_so	2005-12-09 16:14:07.000000000 -0600
+@@ -9,7 +9,7 @@
+ SHELL=/bin/sh
+ CC=gcc
+ BIGFILES=-D_FILE_OFFSET_BITS=64
+-CFLAGS=-fpic -fPIC -Wall -Winline -O -g
++CFLAGS=-fpic -fPIC -Wall -Winline -O -g $(BIGFILES)
+ 
+ OBJS= blocksort.o  \
+       huffman.o    \

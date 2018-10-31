@@ -1,0 +1,66 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=tcl
+pkgver=8.4.12
+pkgrel=1
+pkgdesc="tcl (Tool Command Language) Tcl, developed by Dr. John Ousterhout, is a simple to use text-based script language with many built-in features which make it especially nice for writing interactive scripts."
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/tcl/$pkgname$pkgver-src.tar.gz)
+url="http://tcl.sourceforge.net"
+md5sums=('7480432d8730263f267952788eb4839b')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 8.4.12 2005.12.21
+##   rel1: Upgraded to 8.4.11 2005.08.08
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname$pkgver/unix
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname$pkgver
+
+	cp -a README $startdir/pkg/usr/doc/$pkgname$pkgver
+
+	./configure --prefix=/usr --disable-shared --enable-man-symlinks --enable-man-compression=gzip
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+	make DESTDIR=$startdir/pkg install-private-headers
+	make clean
+
+	./configure --prefix=/usr --enable-shared --enable-man-symlinks --enable-man-compression=gzip
+	make || return 1
+	make DESTDIR=$startdir/pkg install-private-header
+	make DESTDIR=$startdir/pkg install
+
+	cd $startdir/pkg/usr/bin
+	ln -s tclsh8.4 tclsh
+
+	cd $startdir/pkg/usr/lib
+	ln -s libtcl8.4.a libtcl.a
+	ln -s libtcl8.4.so libtcl.so
+	ln -s libtclstub8.4.a libtclstub.a
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

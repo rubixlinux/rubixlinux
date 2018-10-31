@@ -1,0 +1,66 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=autofs
+pkgver=4.1.4
+pkgrel=2
+pkgdesc="autofs (kernel-based automounter) autofs is a kernel-based automounter for Linux.  It performs a job similar to amd(8) but relies on a small stub of kernel code instead of pretending to be an NFS server.  The result is simpler code, better reliability, and much faster operation in the common case (everything already mounted.)"
+depends=('openldap')
+source=(ftp://ftp.kernel.org/pub/linux/daemons/$pkgname/v4/$pkgname-$pkgver.tar.bz2)
+md5sums=('7e3949114c00665b4636f0c318179657')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: Recompiled to support openldap 2005.06.03
+##   rel1: Initial Rubix release 2005.06.03
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		CHANGELOG		\
+		COPYING			\
+		COPYRIGHT		\
+		CREDITS			\
+		README.*		\
+		samples			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type d -exec chmod 755 {} \;
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make
+
+	cd daemon
+	mkdir -p $startdir/pkg/usr/sbin
+	cp automount $startdir/pkg/usr/sbin
+	chown root.bin $startdir/pkg/usr/sbin/automount
+	chmod 755 $startdir/pkg/usr/sbin/automount
+
+	cd ../modules
+	mkdir -p $startdir/pkg/usr/lib/autofs
+	for file in *.so ; do
+		cp $file $startdir/pkg/usr/lib/autofs/$file
+	done
+
+	cd ../man
+	mkdir -p $startdir/pkg/usr/man/man5 $startdir/pkg/usr/man/man8
+	for file in *.5 ; do
+		cp $file $startdir/pkg/usr/man/man5/$file
+	done
+	for file in *.8 ; do
+		cp $file $startdir/pkg/usr/man/man8/$file
+	done
+
+	ln -s mount_ext2.so $startdir/pkg/usr/lib/autofs/mount_ext3.so
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

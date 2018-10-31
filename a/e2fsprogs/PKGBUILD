@@ -1,0 +1,100 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=e2fsprogs
+pkgver=1.38
+pkgrel=2
+pkgdesc="Utilities needed to create and maintain ext2 and ext3 filesystems. These utilities were written by Remy Card (the developer and maintainer of the ext2 fs) and Theodore T'so."
+url="http://e2fsprogs.sourceforge.net"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('d774d4412bfb80d12cf3a4fdfd59de5a')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: rebuilt with proper libcom_err info 2005.10.15
+#rel1: upgraded to 1.38 2005.08.19
+#rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--with-root-prefix=""	\
+		--enable-elf-shlibs	\
+		--enable-dynamic-e2fsck	\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install install-libs
+
+	rm								\
+		$startdir/pkg/usr/man/man3/uuid_generate_random.3	\
+		$startdir/pkg/usr/man/man3/uuid_generate_time.3		\
+		$startdir/pkg/usr/man/man8/fsck.ext2.8			\
+		$startdir/pkg/usr/man/man8/fsck.ext3.8			\
+		$startdir/pkg/usr/man/man8/mkfs.ext2.8			\
+		$startdir/pkg/usr/man/man8/mkfs.ext3.8
+
+	cd $startdir/pkg/usr/man/man8
+	ln -sf e2fsck.8.gz fsck.ext2.8.gz
+	ln -sf e2fsck.8.gz fsck.ext3.8.gz
+	ln -sf mke2fs.8.gz mkfs.ext2.8.gz
+	ln -sf mke2fs.8.gz mkfs.ext3.8.gz
+
+	mv $startdir/pkg/usr/sbin/* $startdir/pkg/sbin
+	rmdir $startdir/pkg/usr/sbin
+
+	mv $startdir/pkg/usr/lib/e2initrd_helper $startdir/pkg/lib
+
+	cd $startdir/pkg/sbin
+	rm mkfs.ext2 mkfs.ext3 fsck.ext2 fsck.ext3 e2label findfs
+	ln -sf mke2fs mkfs.ext2
+	ln -sf mke2fs mkfs.ext3
+	ln -sf tune2fs e2label
+	ln -sf tune2fs findfs
+
+	cat << EOF > fsck.ext2
+#!/bin/sh
+exec /sbin/e2fsck -C 0 \$*
+EOF
+	cat << EOF > fsck.ext3
+#!/bin/sh
+exec /sbin/e2fsck -C 0 \$*
+EOF
+
+	chown root.bin fsck.ext2 fsck.ext3
+	chmod 755 fsck.ext2 fsck.ext3
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		INSTALL		\
+		INSTALL.elfbin	\
+		README		\
+		RELEASE-NOTES	\
+		SHLIBS		\
+		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/pkg/usr/man/man3 
+	ln -sf uuid_generate.3.gz uuid_generate_time.3.gz
+	ln -sf uuid_generate.3.gz uuid_generate_random.3.gz
+
+	cd $startdir/pkg/usr/man/man8
+	ln -sf mke2fs.8.gz mkfs.ext2.8.gz
+	ln -sf mke2fs.8.gz mkfs.ext3.8.gz
+	ln -sf e2fsck.8.gz fsck.ext2.8.gz
+	ln -sf e2fsck.8.gz fsck.ext3.8.gz
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/sbin
+}

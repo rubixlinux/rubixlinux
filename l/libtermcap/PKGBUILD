@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libtermcap
+pkgver=1.2.3
+pkgrel=2
+pkgdesc=" libtermcap This is the GNU termcap library -- a library of C functions that enable programs to send control strings to terminals in a way independent of the terminal type.  Most of this package is also distributed with GNU Emacs, but it is available in this separate distribution to make it easier to install as -ltermcap."
+depends=('glibc')
+source=(termcap-compat_$pkgver.diff.gz	\
+	termcap-compat_$pkgver.tar.gz	\
+	termcap.bufsize.diff.gz		\
+	termcap.h.diff.gz		)
+md5sums=('712f3e042e6108d4082b0deebeb00501' \
+	 '698f1e510845b8c0f15ea8c3010c35ed' \
+	 '5d699810dc06abdef7cb1987fd3dc754' \
+	 '339b53efb06886d89151ecf422d14b27' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: removed bugs in PKGBUILD 2005.09.30
+#rel1: Initial Rubix Release
+
+build() {
+
+	mkdir -p $startdir/pkg/lib
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/include
+
+	cd $startdir/src/termcap-compat-$pkgver
+
+	patch -p1 < $startdir/src/termcap-compat_$pkgver.diff	|| return 1
+	patch -p0 < $startdir/src/termcap.h.diff		|| return 1
+	patch -p1 < $startdir/src/termcap.bufsize.diff		|| return 1
+
+	make || return 1
+	make install prefix=$startdir/pkg/usr
+
+	mkdir -p $startdir/pkg/usr/doc/termcap-$pkgver
+	cp -a ChangeLog debian/changelog README $startdir/pkg/usr/doc/termcap-$pkgver
+
+	mkdir -p $startdir/pkg/usr/info
+	cp termcap.info* $startdir/pkg/usr/info
+
+	cd $startdir/pkg/usr/lib
+	rm libtermcap.so
+	mv libtermcap.so.2.0.8 $startdir/pkg/lib
+	ln -s /lib/libtermcap.so.2.0.8 libtermcap.so
+	cd $startdir/pkg/lib
+	ln -s libtermcap.so.2.0.8 libtermcap.so.2
+
+	chown -R root.root $startdir/pkg
+
+}

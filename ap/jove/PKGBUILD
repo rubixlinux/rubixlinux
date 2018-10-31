@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=jove
+pkgver=4.16.0.61
+pkgrel=1
+pkgdesc="jove (Jonathan's Own Version of Emacs) A mostly Emacs compatible text editor, with man pages and the  'teachjove' tutorial program.  If you'd rather have the real thing,  the actual Emacs editor/environment is available in series 'E'. JOVE was written by Jonathan Payne."
+source=(ftp://ftp.cs.toronto.edu/cs/ftp/pub/hugh/$pkgname-dev/$pkgname$pkgver.tgz	\
+	$pkgname.makefile.diff.gz							)
+md5sums=('13dafaff09e0a6d98454c62702b59891' \
+	 'd08d24e1c65690310f62e05b543360e5' )
+depends=('glibc' 'libtermcap')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.makefile.diff || return 1
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/lib/jove
+	install -c -m 755 recover $startdir/pkg/usr/lib/jove/recover
+
+	mkdir -p			$startdir/pkg/usr/bin
+	install -c -m 755 jjove		$startdir/pkg/usr/bin/jove
+	install -c -m 755 teachjove	$startdir/pkg/usr/bin/teachjove
+	ln -s /usr/lib/jove/recover	$startdir/pkg/usr/bin/jove-recover
+	chown -R root.bin		$startdir/pkg/usr/bin
+
+	install -c -m 644 doc/teach-jove $startdir/pkg/usr/lib/jove/teach-jove
+	install -c -m 644 doc/cmds.doc $startdir/pkg/usr/lib/jove/cmds.doc
+	install -c -m 644 doc/jove.rc.sun doc/keychart.sun doc/jove.rc.sun-cmd doc/keychart.sun-cmd doc/jove.rc.vt100 doc/keychart.vt100 doc/jove.rc.wyse doc/keychart.wyse doc/jove.rc.xterm doc/keychart.xterm doc/jove.rc.z29 doc/keychart.z29 doc/jove.rc.3022 doc/keychart.3022 doc/keychart. doc/XTermresource $startdir/pkg/usr/lib/jove
+	install -c -m 644 doc/jove.rc $startdir/pkg/usr/lib/jove/jove.rc
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	install -c -m 644 doc/jove.1 $startdir/pkg/usr/man/man1/jove.1
+	install -c -m 644 doc/teachjove.1 $startdir/pkg/usr/man/man1/teachjove.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname$pkgver
+	cp -a README $startdir/pkg/usr/doc/$pkgname$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname$pkgver/*
+
+}

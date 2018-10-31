@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-term-progressbar
+pkgver=2.09
+pkgrel=2
+pkgdesc="Term::ProgressBar - provide a progress meter on a standard terminal"
+url="http://search.cpan.org/~fluffy/Term-ProgressBar-$pkgver/lib/Term/ProgressBar.pm"
+depends=('perl-class-methodmaker' 'perl-term-readkey')
+source=(http://search.cpan.org/CPAN/authors/id/F/FL/FLUFFY/Term-ProgressBar-$pkgver.tar.gz)
+md5sums=('440dfd04fe51a12d314e9adf2445f04a')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt with perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Term-ProgressBar-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Term-ProgressBar-$pkgver
+	cp	-a		\
+		BUGS		\
+		Changes		\
+		INSTALL		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+		SIGNATURE	\
+	$startdir/pkg/usr/doc/perl-$PERL/Term-ProgressBar-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/Term-ProgressBar-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

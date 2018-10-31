@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=reiserfsprogs
+pkgver=3.6.19
+pkgrel=1
+pkgdesc="reiserfsprogs These utilities are used for Reiserfs.  Reiserfs is a file system based on balanced tree algorithms.  Learn more at the home site: http://www.namesys.com Reiserfs is the work of Hans Reiser and many others.  See the file /usr/doc/reiserfs*/README for full credits."
+url="http://www.namesys.com"
+source=(ftp://ftp.namesys.com/pub/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('b42cf15f6651c3ceff5cb84996c0d539')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+
+	make
+
+	make install DESTDIR=$startdir/pkg
+
+	mv $startdir/pkg/usr/sbin $startdir/pkg
+
+	cd $startdir/pkg/sbin
+	ln -sf mkreiserfs mkfs.reiserfs
+	ln -sf reiserfsck fsck.reiserfs
+
+	chown -R root.bin $startdir/pkg/sbin
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=wv2
+pkgver=0.2.2
+pkgrel=1
+pkgdesc="wv2 (MS Word document import library) wv2 is a portable MS Word .doc import filter that is used by KWord. Currently, it supports MS Word 6, MS Word 95, MS Word 97, MS Word 2000, and MS Word 2002 (XP) documents.  Older versions like Word 2, 3, 4, and 5 aren't supported yet, but might be in the future. wv2's authors are Shaheed Haque, Werner Trobin, and David Faure."
+url="http://sourceforge.net/projects/wvware/"
+depends=('libgsf')
+source=(http://dl.sourceforge.net/sourceforge/wvware/$pkgname-$pkgver.tar.bz2)
+md5sums=('d05318852b6c599270c7e0376834c413')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--disable-debug		\
+		--disable-static	\
+		--program-prefix=""	\
+		--program-suffix=""	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING.LIB	\
+		README		\
+		RELEASE		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

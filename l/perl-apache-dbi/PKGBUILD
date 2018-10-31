@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+
+pkgname=perl-apache-dbi
+pkgver=0.9901
+pkgrel=1
+pkgdesc="Apache::DBI - Initiate a persistent database connection"
+url="http://search.cpan.org/~pgollucci/Apache-DBI-$pkgver/DBI.pm"
+depends=('perl' 'mod_perl' 'apache')
+source=(http://search.cpan.org/CPAN/authors/id/P/PG/PGOLLUCCI/Apache-DBI-$pkgver.tar.gz)
+md5sums=('3651690e9d25b6634b9e5f554afa7f5e')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Apache-DBI-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Apache-DBI-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Apache-DBI-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/Apache-DBI-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

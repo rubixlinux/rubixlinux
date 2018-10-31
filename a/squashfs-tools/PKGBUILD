@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+REALVER=2.2-r2
+
+pkgname=squashfs-tools
+pkgver=2.2.2
+pkgrel=1
+pkgdesc="Squashfs is a compressed read-only filesystem for Linux. Squashfs is intended for general read-only filesystem use, for archival use (i.e. in cases where a .tar.gz file may be used), and in constrained block device/memory systems (e.g. embedded systems) where low overhead is needed."
+url="http://squashfs.sourceforge.net"
+depends=('glibc' 'zlib')
+source=(http://dl.sourceforge.net/sourceforge/squashfs/squashfs$REALVER.tar.gz)
+md5sums=('a8d09a217240127ae4d339e8368d2de1')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/squashfs${REALVER}/$pkgname
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/sbin
+	cp mksquashfs $startdir/pkg/sbin
+
+	cd ..
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$REALVER
+	cp	-a			\
+		ACKNOWLEDGEMENTS	\
+		CHANGES			\
+		COPYING			\
+		INSTALL			\
+		PERFORMANCE.README	\
+		README*			\
+	$startdir/pkg/usr/doc/$pkgname-$REALVER
+
+	chown -R root.bin $startdir/pkg/sbin
+
+}

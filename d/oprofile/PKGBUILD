@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=oprofile
+pkgver=0.9.1
+pkgrel=2
+pkgdesc="oprofile (system profiling tool) OProfile is a profiling system for Linux.  Profiling runs transparently in the background and profile data can be collected at any time.  OProfile makes use of the hardware performance counters provided on Intel, AMD, and other processors, and uses a timer-interrupt based mechanism on CPUs without counters. OProfile can profile the whole system in high detail."
+url="http://oprofile.sourceforge.net"
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('c25a05406e30e81a6afbd3264191fa37')
+depends=('glibc' 'qt' 'freetype2' 'libjpeg' 'fontconfig' 'x11' 'expat' 'binutils' 'libmng' 'zlib' 'gcc' 'popt' 'libpng')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt against some new libs 2005.10.06
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --with-kernel-support
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+	mv $startdir/pkg/usr/doc/oprofile $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

@@ -1,0 +1,35 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=openal
+pkgver=1.0
+pkgrel=1
+url="http://www.openal.org"
+pkgdesc="OpenAL is a cross-platform 3D audio API appropriate for use with gaming applications and many other types of audio applications."
+source=($pkgname-$pkgver.tar.bz2)
+md5sums=('9bfb76db5f7d19741adcd8a71dd621a6')
+depends=('glibc')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver/linux
+
+	./autogen.sh
+	./configure
+	make || return 1
+	make DESTDIR=$startdir/pkg/usr/ install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CREDITS		\
+		ChangeLog	\
+		INSTALL		\
+		NOTES		\
+		PLATFORM	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,79 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=kernel24
+pkgver=2.4.32
+pkgrel=1
+url="http://www.kernel.org"
+pkgdesc="kernel24 (Linux kernel) You MUST install a kernel image in order for your system to boot. This kernel supports IDE and SCSI hard drives and IDE CD-ROM drives.  Other drivers (such as for CD-ROM drives on proprietary interfaces, or ethernet cards) may be loaded as modules."
+backup=('boot/config-$pkgver')
+depends=('i2c')
+provides=('kernel')
+source=(ftp://ftp.kernel.org/pub/linux/kernel/v2.4/linux-$pkgver.tar.bz2	\
+	config.gz								)
+md5sums=('38f4d0830e95a20f4bfed17622d5557c' \
+	 '04c94df958b1f91eaf39a86102786a8a' )
+install=$pkgname.install
+
+## Todo:
+##   Possibly make install note about running lilo or updating /boot/grub/menu.lst
+
+## Notes:
+##   Ignore the depmod errors at the end of the build, that is why i2c is now a dep
+##   This kernel combines all possible features from each of the slackware kernels
+##     not including zipslack or lowmem
+##     as such, it does not fit on a floppy, boot from the CD to rescue your system
+##   No longer split into two packages for kernel and modules
+##     symbiotic dependencies dont make sense
+
+## Changelog:
+##   rel1: upgraded to 2.4.32 2005.11.16
+##   rel2: 'unremoved' the kernel modules msp3400 since the ivtv module have been renamed to msp3400-ivtv 2005.07.27
+##   rel1: upgraded to 2.4.31 2005.06.18
+##   rel5: removed the msp3400 (but kept bttv), install ivtv for the newer msp3400 module 2005.05.28
+##   rel4: added /boot/vmlinuz-2.4 symlink 2005.04.26
+##   rel3: updated install script to create /boot/vmlinuz link 2005.04.24
+##   rel2: fixed some broken links 2005.04.22
+##   rel1: upgraded to 2.4.30 2005.04.13
+##   rel3: removed old i2c, we use an updated i2c which is now a dependency for 2.4 kernels 2005.03.08
+##   rel2: gziped modules, added modprobe install script 2005.02.26
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/linux-$pkgver
+
+	cp $startdir/src/config .config
+
+	make oldconfig	|| return 1
+	make dep	|| return 1
+	make bzImage	|| return 1
+	make modules	|| return 1
+
+	make INSTALL_MOD_PATH=$startdir/pkg modules_install
+
+	mkdir -p $startdir/pkg/boot
+	cp arch/i386/boot/bzImage	$startdir/pkg/boot/vmlinuz-$pkgver
+	cp .config			$startdir/pkg/boot/config-$pkgver
+	cp System.map			$startdir/pkg/boot/System.map-$pkgver
+
+	cd $startdir/pkg/boot
+
+	rdev -R vmlinuz-$pkgver  0
+	rdev -v vmlinuz-$pkgver -1
+	rdev -r vmlinuz-$pkgver  0
+
+	cd $startdir/pkg/lib/modules/$pkgver
+	rm build
+	ln -s /usr/src/linux-$pkgver build
+
+	find $startdir/pkg/lib/modules -type f -name *.o -exec gzip {} \;
+
+	cd $startdir/pkg/lib/modules/*/pcmcia
+	for module in *
+	do
+		link=`ls -l $module | cut -d" " -f10`
+		rm $module
+		ln -s $link.gz
+	done
+
+}

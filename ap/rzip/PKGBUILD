@@ -1,0 +1,37 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=rzip
+pkgver=2.0
+pkgrel=1
+pkgdesc="rzip (a large-file compression program) rzip is a file compression program designed to do particularly well on very large files containing long distance redundancy. rzip was written by Andrew Tridgell."
+url="http://rzip.samba.org"
+source=(http://rzip.samba.org/ftp/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('8a88b445afba919b122a3899d6d26b2a')
+depends=('glibc' 'bzip2')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--program-prefix=""	\
+		--program-suffix=""	\
+		$CHOST
+	make || return 1
+
+	mkdir -p		$startdir/pkg/bin
+	cp rzip			$startdir/pkg/bin
+	chmod 755		$startdir/pkg/bin/rzip
+	chown -R root.bin	$startdir/pkg/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+	cp rzip.1	$startdir/pkg/usr/man/man1/rzip.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a COPYING $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

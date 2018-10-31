@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=brltty
+pkgver=3.7
+pkgrel=1
+pkgdesc="brltty (Braille display daemon) BRLTTY is a daemon which provides access to the Linux console (text mode) for a blind person using a soft braille display.  It drives the braille terminal and provides complete screen review functionality."
+url="http://www.mielke.cc/brltty"
+depends=('glibc' 'x11' 'gpm' 'ncurses')
+source=(http://www.mielke.cc/brltty/releases/$pkgname-$pkgver.tar.gz)
+md5sums=('73019ff2101fe2cc56c4ebad0cd746a9')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure $CHOST
+	make || return 1
+	make install INSTALL_ROOT=$startdir/pkg
+
+	chmod 755 $startdir/pkg/bin/* $startdir/pkg/lib/brltty/*
+	chown -R root.bin $startdir/pkg/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a						\
+		README*						\
+		COPYING						\
+		Documents/Manual-HTML Documents/Manual.txt	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

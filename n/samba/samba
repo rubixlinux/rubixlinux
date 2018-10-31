@@ -1,0 +1,32 @@
+#!/bin/bash
+
+SCRIPT=`basename $0`
+SMBD="/usr/sbin/smbd"
+NMBD="/usr/sbin/nmbd"
+SMBDARGS="-D"
+NMBDARGS="-D"
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $SMBD $SMBDARGS
+		if [ $? -eq 0 ]; then
+			start_daemon nmbd $NMBD $NMBDARGS
+		fi
+		;;
+	stop)
+		stop_daemon nmbd    $NMBD
+		stop_daemon $SCRIPT $SMBD
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $SMBD
+		daemon_status nmbd    $NMBD
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

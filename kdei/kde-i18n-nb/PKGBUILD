@@ -1,0 +1,21 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kde-i18n-nb
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kde-i18n-nb Norwegian (Bokmaal) language support for KDE."
+depends=('kdebase')
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
+md5sums=('8fef7b3f29ba8eb68ebd23f228af26ce')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/opt/kde
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+}

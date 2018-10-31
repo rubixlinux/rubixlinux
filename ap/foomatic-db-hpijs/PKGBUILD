@@ -1,0 +1,34 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=foomatic-db-hpijs
+pkgver=1.5
+pkgrel=1
+pkgdesc="foomatic-db-hpijs Foomatic XML data generators for HP's HPIJS driver."
+depends=('foomatic-db-engine')
+source=(http://www.linuxprinting.org/download/foomatic/$pkgname-$pkgver-current.tar.gz)
+url="http://www.linuxprinting.org/foomatic.html"
+md5sums=('0576ae113a5e45338347c8727cdfbc65')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver-*
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+		TODO		\
+		USAGE		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	rmdir $startdir/pkg/usr/share/foomatic/db/source/printer
+
+	find $startdir/pkg/usr -type d -exec chmod 755 {} \;
+
+}

@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+FRONT=1.0.14
+
+pkgname=sane
+pkgver=1.0.17
+pkgrel=1
+pkgdesc="sane (Scanner Access Now Easy) SANE is a universal scanner interface that provides standardized access to any raster image scanner hardware, such as flatbed scanners, hand-held scanners, video and still cameras, frame-grabbers, and other similar devices."
+depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'gimp' 'libjpeg' 'libieee1284' 'fontconfig' 'x11' 'expat'	\
+	 'glib2' 'libusb' 'gphoto2' 'libexif' 'zlib' 'libpng'								)
+source=(ftp://ftp.sane-project.org/pub/$pkgname/$pkgname-backends-$pkgver/$pkgname-backends-$pkgver.tar.gz	\
+	ftp://ftp.sane-project.org/pub/$pkgname/$pkgname-frontends-$FRONT/$pkgname-frontends-$FRONT.tar.gz	)
+md5sums=('b51c10da8a81a04e1bae88c9e6556df2' \
+	 'c63bf7b0bb5f530cf3c08715db721cd3' )
+url="http://www.sane-project.org"
+
+## Todo:
+##   backup files
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.0.17 2005.12.20
+##   rel1: upgraded to 1.0.16, frontend 1.0.14 2005.09.18
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-backends-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cp -a tools/hotplug/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.hotplug
+
+	mkdir -p $startdir/pkg/etc/hotplug/usb
+	cp	-a				\
+		tools/hotplug/libsane.usermap	\
+		tools/hotplug/libusbscanner	\
+	$startdir/pkg/etc/hotplug/usb
+
+	chmod 644 $startdir/pkg/etc/hotplug/usb/libsane.usermap
+	chmod 755 $startdir/pkg/etc/hotplug/usb/libusbscanner
+
+	cd $startdir/src/$pkgname-frontends-$FRONT
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown root.root $startdir/pkg/usr/var
+	chmod 755 $startdir/pkg/usr/var
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

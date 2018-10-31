@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-xml-parser
+pkgver=2.34
+pkgrel=3
+pkgdesc="XML::Parser - A perl module for parsing XML documents"
+url="http://search.cpan.org/~msergeant/XML-Parser-2.34/Parser.pm"
+depends=('perl' 'expat')
+source=(http://search.cpan.org/CPAN/authors/id/M/MS/MSERGEANT/XML-Parser-$pkgver.tar.gz)
+md5sums=('84d9e0001fe01c14867256c3fe115899')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel3: rebuilt for perl 5.8.7 2005.06.13
+#rel2: removed .packlist file 2005.05.12
+#rel1: Initial Rubix release 2005.04.25
+
+build() {
+
+	cd $startdir/src/XML-Parser-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/XML-Parser-$pkgver
+	cp -a README $startdir/pkg/usr/doc/perl-$PERL/XML-Parser-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/XML-Parser-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+}

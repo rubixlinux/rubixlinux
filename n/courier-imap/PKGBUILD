@@ -1,0 +1,71 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=courier-imap
+pkgver=4.0.6
+pkgrel=2
+pkgdesc="Courier-IMAP is a fast, scalable enterprise IMAP server that uses Maildirs."
+url="http://www.courier-mta.org/imap"
+depends=('glibc' 'courier-authlib' 'openssl' 'gdbm' 'gcc')
+source=(http://dl.sourceforge.net/sourceforge/courier/$pkgname-$pkgver.tar.bz2	\
+	$pkgname								)
+md5sums=('5e1c53a49d5ffb2ec9f3b600a6e1fbef' \
+	 'a145b5891fa2b84387b53aabbffc3793' )
+backup=('etc/courier-imap/imapd'	\
+	'etc/courier-imap/imapd-ssl'	\
+	'etc/courier-imap/imapd.cnf'	\
+	'etc/courier-imap/pop3d'	\
+	'etc/courier-imap/pop3d-ssl'	\
+	'etc/courier-imap/pop3d.cnf'	\
+	'etc/rc.d/courier-imap'		)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.15
+##   rel1: upgraded to 4.0.6 2005.11.15
+##   rel1: upgraded to 4.0.4 2005.09.04
+##   rel1: upgraded to 4.0.3 2005.06.12
+##   rel2: added backup files, moved localstatedir 2005.04.03
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure					\
+		--prefix=/usr				\
+		--sysconfdir=/etc/$pkgname		\
+		--datadir=/usr/share/$pkgname		\
+		--libexecdir=/usr/libexec/$pkgname	\
+		--localstatedir=/var/run/$pkgname	\
+		--disable-root-check
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+	make DESTDIR=$startdir/pkg install-configure
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		00README.NOW.OR.SUFFER	\
+		AUTHORS			\
+		COPYING*		\
+		ChangeLog		\
+		INSTALL			\
+		NEWS*			\
+		README*			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	find $startdir/pkg/etc/$pkgname -type f -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	mv $startdir/pkg/usr/man/man8/imapd.8 $startdir/pkg/usr/man/man8/courier-imapd.8
+
+}

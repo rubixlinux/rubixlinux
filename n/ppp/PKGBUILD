@@ -1,0 +1,133 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PPPSETUP=1.98
+RAD=0.3.2
+
+pkgname=ppp
+pkgver=2.4.4b1
+pkgrel=1
+pkgdesc="ppp (Point-to-Point Protocol) The Point-to-Point Protocol (PPP) provides a method for transmitting data over serial links.  It's commonly used for connecting to the Internet using a modem.  This package includes the PPP daemon (pppd), which negotiates with the peer to establish the link and sets up the ppp network interface, and pppsetup, an easy-to-use utility for setting up your PPP daemon."
+url="http://www.samba.org/ppp"
+depends=('glibc' 'tcpip')
+backup=('etc/ppp/chap-secrets'			\
+	'etc/ppp/pap-secrets'			\
+	'etc/ppp/options'			\
+	'etc/radiusclient/issue'		\
+	'etc/radiusclient/radiusclient.conf'	\
+	'etc/radiusclient/realms'		\
+	'etc/radiusclient/servers'		)
+source=(ftp://ftp.samba.org/pub/$pkgname/$pkgname-$pkgver.tar.gz		\
+	options.new.gz								\
+	$pkgname.slack.diff.gz							\
+	pppsetup-$PPPSETUP.backupfiles.diff.gz					\
+	pppsetup-$PPPSETUP.moredevs.diff.gz					\
+	pppsetup-$PPPSETUP.pppoff.diff.gz					\
+	pppsetup-$PPPSETUP.slack.diff.gz					\
+	pppsetup-$PPPSETUP.tar.gz						\
+	ftp://ftp.cityline.net/pub/radiusclient/radiusclient-$RAD.tar.gz	\
+	radius.msdict.gz							\
+	realms.gz								\
+	servers.gz								)
+md5sums=('a1df8b1272779d9a67340e9357618c21' \
+	 '9467c67ee1289b53887a88a8d3af2ef9' \
+	 '0d5694b591fd1c390866f163ea56af89' \
+	 'cfcc8b4ba69927d23b39dc824c9b1985' \
+	 '14b9880070fdd3d11a991b8a9c519932' \
+	 'cf7bafd178fbdadcff4c1c58949fcdbd' \
+	 'e566fc331419a8c2971c630b368eb9a5' \
+	 '122decd127704a6f1b7bbc26c5fc5d64' \
+	 'dd6a85f2f6fcb944cbf1dddd05ab132f' \
+	 '5280465d9cf03beadb99c5698909a667' \
+         'dc57dd58690a18b7e1a8a727c8b06a96' \
+	 '6463a49a45bb0c11574a28a386c4a69e' )
+
+## Todo:
+##  None
+
+## Notes:
+##  None
+
+## Changelog:
+##  rel1: upgraded to 2.4.4b1 2005.09.16
+##  rel2: upgraded radiusclient 2005.08.15
+##  rel1: upgraded to 2.4.3 2005.07.27
+##  rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.slack.diff || return 1
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg/usr
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	mkdir -p $startdir/pkg/etc/ppp
+	cp -a etc.ppp/* $startdir/pkg/etc/ppp
+	chmod 600 $startdir/pkg/etc/ppp/*secrets
+
+	cp $startdir/src/options.new $startdir/pkg/etc/ppp/options
+	chmod 755 $startdir/pkg/usr/lib/pppd/*/*.so
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		FAQ	\
+		PLUGINS	\
+		README*	\
+		SETUP	\
+		scripts	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/radiusclient-$RAD
+	./configure		\
+		--prefix=/usr	\
+		--sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cp $startdir/src/radius.msdict	$startdir/pkg/etc/radiusclient/dictionary.microsoft
+	cp $startdir/src/realms		$startdir/pkg/etc/radiusclient/realms
+	cp $startdir/src/servers	$startdir/pkg/etc/radiusclient/servers
+
+	mkdir -p $startdir/pkg/usr/doc/radiusclient-$RAD
+	cp -a				\
+		BUGS			\
+		CHANGES			\
+		COPYRIGHT		\
+		README			\
+		README.radexample	\
+		doc/instop.html		\
+	$startdir/pkg/usr/doc/radiusclient-$RAD
+	chmod 644 $startdir/pkg/usr/doc/radiusclient-$RAD/*
+
+	cd $startdir/pkg/etc/radiusclient
+	chmod 600 realms servers
+
+	cd $startdir/src/pppsetup-$PPPSETUP
+	patch -p1 < $startdir/src/pppsetup-$PPPSETUP.slack.diff		|| return 1
+	patch -p0 < $startdir/src/pppsetup-$PPPSETUP.pppoff.diff	|| return 1
+	patch -p1 < $startdir/src/pppsetup-$PPPSETUP.moredevs.diff	|| return 1
+	patch -p1 < $startdir/src/pppsetup-$PPPSETUP.backupfiles.diff	|| return 1
+
+	chown root.bin ppp-off pppsetup
+	chmod 755 ppp-off pppsetup
+	cp -a ppp-off pppsetup $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/pppsetup
+	cp	-a				\
+		README.pppsetup			\
+		ppp-compile.txt			\
+		pppsetup-$PPPSETUP.README	\
+		pppsetup-$PPPSETUP.lsm		\
+	$startdir/pkg/usr/doc/pppsetup
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+}

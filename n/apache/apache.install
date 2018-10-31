@@ -1,0 +1,19 @@
+post_install() {
+	for cfgfile in access.conf httpd.conf magic mime.types srm.conf ; do
+		if [ ! -f etc/apache/${cfgfile} ]; then
+			cp -a etc/apache/${cfgfile}.default etc/apache/${cfgfile}
+		fi
+	done
+
+	if [ ! -L usr/sbin/apachectl ]; then
+		( cd usr/sbin ; ln -sf apachectl-standard apachectl )
+	fi
+}
+
+post_upgrade() {
+	post_install
+}
+
+op=$1
+shift
+$op $*

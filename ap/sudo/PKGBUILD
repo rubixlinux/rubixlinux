@@ -1,0 +1,75 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=sudo
+pkgver=1.6.8p12
+pkgrel=1
+pkgdesc="sudo (give limited root privileges to certain users) 'sudo' is a command that allows users to execute some commands as  root.  The /etc/sudoers file (edited with 'visudo') specifies which users have access to sudo and which commands they can run.  'sudo'  logs all its activities to /var/log/ so the system administrator can keep an eye on things."
+url="http://www.sudo.ws/sudo"
+depends=('glibc' 'skey' 'openssl' 'openldap' 'cyrus-sasl')
+backup=('etc/sudoers')
+source=(ftp://ftp.sudo.ws/pub/$pkgname/$pkgname-$pkgver.tar.gz	\
+	sudo-skeychallengeargs.diff				)
+md5sums=('b29893c06192df6230dd5f340f3badf5' \
+	 '0b50aabedf9bb326893b5f1c333e46b2' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.6.8p12 for security reasons 2006.02.15
+##   rel1: upgraded to 1.6.8p11 and added skey and ldap support 2005.10.30
+##   rel1: RSA:2005-175-02 upgraded to 1.6.8p9 to fix a race condition
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/sudo-skeychallengeargs.diff || return 1
+
+	./configure			\
+		--prefix=/usr		\
+		--sbindir=/usr/sbin	\
+		--with-getpass		\
+		--with-skey		\
+		--with-ldap		\
+		--with-C2
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	cd $startdir/pkg/usr/bin
+	chmod 4711 sudo
+	ln -sf sudo sudoedit
+
+	chmod 755 $startdir/pkg/usr/sbin/visudo
+
+	rm $startdir/pkg/usr/man/man8/sudoedit.8
+	cd $startdir/pkg/usr/man/man8
+	ln -sf sudo.8 sudoedit.8
+	chmod 0644 $startdir/pkg/usr/man/man?/*
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS		\
+		HISTORY		\
+		INSTALL		\
+		LICENSE		\
+		PORTING		\
+		README		\
+		README.LDAP	\
+		RUNSON		\
+		TODO		\
+		TROUBLESHOOTING	\
+		UPGRADE		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

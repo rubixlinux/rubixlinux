@@ -1,0 +1,32 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libmusicbrainz
+pkgver=2.1.1
+pkgrel=1
+pkgdesc="MusicBrainz is a user maintained community music metadatabase. Music metadata is information such as the name of an artist, the name of an album and list of tracks that appear on an album."
+depends=('gcc' 'expat')
+source=(ftp://ftp.musicbrainz.org/pub/musicbrainz/$pkgname-$pkgver.tar.gz)
+url="http://www.musicbrainz.org/index.html"
+md5sums=('4f753d93a85cf413e00f1394b8cbd269')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		README		\
+		README.win32	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -perm 777 -exec chmod 755 {} \;
+
+}

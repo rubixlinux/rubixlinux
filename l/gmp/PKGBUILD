@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gmp
+pkgver=4.1.4
+pkgrel=2
+pkgdesc="gmp (GNU multiple precision arithmetic library) GNU MP is a library for arbitrary precision arithmetic, operating on signed integers, rational numbers, and floating point numbers.  It has a rich set of functions, and the functions have a regular interface."
+depends=('gcc')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://www.swox.com/gmp"
+md5sums=('aa5e5fb3a7cdebe8c5b681a6cf4a670e')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: added --enable-mpfr 2005.05.12
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure		\
+		--prefix=/usr	\
+		--with-gnu-ld	\
+		--enable-cxx	\
+		--enable-mpbsd	\
+		--enable-mpfr	\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

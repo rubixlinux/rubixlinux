@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+SUBVER=1.3.6
+
+pkgname=mod_dav
+pkgver=1.0.3
+pkgrel=1
+pkgdesc="mod_dav is an Apache  module to provide DAV capabilities (RFC 2518) for your Apache web server"
+url="http://www.webdav.org/mod_dav"
+depends=('glibc' 'apache')
+source=(http://www.webdav.org/$pkgname/$pkgname-$pkgver-$SUBVER.tar.gz)
+md5sums=('ba83f2aa6e13b216a11d465b82aab484')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver-$SUBVER
+
+	./configure
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/libexec/apache
+	cp libdav.so $startdir/pkg/usr/libexec/apache
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver-$SUBVER
+	cp	-a		\
+		CHANGES		\
+		INSTALL		\
+		LICENSE.html	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver-$SUBVER
+
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+
+}

@@ -1,0 +1,98 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=grep
+pkgver=2.5.1a
+pkgrel=1
+pkgdesc='grep (print lines matching a pattern) This is GNU grep, the "fastest grep in the west" (we hope).  Grep searches through textual input for lines which contain a match to a specified pattern and then prints the matching lines.'
+url="http://www.gnu.org/software/grep/grep.html"
+depends=('glibc' 'pcre')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('71db1cb262c27f02461c4bca514591ce')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+
+	make
+
+	mkdir -p $startdir/pkg/bin
+
+	cp src/grep $startdir/pkg/bin/grep
+
+	cd $startdir/pkg/bin
+
+	ln -sf grep egrep
+	ln -sf grep fgrep
+
+	chmod 755 $startdir/pkg/bin/*
+
+	chown -R root.bin $startdir/pkg/bin
+
+	mkdir -p $startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/bin
+
+	ln -sf ../../bin/grep .
+	ln -sf ../../bin/egrep .
+	ln -sf ../../bin/fgrep .
+
+	chmod 755 $startdir/pkg/usr/bin/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	cd $startdir/src/$pkgname-$pkgver/doc
+
+	cp grep.1	$startdir/pkg/usr/man/man1
+	cp egrep.1	$startdir/pkg/usr/man/man1
+	cp fgrep.1	$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/info
+
+	for file in *.info* ; do
+		cp $file $startdir/pkg/usr/info
+	done
+
+	cd $startdir/src/$pkgname-$pkgver/po
+
+	for file in *.gmo ; do
+		mkdir -p	$startdir/pkg/usr/share/locale/`basename $file .gmo`/LC_MESSAGES
+		cp $file	$startdir/pkg/usr/share/locale/`basename $file .gmo`/LC_MESSAGES/grep.mo
+	done
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		README-alpha	\
+		README.DOS	\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown root.root $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

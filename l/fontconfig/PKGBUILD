@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=fontconfig
+pkgver=2.3.1
+pkgrel=1
+pkgdesc="Fontconfig is a library for configuring and customizing font access."
+url="http://www.freedesktop.org/software/fontconfig"
+depends=('expat' 'freetype2')
+install=fontconfig.install
+backup=('etc/fonts/local.conf'	\
+	'etc/fonts/fonts.conf'	)
+source=(http://fontconfig.org/release/$pkgname-$pkgver.tar.gz	\
+	fonts.conf.gz						)
+md5sums=('d5e42a27ad2f22bc5ec45f15533fc5d1' \
+	 'be0529d30469b181330939526f6fadce' )
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#Now located in /usr, not /usr/X11R6
+
+#Changelog:
+#rel1: upgraded to fontconfig 2.3.1 2005.03.09
+#rel2: moved all docs to /usr/doc 2005.02.26
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc
+
+	make -i
+	make -i install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mv $startdir/pkg/usr/share/doc/fontconfig/* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	cp $startdir/src/fonts.conf $startdir/pkg/etc/fonts
+
+}

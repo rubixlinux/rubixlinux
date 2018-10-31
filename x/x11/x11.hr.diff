@@ -1,0 +1,16 @@
+--- ./programs/xkbcomp/symbols/pc/hr.orig	2004-04-23 12:54:55.000000000 -0700
++++ ./programs/xkbcomp/symbols/pc/hr	2005-02-13 15:31:36.000000000 -0800
+@@ -39,11 +39,12 @@
+ 
+     key <AC10>	{ [    ccaron,     Ccaron,   dead_acute, dead_doubleacute ] };
+     key <AC11>	{ [    cacute,     Cacute,       ssharp,   dead_caron ]	};
++    key <AB10>  { [     minus, underscore, dead_belowdot, dead_abovedot ] };
+     key <TLDE>	{ [dead_cedilla, dead_diaeresis, notsign,     notsign ]	};
+ 
+     key <BKSL>	{ [    zcaron,     Zcaron,     currency,   dead_breve ]	};
+ 
+-    key <KPDL>	{ [ KP_Delete,  KP_Seprator                           ]	};
++    key <KPDL>	{ [ KP_Delete,  KP_Separator                           ]	};
+ 
+     include "level3(ralt_switch_multikey)"
+ };

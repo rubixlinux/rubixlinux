@@ -1,0 +1,39 @@
+#!/bin/bash
+
+#Change this to startssl to enable ssl support
+#  remember that you must install mod_ssl and set
+#  up the certificates before you can use ssl.
+APACHE_OPTS="start"
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/apachectl
+DAEMON=/usr/sbin/httpd
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG $APACHE_OPTS
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG stop
+		;;
+	restart)
+		$0 stop
+		sleep 2
+		$0 start
+		;;
+	reload)
+		stat_busy "reloading apache configuration"
+		if [ -f /var/run/httpd.pid ]; then
+			kill -HUP `cat /var/run/httpd.pid`
+			stat_done
+		else
+			stat_fail
+		fi
+		;;
+	status)
+		daemon_status $SCRIPT $DAEMON
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|reload|status}"
+esac

@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@ruix-os.org>
+
+pkgname=nc
+pkgver=1.10
+pkgrel=1
+pkgdesc="nc (Netcat network utility) Netcat, or "nc" as the actual program is named, is a simple utility which reads and writes data across network connections, using TCP or UDP protocol.  It is designed to be a reliable "back-end" tool that can be used directly or easily driven by other programs and scripts. At the same time, it is a feature-rich network debugging and exploration tool, since it can create almost any kind of connection you would need and has several interesting built-in capabilities. Netcat was written by *Hobbit* <hobbit@avian.org>, and is a product of Avian Research."
+depends=('glibc')
+source=(http://www.securityfocus.com/data/tools/nc110.tgz	\
+	nc-110-21.diff.gz					\
+	nc.diff.gz						)
+md5sums=('402632f2fe01c169ff19a0ad6e9d608c' \
+	 'd549bb9bf9b51ebc7be8020073f83610' \
+	 'db5e582d4de352d0db09eabf9fe018a9' )
+
+build() {
+
+	patch -p1 < $startdir/src/nc-110-21.diff
+	patch -p1 < $startdir/src/nc.diff
+
+	make linux
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp nc			$startdir/pkg/usr/bin
+	chown -R root.bin	$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/nc
+
+	mkdir -p		$startdir/pkg/usr/man/man1
+	cp debian/nc.1		$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		Changelog	\
+		README		\
+		data		\
+		netcat.blurb	\
+		scripts		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

@@ -1,0 +1,113 @@
+# Maintainer:  Joshua Rubin <joshua@rubix-os.org>
+# Contributer: Jacob Rideout <jacob@rubix-os.org>
+
+ZISOFS=1.0.6
+
+pkgname=cdrtools
+pkgver=2.01
+pkgrel=1
+pkgdesc="cdrtools Tools for mastering and writing compact discs. cdda2wav -- CD audio sampling utility. cdrecord -- burn discs in most ATAPI and SCSI CD-R drives. mkisofs  -- create ISO9660/HFS/Joliet CD-ROM images. mkzftree -- compress a file tree to make a compressed CD-ROM."
+depends=('glibc' 'zlib')
+source=(ftp://ftp.berlios.de/pub/cdrecord/$pkgname-$pkgver.tar.gz 			\
+	http://www.kernel.org/pub/linux/utils/fs/zisofs/zisofs-tools-$ZISOFS.tar.bz2	)
+url="http://www.fokus.fhg.de/research/cc/glone/employees/joerg.schilling/private/cdrecord.html"
+md5sums=('6f58882dfba4c615e2ebd81a565f7cfa' \
+	 'b1439812746bd6176401fcdac82eeabf' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	make
+	make INS_BASE=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a 		\
+		AN-*		\
+		BUILD		\
+		COMPILE		\
+		COPYING		\
+		INSTALL		\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+	cd mkisofs
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/mkisofs
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README*		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/mkisofs
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/mkisofs/*
+	cd ..
+
+	cd cdda2wav
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/cdda2wav
+	cp	-a		\
+		FAQ		\
+		Frontends	\
+		GPL		\
+		HOWTOUSE	\
+		NEEDED		\
+		OtherProgs	\
+		README		\
+		THANKS		\
+		TODO		\
+		Changelog	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/cdda2wav
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/cdda2wav/*
+	cd ..
+
+	rm -r $startdir/pkg/usr/lib $startdir/pkg/usr/include $startdir/pkg/usr/man/man5 $startdir/pkg/usr/man/man1/cdda2ogg.1
+
+	cd $startdir/pkg/usr/bin
+	ln -sf mkisofs mkhybrid
+
+	rm -r $startdir/pkg/usr/sbin
+	rm    $startdir/pkg/usr/doc/$pkgname-$pkgver/README.rscsi
+
+	cd $startdir/src/zisofs-tools-$ZISOFS
+
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make
+
+	cp mkzftree	$startdir/pkg/usr/bin
+	chown root.bin	$startdir/pkg/usr/bin/mkzftree
+	chmod 755	$startdir/pkg/usr/bin/mkzftree
+
+	cp mkzftree.1	$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/doc/zisofs-tools-$ZISOFS
+
+	cp	-a		\
+		CHANGES		\
+		COPYING		\
+		INSTALL		\
+		README		\
+		zisofs.magic	\
+	$startdir/pkg/usr/doc/zisofs-tools-$ZISOFS
+
+	chown -R root.root $startdir/pkg
+	chown -R root.bin  $startdir/pkg/usr/bin
+	find $startdir/pkg -type d -exec chmod 755 {} \;
+	find $startdir/pkg/usr/man -type f -exec chmod 644 {} \;
+
+}

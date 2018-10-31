@@ -1,0 +1,35 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gtkspell
+pkgver=2.0.8
+pkgrel=1
+url="http://gtkspell.sourceforge.net"
+pkgdesc="GtkSpell provides MSWord/MacOSX-style highlighting of misspelled words in a GtkTextView widget.  Right-clicking a misspelled word pops up a menu ofsuggested replacements."
+depends=('gtk+2' 'aspell')
+source=(http://gtkspell.sourceforge.net/download/$pkgname-$pkgver.tar.gz)
+md5sums=('1199f7479ddb8ce286606a0893174c2f')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mv $startdir/pkg/usr/share/gtk-doc/html/$pkgname/* $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+	rm -r $startdir/pkg/usr/share/gtk-doc
+
+}

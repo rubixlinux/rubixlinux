@@ -1,0 +1,21 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kde-i18n-eo
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kde-i18n-eo Esperanto language support for KDE."
+depends=('kdebase')
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
+md5sums=('56aa8b57be70ade555fc5ce5aaa187b4')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/opt/kde
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+}

@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=dirvish
+pkgver=1.2.1
+pkgrel=1
+url="http://www.dirvish.org"
+pkgdesc="Dirvish is a fast, disk based, rotating network backup system. With dirvish you can maintain a set of complete images of your filesystems with unattended creation and expiration. A dirvish backup vault is like a time machine for your data. Dirvish was originally created by jw schultz."
+depends=('perl-time-modules' 'perl-time-period' 'rsync')
+source=(http://www.dirvish.org/$pkgname-$pkgver.tgz)
+md5sums=('51dd3f38f0bddb45b67d69b29af333c0')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix Release 2005.05.20
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	echo "This is the prefix: $startdir/pkg/usr"
+	echo "This is the confdir: /etc/$pkgname"
+
+	./install.sh
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGELOG	\
+		COPYING		\
+		FAQ.html	\
+		INSTALL		\
+		RELEASE.html	\
+		TODO.html	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mkdir -p $startdir/pkg/etc/$pkgname
+
+}

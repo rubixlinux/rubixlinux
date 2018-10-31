@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=glib
+pkgver=1.2.10
+pkgrel=1
+pkgdesc="glib (library of C routines) GLib is a library which includes support routines for C such as lists, trees, hashes, memory allocation, and many other things. GLib is required by nearly everything that uses GTK+."
+url="http://www.gtk.org"
+depends=('glibc')
+source=(ftp://ftp.gtk.org/pub/gtk/v1.2/$pkgname-$pkgver.tar.gz	\
+	gcc340.patch.gz						)
+md5sums=('6fe30dad87c77b91b632def29dd69ef9' \
+	 'eb58fa0a1cd007e99ebd7e42b61d5291' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/gcc340.patch
+
+	./configure --prefix=/usr --sysconfdir=/etc $CHOST
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a AUTHORS COPYING INSTALL NEWS README $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/glib-1.2.10/*
+	chmod 755 $startdir/pkg/usr/lib/libgmod*.so.*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/info/dir
+
+}

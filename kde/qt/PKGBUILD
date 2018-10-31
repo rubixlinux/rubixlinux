@@ -1,0 +1,177 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=qt
+pkgver=3.3.5
+pkgrel=2
+pkgdesc="Qt (a multi-platform C++ graphical user interface toolkit) Qt is a complete and well-developed object-oriented framework for developing graphical user interface (GUI) applications using C++. This release is free only for development of free software for the X Window System.  If you use Qt for developing commercial or other non-free software, you must have a professional license.  Please see http://www.trolltech.com/purchase.html for information on how to obtain a professional license."
+url="http://www.trolltech.com/products/qt/index.html"
+depends=('glibc' 'freetype2' 'libjpeg' 'mysql' 'x11' 'fontconfig' 'openssl' 'expat' 'libmng' 'gcc' 'zlib' 'libpng')
+makedepends=('mysql')
+install=$pkgname.install
+source=(ftp://ftp.trolltech.com/qt/source/$pkgname-x11-free-$pkgver.tar.bz2	\
+	qt-x11.diff								\
+	qt.csh									\
+	qt.mysql.h.diff								\
+	qt.sh									\
+	qt.x86.cflags.diff							\
+	qt-uic-fix.diff								)
+md5sums=('05d04688c0c0230ed54e89102d689ca4' \
+	 '45c9e1b5e141b998e8240990696129ce' \
+	 '1e06d17cea6a138d67a5e22f6c3761e1' \
+	 '8ab765eef22a871177a4cfeba2be8249' \
+	 '391cfbf36341bab9150b7a3784fd3e08' \
+	 'ee83e613e11e7acc10ea8f2294ccf0e2' \
+	 '08ed7e5a6f33e7f88c7e86f13898fca2' )
+
+## Todo:
+##   None
+
+## Notes:
+##   The x11 patch enables the builtin gif reader
+##   The mysql patch changes the mysql include directory
+##   The x86.cflags sets the proper Rubix CFLAGS, qt is built with O2 an no PIE or SSP
+
+## Changelog:
+##   rel2: fixed namespace hinting 2006.01.21
+##   rel1: upgraded to 3.3.5 2005.10.13
+##   rel6: added stl 2005.03.27
+##   rel5: rebuild with new cflags 2005.03.17
+##   rel4: Fixed build flags
+##   rel1: Initial Rubix release
+
+build() {
+
+	export QTDIR=$startdir/src/$pkgname-x11-free-$pkgver
+	export PATH=$QTDIR/bin:$PATH
+	export MANPATH=$QTDIR/doc/man:$MANPATH
+	export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+
+	cd $QTDIR
+
+	patch -p1 < $startdir/src/qt.x86.cflags.diff	|| return 1
+	patch -p1 < $startdir/src/qt-x11.diff		|| return 1
+	patch -p1 < $startdir/src/qt.mysql.h.diff	|| return 1
+	patch -p0 < $startdir/src/qt-uic-fix.diff	|| return 1
+
+	find . -perm 2775 -exec chmod 755 {} \;
+	find . -perm 2755 -exec chmod 755 {} \;
+	find . -perm  775 -exec chmod 755 {} \;
+	find . -perm  555 -exec chmod 755 {} \;
+	find . -perm  664 -exec chmod 644 {} \;
+	find . -perm  444 -exec chmod 644 {} \;
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver
+	ln -sf /usr/lib/$pkgname-$pkgver/examples .
+	ln -sf /usr/lib/$pkgname-$pkgver/tutorial .
+	ln -sf /usr/lib/$pkgname-$pkgver/doc/html .
+	ln -sf /usr/lib/$pkgname-$pkgver/doc/man .
+	cd $QTDIR
+
+	echo "yes" | ./configure	\
+		-prefix /usr/lib/qt	\
+		-release		\
+		-system-zlib		\
+		-system-libpng		\
+		-qt-imgfmt-png		\
+		-system-libmng		\
+		-qt-imgfmt-mng		\
+		-system-libjpeg		\
+		-qt-imgfmt-jpeg		\
+		-qt-gif			\
+		-thread			\
+		-stl			\
+		-no-g++-exceptions	\
+		-xft			\
+		-plugin-sql-mysql	\
+		-plugin-style-cde	\
+		-plugin-style-compact	\
+		-qt-style-motif		\
+		-plugin-style-motifplus	\
+		-plugin-style-platinum	\
+		-plugin-style-sgi	\
+		-plugin-style-windows	\
+		-enable-opengl
+	make symlinks sub-src sub-tools || return 1
+
+	mkdir -p	$startdir/pkg/usr/lib
+	cp -a $QTDIR	$startdir/pkg/usr/lib
+	cd		$startdir/pkg/usr/lib
+	mv $pkgname-x11-free-$pkgver $pkgname-$pkgver
+	ln -sf $pkgname-$pkgver $pkgname
+
+	cd $startdir/pkg/usr/lib/$pkgname-$pkgver
+	mv			\
+		FAQ		\
+		INSTALL		\
+		LICENSE.GPL	\
+		LICENSE.QPL	\
+		MANIFEST	\
+		PLATFORMS	\
+		README		\
+		changes*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/lib/qt/include/private
+	mkdir tmp
+	cp *.h tmp
+	rm *.h
+	mv tmp/* .
+	rmdir tmp
+	cd ..
+	mkdir tmp
+	cp *.h tmp
+	rm *.h
+	mv tmp/* .
+	rmdir tmp
+
+	cd $startdir/pkg/usr/lib/qt/bin
+	cp qmake qmake.bin
+	rm qmake
+	mv qmake.bin qmake
+
+	mkdir -p $startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/bin
+	for file in		\
+		assistant	\
+		designer	\
+		linguist	\
+		lrelease	\
+		lupdate		\
+		moc		\
+		qm2ts		\
+		qmake		\
+		qtconfig	\
+		uic
+	do
+		ln -sf /usr/lib/qt/bin/$file .
+	done
+
+	rm $startdir/pkg/usr/lib/qt/lib/README
+
+	cd $startdir/pkg/usr/lib/qt
+	find . -type d -name .obj -exec rm -r {} \;
+	find . -type d -name .moc -exec rm -r {} \;
+
+	rm	-r		\
+		config.tests	\
+		qmake		\
+		src		\
+		tools		\
+		translations	\
+		config.status	\
+		configure	\
+		Makefile
+
+	mkdir -p $startdir/pkg/etc/profile.d
+	cp $startdir/src/qt.sh  $startdir/pkg/etc/profile.d/qt.sh
+	cp $startdir/src/qt.csh $startdir/pkg/etc/profile.d/qt.csh
+	chmod 755 $startdir/pkg/etc/profile.d/*
+
+	cd $startdir/pkg/usr/lib/qt
+	patch -p1 -R < $startdir/src/qt.x86.cflags.diff || return 1
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

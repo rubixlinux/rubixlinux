@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+SHORTVER=5.43
+
+pkgname=expect
+pkgver=5.43.0
+pkgrel=1
+pkgdesc="Expect is a program that talks to other interactive programs according to a script.  Following the script, Expect knows what can be expected from a program and what the correct response should be. An interpreted language provides branching and high-level control structures to direct the dialogue. Expect was written by Don Libes of the National Institute of Standards and Technology."
+depends=('glibc' 'tcl' 'tk' 'x11')
+source=(http://expect.nist.gov/src/$pkgname-$pkgver.tar.gz)
+md5sums=('230400129630335b3060a42f66fec11d')
+url="http://expect.nist.gov"
+
+build() {
+
+	cd $startdir/src/$pkgname-$SHORTVER
+	./configure				\
+		--prefix=/usr			\
+		--with-tclconfig=/usr/lib	\
+		--enable-shared
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		FAQ	\
+		HISTORY	\
+		INSTALL	\
+		NEWS	\
+		README	\
+		example	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/lib
+	ln -s libexpect${SHORTVER}.a libexpect.a
+	ln -s libexpect${SHORTVER}.so libexpect.so
+
+	find $startdir/pkg -perm 754 -exec chmod 755 {} \;
+	find $startdir/pkg -perm 640 -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,50 @@
+#
+# /etc/makepkg.conf
+#
+
+#########################################################################
+# SOURCE ACQUISITION
+#########################################################################
+#
+#-- The FTP/HTTP download utility that makepkg should use to acquire sources
+export FTPAGENT="/usr/bin/wget --continue --passive-ftp --tries=3 --waitretry=3 --no-check-certificate"
+#export FTPAGENT="/usr/bin/snarf"
+#export FTPAGENT="/usr/bin/lftpget -c"
+
+#########################################################################
+# ARCHITECTURE, COMPILE FLAGS
+#########################################################################
+#
+export CARCH="i486"
+export CHOST="i486-pc-linux-gnu"
+#-- Security enhanced build flags, only change if you know what you are doing
+export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -fstack-protector-all -Wa,--noexecstack"
+export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -fstack-protector-all -Wa,--noexecstack"
+#-- Make Flags: change this for DistCC/SMP systems
+#export MAKEFLAGS="-j2"
+#export MAKEFLAGS="-j3 CC=distcc"
+
+#########################################################################
+# BUILD ENVIRONMENT
+##########################################################################
+
+#-- A space-delimited list of hosts running in the DistCC cluster
+export DISTCC_HOSTS=""
+#-- Colorized output messages
+export USE_COLOR="y"
+
+#########################################################################
+# GLOBAL PACKAGE OPTIONS
+#########################################################################
+#
+#-- Don't strip symbols from binaries/libraries
+#export NOSTRIP="1"
+
+#########################################################################
+# PACKAGE OUTPUT
+#########################################################################
+#
+#-- Destination: specify a fixed directory where all packages will be placed
+#export PKGDEST=/home/packages
+#-- Packager: name/email of the person or organization building packages
+#export PACKAGER="John Doe <john@doe.com>"

@@ -1,0 +1,13 @@
+--- ./startkde.orig	2005-07-20 03:04:12.000000000 -0700
++++ ./startkde	2005-07-28 21:44:45.000000000 -0700
+@@ -25,6 +25,10 @@
+ # we have to unset this for Darwin since it will screw up KDE's dynamic-loading
+ unset DYLD_FORCE_FLAT_NAMESPACE
+ 
++# Without this, /etc/xdg will take priority, and if this was installed by
++# GNOME it will make a mess of KDE's panel menu:
++export XDG_CONFIG_DIRS=/opt/kde/etc/xdg
++
+ # in case we have been started with full pathname spec without being in PATH
+ bindir=`echo "$0" | sed -n 's,^\(/.*\)/[^/][^/]*$,\1,p'`
+ if [ -n "$bindir" ]; then

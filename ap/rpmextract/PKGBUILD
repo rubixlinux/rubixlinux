@@ -1,0 +1,17 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=rpmextract
+pkgver=1.0
+pkgrel=1
+pkgdesc="This script extracts rpm archives"
+depends=('bash' 'gzip' 'bzip2' 'cpio')
+source=($pkgname.sh)
+md5sums=('c77c951913d7dbdacc36bade7751c4f4')
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp $startdir/src/$pkgname.sh $startdir/pkg/usr/bin
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

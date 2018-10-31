@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=doxygen
+pkgver=1.4.6
+pkgrel=1
+pkgdesc="doxygen (documentation generator) Doxygen is a documentation system for C++, C, Java, IDL, and to some extent PHP and C#.  Doxygen generates project documentation using special documentation blocks in the source code, easing the process of keeping docs and code in sync.  Doxygen produces documentation in several output formats, including HTML, LaTeX, man pages, RTF, XML, compressed HTML, PostScript, and PDF."
+depends=('glibc' 'qt' 'freetype2' 'libjpeg' 'fontconfig' 'x11' 'expat' 'libmng' 'gcc' 'zlib' 'libpng')
+makedepends=('tetex')
+source=(ftp://ftp.stack.nl/pub/users/dimitri/$pkgname-$pkgver.src.tar.gz	\
+	doxygen.docdir.diff							)
+md5sums=('ebf11130bec7987e9b69b1e0301d151a' \
+	 '861c29633e9b6f26bfc7ff71324495ed' )
+url="http://www.doxygen.org"
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.4.6 2006.01.18
+##   rel1: upgraded to 1.4.5 2005.11.09
+##   rel1: upgraded to 1.4.3 2005.06.24
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/doxygen.docdir.diff || return 1
+
+	./configure					\
+		--shared				\
+		--release				\
+		--prefix /usr				\
+		--docdir /usr/doc/$pkgname-$pkgver	\
+		--with-doxywizard
+	make || return 1
+	make install INSTALL=$startdir/pkg/usr DOCDIR=$startdir/pkg/usr/doc/$pkgname-$pkgver
+	make install_docs INSTALL=$startdir/pkg/usr DOCDIR=$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		INSTALL		\
+		LANGUAGE.HOWTO	\
+		LICENSE		\
+		PLATFORMS	\
+		README		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

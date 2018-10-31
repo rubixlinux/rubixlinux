@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=bitchx
+pkgver=1.1
+pkgrel=1
+pkgdesc="BitchX (chat client) BitchX is an advanced Internet Relay Chat (IRC) client."
+url="http://www.bitchx.org"
+depends=('glibc' 'mysql' 'openssl' 'gpm' 'zlib' 'ncurses')
+source=(http://bitchx.org/files/source/ircii-pana-$pkgver-final.tar.gz	\
+	ircii-pana_1.1-1.diff.gz					)
+md5sums=('611d2dda222f00c10140236f4c331572' \
+	 'dc140419ec49f132814b471b90cdfc51' )
+
+build() {
+
+	cd $startdir/src/BitchX
+
+	patch -p1 < $startdir/src/ircii-pana_1.1-1.diff || return 1
+
+	./configure		\
+		--prefix=/usr	\
+		--enable-cdrom	\
+		--with-ssl	\
+		--with-plugins	\
+		--enable-ipv6
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	bzip2 -d $startdir/pkg/usr/man/man1/BitchX.1.bz2
+
+	mkdir -p $startdir/pkg/usr/doc/BitchX-$pkgver
+	cp	-a			\
+		README-*		\
+		COMPILE-PROBLEMS	\
+		INST*			\
+		IPv6-support		\
+		doc/*			\
+	$startdir/pkg/usr/doc/BitchX-$pkgver
+
+	rm $startdir/pkg/usr/bin/BitchX
+	ln -s BitchX-1.1-final $startdir/pkg/usr/bin/BitchX
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,204 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=firefox
+pkgver=1.5.0.4
+pkgrel=1
+pkgdesc="mozilla-firefox (Mozilla Firefox Web browser) This project is a redesign of the Mozilla browser component written using the XUL user interface language.  Firefox empowers you to browse faster, more safely and more efficiently than with any other browser. Visit the Mozilla Firefox project online: http://www.mozilla.org/projects/firefox/"
+depends=('glibc' 'freetype2' 'gtk+2' 'libjpeg' 'cairo' 'pango' 'atk' 'x11' 'fontconfig' 'expat' 'glib2' 'zlib' 'gcc' 'libidl' 'libpng')
+url="http://www.mozilla.org/projects/firefox"
+source=(ftp://ftp.mozilla.org/pub/mozilla.org/$pkgname/releases/$pkgver/source/$pkgname-$pkgver-source.tar.bz2	\
+	firefox.png												\
+	mozilla-firefox.desktop											\
+	aoss.diff												\
+	firefox.moz_plugin_path.diff										\
+	pangoxft.diff												\
+	rubix-default-prefs.js											\
+	homepage												\
+	bookmarks.html												)
+md5sums=('4cb3d7c1b5345585750766c589308b5e' \
+	 '44600a407b2c582eaf9ec4340a3b83e3' \
+	 '7559d07652d7dd9cc6055265f54bdc50' \
+	 'd5adc62af2cbfea1f9d9518228d2eed3' \
+	 'd5dbe26fef92fa6a2a33dae25c51df0b' \
+	 '91661761f2f232b08b74f5adc4f1eff0' \
+	 'e38efa3622645b90f11a1a3fff30cd27' \
+	 'd1cf5a7cc12729877be126d341042206' \
+	 '144adb4bc1f0d5ec1f1ded1c0a580ea3' )
+
+## Todo:
+##   None
+
+## Notes:
+##   Firefox is now the default mozilla browser on rubix
+##   Cannot be built with either PIE or SSP
+
+## Changelog:
+##   rel1: upgraded to 1.5.0.4 2006.06.04 *security*
+##   rel1: upgraded to 1.5.0.3 2006.05.03 *security*
+##   rel1: upgraded to 1.5.0.2 2006.04.15 *security*
+##   rel1: upgraded to 1.5.0.1 2006.02.02
+##   rel2: made thunderbird the default mailto and news handler 2006.01.16
+##   rel1: upgraded to 1.5 2005.11.29
+##         built with official branding because without it every reference to "firefox" comes
+##         up as "deer park" (the codename for firefox 1.5 prereleases). It would be embarrassing
+##         to both rubix and mozilla to distribute such a poor quality build. I have reapplied for
+##         permission to use mozilla trademarks, but if this is again denied, we might have to
+##         rebrand firefox as "RubixFox based on Mozilla Firefox". I have changed the build to
+##         more closely follow the mozilla distribution policy so that there is a better chance
+##         for mozilla to give trademark permissions. The extensions are now the default
+##         extensions minus gnomevfs since Rubix does not support Gnome. There are some default
+##         preference modifications including:
+##         *auto update is disabled (since you need to be root, and rubix will distribute updates via pacman)
+##         *external links will open a new tab instead of a new window
+##         *smoothscroll and autoscroll are enabled
+##         *idn is disabled for security reasons
+##         also, the default homepage has been changed to the rubix firefox start page
+##         rubix linux favorite bookmarks and rubix linux rss feeds have been added to the default bookmarks
+##         one small patch has been added so that firefox does not need to link with pangoxft (firefox would
+##         not start without this)
+##         other changes in this build are:
+##         *better optimizations
+##         *pango support
+##         *svg support via cairo
+##         *all image encoders are built
+##         *mathml is enabled
+##         *oji is enabled (you should install jre even though it is not a required dependency)
+##   rel4: added another small patch so that Rubix mozilla plugins are now located, generically,
+##         at /usr/lib/mozilla/plugins 2005.11.01
+##   rel3: added a small patch to run-mozilla.sh that runs mozilla with aoss so sound works properly
+##         this could not be done until alsa enabled dmix by default 2005.10.23
+##   rel2: fixed deps 2005.09.30
+##   rel1: upgraded to 1.0.6 2005.09.21
+##   rel1: upgraded to 1.0.6 2005.07.28
+##   rel1: upgraded to 1.0.4 changed dep of libidl2 to libidl 2005.05.12
+##   rel1: upgraded to 1.0.3 2005.04.17
+##   rel1: upgraded to 1.0.2 2005.03.27
+##   rel2: removed the "--enable-official-branding", we could have followed suit like slackware and just repackaged 
+##         the official mozilla binaries but I really hate using binaries since I have to make sure that all the 
+##         libraries are satisfied among other things. Mozilla has no problem with us distributing non official source 
+##         builds now, and once Rubix's reputation grows enough they will reconsider us using 
+##         "--enable-official-branding".  So we will comply with Mozilla's request and remove the 
+##         "--enable-official-branding" for now.
+##   rel1: Upgraded to 1.0.1 2005.02.25
+##   rel2: Moved a few more libs to /usr/lib 2005.02.21
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS=""
+	export CXXFLAGS=""
+	export OPTIMIZE="-march=i486 -mtune=i686 -Os -pipe -Wa,--noexecstack"
+	export MOZ_CO_PROJECT="browser"
+	export MOZILLA_OFFICIAL="1"
+	export BUILD_OFFICIAL="1"
+
+	cd $startdir/src/mozilla
+
+	patch -p1 < $startdir/src/pangoxft.diff						|| return 1
+	patch -p1 < $startdir/src/aoss.diff						|| return 1
+	sed -i "s@destdir@DESTDIR@" $startdir/src/mozilla/browser/app/Makefile.in	|| return 1
+
+	# We will --enable-official-branding eventually when Rubix has built up its reputation for
+	#   only the highest quality packages, and Mozilla approves of it :)
+
+	./configure								\
+		--prefix=/usr							\
+		--enable-application=browser					\
+		--enable-crypto							\
+		--enable-default-toolkit=gtk2					\
+		--enable-extensions=default,-gnomevfs				\
+		--enable-image-encoder=all					\
+		--enable-mathml							\
+		--enable-official-branding					\
+		--enable-oji							\
+		--enable-optimize="$OPTIMIZE"					\
+		--enable-pango							\
+		--enable-reorder						\
+		--enable-single-profile						\
+		--enable-strip							\
+		--enable-svg							\
+		--enable-svg-renderer-cairo					\
+		--enable-system-cairo						\
+		--enable-xinerama						\
+		--enable-xft							\
+		--disable-composer						\
+		--disable-debug							\
+		--disable-freetype2						\
+		--disable-gnomeui						\
+		--disable-gnomevfs						\
+		--disable-installer						\
+		--disable-ldap							\
+		--disable-mailnews						\
+		--disable-pedantic						\
+		--disable-profilesharing					\
+		--disable-tests							\
+		--disable-xprint						\
+		--with-default-mozilla-five-home=/usr/lib/$pkgname-$pkgver	\
+		--with-system-jpeg						\
+		--with-system-mng						\
+		--with-system-png						\
+		--with-system-zlib
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/include/$pkgname-$pkgver/nss
+	find security/nss/lib -name "*.h" -type f -exec cp -a {} $startdir/pkg/usr/include/$pkgname-$pkgver/nss \;
+	chmod 644 $startdir/pkg/usr/include/$pkgname-$pkgver/nss/*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		LEGAL		\
+		LICENSE		\
+		README.txt	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/pkg/usr/lib/$pkgname-$pkgver
+	for lib in			\
+		libgfxpsshar.so		\
+		libgkgfx.so		\
+		libgtkembedmoz.so	\
+		libgtkxtbin.so		\
+		libjsj.so		\
+		libmozjs.so		\
+		libxpcom.so		\
+		libxpcom_compat.so	\
+		libnspr4.so		\
+		libnss3.so		\
+		libnssckbi.so		\
+		libplc4.so		\
+		libplds4.so		\
+		libsmime3.so		\
+		libsoftokn3.so		\
+		libssl3.so		\
+		libxpcom_core.so	\
+		libxpistub.so
+	do
+		mv $lib ..
+		ln -s ../$lib .
+	done
+
+	ln -s $pkgname-$pkgver $startdir/pkg/usr/lib/$pkgname
+	ln -s $pkgname-$pkgver $startdir/pkg/usr/include/$pkgname
+	ln -s $pkgname-$pkgver $startdir/pkg/usr/share/idl/$pkgname
+
+	mkdir -p $startdir/pkg/usr/share/applications
+	cp $startdir/src/mozilla-firefox.desktop $startdir/pkg/usr/share/applications
+
+	mkdir -p $startdir/pkg/usr/share/pixmaps
+	cp $startdir/src/firefox.png $startdir/pkg/usr/share/pixmaps/firefox.png
+
+	cd $startdir/pkg/usr/bin
+	patch -p0 < $startdir/src/firefox.moz_plugin_path.diff || return 1
+	rm $startdir/pkg/usr/bin/firefox~
+
+	mkdir -p $startdir/pkg/usr/lib/mozilla/plugins
+
+	cp $startdir/src/rubix-default-prefs.js	$startdir/pkg/usr/lib/$pkgname-$pkgver/greprefs/all-rubix.js
+	cp $startdir/src/rubix-default-prefs.js	$startdir/pkg/usr/lib/$pkgname-$pkgver/defaults/pref/all-rubix.js
+	cp $startdir/src/homepage		$startdir/pkg/usr/lib/$pkgname-$pkgver/browserconfig.properties
+	cp $startdir/src/bookmarks.html		$startdir/pkg/usr/lib/$pkgname-$pkgver/defaults/profile/bookmarks.html
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

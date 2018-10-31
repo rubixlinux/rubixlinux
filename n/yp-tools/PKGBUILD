@@ -1,0 +1,237 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+BIND=1.19.1
+SERV=2.18
+
+pkgname=yp-tools
+pkgver=2.9
+pkgrel=3
+pkgdesc="yptools (NIS servers and clients) NIS stands for Network Information Service.  NIS is usually used to provide /etc/passwd and /etc/group information throughout the network. Most Sun-based networks run NIS, and Linux machines can take full advantage of existing NIS service or provide NIS service themselves."
+url="http://www.linux-nis.org"
+depends=('glibc' 'gdbm')
+backup=(etc/nsswitch.conf-nis	\
+	etc/netgroup		\
+	etc/yp.conf		\
+	etc/rc.d/yp		\
+	var/yp/nicknames	\
+	var/yp/Makefile		\
+	var/yp/securenets	)
+source=(ftp://ftp.kernel.org/pub/linux/utils/net/NIS/$pkgname-$pkgver.tar.gz	\
+	ftp://ftp.kernel.org/pub/linux/utils/net/NIS/ypbind-mt-$BIND.tar.bz2	\
+	ftp://ftp.kernel.org/pub/linux/utils/net/NIS/ypserv-$SERV.tar.bz2	\
+	nsswitch.conf-nis							\
+	yp									)
+md5sums=('8a852581c831eb6e699a16d741a7ec52' \
+	 '34a6e181289a637ebcc1e596c70af6c8' \
+	 'c02abaf8f4b8330a49e5cd58d469afc5' \
+	 '7cd9ba40c34fcaf56b7e0b0c38d552b5' \
+	 '38f08499fe2c27702bbb3b4027ed8ef6' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: updated rc script to new format 2006.01.17
+##   rel2: upgraded bind to 1.19.1, ypserv to 2.18 2005.08.16
+##   rel1: initial rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/etc
+	cp $startdir/src/nsswitch.conf-nis $startdir/pkg/etc/nsswitch.conf-nis
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--disable-domainname	\
+		$CHOST
+	make clean
+	./configure			\
+		--prefix=/usr		\
+		--disable-domainname	\
+		$CHOST
+	make || return 1
+
+	mkdir -p $startdir/pkg/var/yp
+	cp etc/nicknames $startdir/pkg/var/yp/nicknames
+
+	mkdir -p	$startdir/pkg/usr/share/locale/de/LC_MESSAGES
+	cp po/de.gmo	$startdir/pkg/usr/share/locale/de/LC_MESSAGES/yp-tools.mo
+
+	cd src
+	mkdir -p	$startdir/pkg/usr/bin
+	cp ypcat	$startdir/pkg/usr/bin
+	cp ypmatch	$startdir/pkg/usr/bin
+	cp yppasswd	$startdir/pkg/usr/bin
+	cp ypwhich	$startdir/pkg/usr/bin
+
+	ln -s yppasswd $startdir/pkg/usr/bin/ypchfn
+	ln -s yppasswd $startdir/pkg/usr/bin/ypchsh
+
+	mkdir -p	$startdir/pkg/usr/sbin
+	cp yppoll	$startdir/pkg/usr/sbin
+	cp ypset	$startdir/pkg/usr/sbin
+
+	cd ../man
+
+	mkdir -p $startdir/pkg/usr/man/man{1,5,8}
+
+	cp nicknames.5 $startdir/pkg/usr/man/man5
+
+	for file in *.1 ; do
+		cp $file $startdir/pkg/usr/man/man1
+	done
+
+	for file in *.8 ; do
+		cp $file $startdir/pkg/usr/man/man8
+	done
+
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/ypbind-mt-$BIND
+
+	./configure --prefix=/usr $CHOST
+	make clean
+	./configure --prefix=/usr $CHOST
+	make || return 1
+
+	mkdir -p	$startdir/pkg/etc
+
+	cp etc/yp.conf	$startdir/pkg/etc/yp.conf
+
+	cp src/ypbind	$startdir/pkg/usr/sbin/ypbind
+
+	cp man/yp.conf.5	$startdir/pkg/usr/man/man5
+	cp man/ypbind.8		$startdir/pkg/usr/man/man8
+
+	mkdir -p	$startdir/pkg/usr/share/locale/de/LC_MESSAGES
+	cp po/de.gmo	$startdir/pkg/usr/share/locale/de/LC_MESSAGES/ypbind-mt.mo
+
+	mkdir -p $startdir/pkg/usr/doc/ypbind-mt-$BIND
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/ypbind-mt-$BIND
+
+	cd $startdir/src/ypserv-$SERV
+
+	./configure			\
+		--enable-fqdn		\
+		--enable-yppasswd	\
+		$CHOST
+	make clean
+	./configure			\
+		--enable-fqdn		\
+		--enable-yppasswd	\
+		$CHOST
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/lib/yp
+
+	cd scripts
+
+	for file in		\
+		create_printcap	\
+		match_printcap	\
+		pwupdate	\
+		ypinit		\
+		ypxfr_1perday	\
+		ypxfr_1perhour	\
+		ypxfr_2perday
+	do
+		cp $file	$startdir/pkg/usr/lib/yp
+		chmod 755	$startdir/pkg/usr/lib/yp/$file
+	done 
+
+	for file in		\
+		pwupdate.8	\
+		ypinit.8
+	do
+		cp $file $startdir/pkg/usr/man/man8
+	done
+
+	cd ..
+
+	for FILE in		\
+		makedbm		\
+		mknetid		\
+		revnetgroup	\
+		yphelper	\
+		ypxfr
+	do
+		cd $FILE
+		cp $FILE	$startdir/pkg/usr/lib/yp
+		cp $FILE.8	$startdir/pkg/usr/man/man8/$FILE.8
+		cd ..
+	done
+
+	cp rpc.ypxfrd/ypxfrd.8	$startdir/pkg/usr/man/man8/ypxfrd.8
+
+	for FILE in		\
+		ypserv		\
+		rpc.yppasswdd	\
+		rpc.ypxfrd	\
+		yppush
+	do
+		cd $FILE
+		cp $FILE	$startdir/pkg/usr/sbin
+		cp $FILE.8	$startdir/pkg/usr/man/man8/${FILE}.8
+		cd ..
+	done
+
+	cp rpc.yppasswdd/yppasswdd.8	$startdir/pkg/usr/man/man8/yppasswdd.8
+	cp scripts/ypMakefile		$startdir/pkg/var/yp/Makefile
+	cp etc/securenets		$startdir/pkg/var/yp/securenets
+
+	echo "# This file is part of the YP server package -- see 'man netgroup'" > $startdir/pkg/etc/netgroup
+
+	cat	etc/netgroup >>		$startdir/pkg/etc/netgroup
+	cp	etc/netgroup.5		$startdir/pkg/usr/man/man5/netgroup.5
+	cp	etc/ypserv.conf.5	$startdir/pkg/usr/man/man5/ypserv.conf.5
+
+	mkdir -p $startdir/pkg/usr/include/rpcsvc
+
+	cp lib/ypxfrd.x $startdir/pkg/usr/include/rpcsvc
+
+	mkdir -p $startdir/pkg/usr/doc/ypserv-$SERV
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/ypserv-$SERV
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/yp $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

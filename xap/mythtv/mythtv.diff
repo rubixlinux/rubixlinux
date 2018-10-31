@@ -1,0 +1,30 @@
+--- ./settings.pro.orig	2005-05-29 01:54:56.000000000 -0600
++++ ./settings.pro	2005-05-29 01:55:16.000000000 -0600
+@@ -1,7 +1,7 @@
+ CONFIG += $$CCONFIG
+ 
+ isEmpty( PREFIX ) {
+-    PREFIX = /usr/local
++    PREFIX = /usr
+ }
+ 
+ LIBVERSION = 0.18.1
+@@ -19,6 +19,7 @@
+ 
+ INCLUDEPATH += $${PREFIX}/include
+ INCLUDEPATH += $$CONFIG_INCLUDEPATH
++INCLUDEPATH += /opt/kde/include
+ 
+ # figure out compile flags based on qmake info
+ 
+--- ./configure.orig	2005-05-29 02:08:27.000000000 -0600
++++ ./configure	2005-05-29 02:08:41.000000000 -0600
+@@ -1604,7 +1604,7 @@
+ 	CFLAGS="$CFLAGS -O5"
+ 	LDFLAGS="$LDFLAGS -O5"
+     else
+-	CFLAGS="-O3 $CFLAGS"
++	CFLAGS="$CFLAGS"
+     fi
+ fi
+ 

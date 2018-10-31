@@ -1,0 +1,76 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+VER=6.2.6
+SUBVER=2
+
+pkgname=imagemagick
+pkgver=6.2.6_2
+pkgrel=1
+pkgdesc="imagemagick (a robust collection of image processing tools) ImageMagick is a collection of tools for manipulating and displaying digital images.  It can merge images, transform image dimensions, do screen captures, create animation sequences, and convert between many different image formats. ImageMagick was written by John Cristy of ImageMagick Studio. Home page:  http://www.imagemagick.org/"
+depends=('glibc' 'freetype2' 'libtiff' 'libjpeg' 'libxml2' 'x11' 'bzip2' 'gcc' 'zlib' 'lcms' 'libpng' 'perl')
+source=(ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-$VER-$SUBVER.tar.bz2)
+url="http://www.imagemagick.org"
+md5sums=('1805b3cf1f63e0f08ed62bd3a8164208')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 6.2.6-2 2006.03.03
+##   rel1: upgraded to 6.2.6-1 for security reasons 2006.02.14
+##   rel1: rebuilt against xorg without deps 2005.12.23
+##   rel1: upgraded to 6.2.5-5 2005.12.05
+##   rel1: upgraded to 6.2.5-4 2005.11.10
+##   rel1: upgraded to 6.2.5-2 2005.10.17
+##   rel1: upgraded to 6.2.5-0 2005.10.06
+##   rel1: upgraded to 6.2.4-6, fixed location of some docs 2005.09.23
+##   rel1: upgraded to 6.2.4-0 2005.08.15
+##   rel1: upgraded to 6.2.3-1 2005.06.13
+##   rel1: Initial Rubix release 2005.05.12
+
+build() {
+
+	cd $startdir/src/ImageMagick-$VER
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 666 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr	\
+		--program-prefix=	\
+		--enable-16bit-pixel	\
+		--with-x		\
+		--with-frozenpaths=no	\
+		--enable-static=no	\
+		--enable-shared		\
+		--with-perl		\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chmod 644 $startdir/pkg/usr/share/man/man3/*
+	mv $startdir/pkg/usr/share/man/man3 $startdir/pkg/usr/man
+	rmdir $startdir/pkg/usr/share/man
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mv $startdir/pkg/usr/share/ImageMagick-$VER/* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mv $startdir/pkg/usr/share/doc/ImageMagick-$VER $startdir/pkg/usr/doc/$pkgname-$pkgver	
+	cp -a *.txt $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm -r $startdir/pkg/usr/share
+
+	cd $startdir/pkg/usr/lib/perl5
+	find . -name perllocal.pod | xargs rm
+	rmdir */* 2> /dev/null
+	rmdir * 2> /dev/null
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+}

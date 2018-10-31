@@ -1,0 +1,77 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=apmd
+pkgver=3.0.2
+pkgrel=4
+pkgdesc="apmd (Advanced Power Management daemon) apmd is an APM monitoring daemon, and works in conjunction with the APM BIOS driver in the kernel.  Apmd (and the included tools) handle tasks such as automatically putting a laptop into suspend when the power level drop below a certain point.  This package also includes the graphical power management tools xapm and xbattery. The apmd tools were written by Rik Faith and are maintained by Avery Pennarun.  xbattery was written by Nathan Sidwell."
+depends=('glibc')
+source=(http://www.worldvisions.ca/~apenwarr/apmd/$pkgname-$pkgver.tar.gz	\
+	apmd-$pkgver.patch							\
+	apm									)
+md5sums=('23ce275766441c59b6b47c002f9098eb' \
+	 'a27ecf771d9dc5d4cf57b9c79972ec46' \
+	 'ebfb2fe48aa48ae086819d08a5f9b4d1' )
+
+## Todo:
+##   None
+
+## Notes:
+##   The patch fixes all sorts of compilation problems
+
+##Changelog:
+##   rel4: updated rc script to new format 2006.01.15
+##   rel2: Changed spacing in rc script 2005.02.22
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname
+
+	patch -p1 < $startdir/src/apmd-3.0.2.patch || return 1
+
+	make apm apmsleep apmd || return 1
+
+	mkdir -p			$startdir/pkg/usr/bin
+	cp apm				$startdir/pkg/usr/bin
+	cp apmsleep			$startdir/pkg/usr/bin
+	cp on_ac_power			$startdir/pkg/usr/bin
+	chown -R root.bin		$startdir/pkg/usr/bin
+	chmod 755			$startdir/pkg/usr/bin/*
+
+	mkdir -p			$startdir/pkg/usr/man/man1
+	cp apm.1			$startdir/pkg/usr/man/man1
+	cp apmsleep			$startdir/pkg/usr/man/man1
+
+	mkdir -p			$startdir/pkg/usr/sbin
+	cp apmd				$startdir/pkg/usr/sbin
+	chmod 755			$startdir/pkg/usr/sbin/*
+	chown -R root.bin		$startdir/pkg/usr/sbin
+
+	mkdir -p			$startdir/pkg/usr/man/man8
+	cp apmd.8			$startdir/pkg/usr/man/man8
+
+	chmod 0644			$startdir/pkg/usr/man/man*/*
+
+	mkdir -p			$startdir/pkg/usr/lib
+	cp libapm.a			$startdir/pkg/usr/lib
+
+	mkdir -p			$startdir/pkg/usr/include
+	cp apm.h			$startdir/pkg/usr/include
+	chmod 0644			$startdir/pkg/usr/include/*
+
+	mkdir -p			$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ANNOUNCE	\
+		BUGS.apmsleep	\
+		LSM		\
+		README		\
+		README.transfer	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chown root.root		$startdir/pkg/usr/doc/$pkgname-$pkgver/*
+	chmod 644		$startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mkdir -p		$startdir/pkg/etc/rc.d
+	cp $startdir/src/apm	$startdir/pkg/etc/rc.d
+
+}

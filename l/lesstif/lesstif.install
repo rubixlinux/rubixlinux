@@ -1,0 +1,17 @@
+post_install() {
+if [ -r usr/X11R6/lib/X11/config/host.def ]; then
+	if ! grep LessTif usr/X11R6/lib/X11/config/host.def 1> /dev/null 2> /dev/null ; then
+		cat usr/X11R6/lib/X11/config/host.def-lesstif >> usr/X11R6/lib/X11/config/host.def
+	fi
+else
+	cat usr/X11R6/lib/X11/config/host.def-lesstif >> usr/X11R6/lib/X11/config/host.def
+fi
+}
+
+post_upgrade() {
+	post_install
+}
+
+op=$1
+shift
+$op $

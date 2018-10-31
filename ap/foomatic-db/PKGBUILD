@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=foomatic-db
+pkgver=20051002
+pkgrel=1
+pkgdesc="foomatic-db The collected knowledge about printers, drivers, and driver options in XML files, used by foomatic-db-engine to generate PPD files."
+depends=('foomatic-db-engine')
+source=(http://www.linuxprinting.org/download/foomatic/$pkgname-3.0-$pkgver.tar.gz)
+url="http://www.linuxprinting.org/foomatic.html"
+md5sums=('f2b2e7ae9b0a5cc7c8aecb440b9c5161')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+		TODO		\
+		USAGE		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	find $startdir/pkg/usr/share -type f -exec chmod 644 {} \;
+	find $startdir/pkg/usr -type d -exec chmod 755 {} \;
+
+}

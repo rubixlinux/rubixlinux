@@ -1,0 +1,104 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+ACL=2.2.32
+ATTR=2.4.24
+DMAPI=2.2.1
+XFSDUMP=2.2.30
+
+pkgname=xfsprogs
+pkgver=2.7.3
+pkgrel=1
+pkgdesc="xfsprogs (Utilities for SGI's XFS filesystem) XFS is a high performance journaling filesystem which originated on the SGI IRIX platform.  It is completely multi-threaded, can support large files and large filesystems, extended attributes, variable block sizes, is extent based, and makes extensive use of Btrees (directories, extents, free space) to aid both performance and scalability."
+url="http://oss.sgi.com/projects/xfs"
+depends=('e2fsprogs' 'glibc' 'gpm' 'ncurses')
+source=(ftp://oss.sgi.com/projects/xfs/cmd_tars/acl-$ACL.src.tar.gz		\
+	ftp://oss.sgi.com/projects/xfs/cmd_tars/attr-$ATTR.src.tar.gz		\
+	ftp://oss.sgi.com/projects/xfs/cmd_tars/dmapi-$DMAPI.src.tar.gz		\
+	ftp://oss.sgi.com/projects/xfs/cmd_tars/xfsdump-$XFSDUMP.src.tar.gz	\
+	ftp://oss.sgi.com/projects/xfs/cmd_tars/$pkgname-$pkgver.src.tar.gz	\
+	compile-fix.diff.gz							)
+md5sums=('85d2e73c5a3175b96d1d956c52835fe4' \
+	 'f696ab041e2981183cc507f7b0429207' \
+	 '2f10f3846c2d2061b0692d96db655240' \
+	 'f9ae54ddebf9f158bef0b15049d26dfa' \
+	 '89728c0d84258c94e629bf39e4ba1509' \
+	 'f592f22df82553c663baa86d6aa783e0' )
+
+## Todo:
+##   None
+
+## Notes:
+##   dmapi needs to be installed to build xfsdump, so comment out the dmapi section first,
+##   build, install, uncomment the dmapi section, build, install
+
+## Changelog:
+##   rel1: upgraded to 2.7.3, acl 2.2.32, attr, 2.4.24 2005.12.18
+##   rel1: upgraded to 2.6.38, acl 2.2.31, attr 2.4.23 and xfsdump 2.2.30 2005.09.18
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/attr-$ATTR
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+	make prefix=$startdir/pkg/usr install-dev
+	make prefix=$startdir/pkg/usr install-lib
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/doc/attr $startdir/pkg/usr/doc/attr-$ATTR
+
+	cd $startdir/src/$pkgname-$pkgver
+	patch -p1 < $startdir/src/compile-fix.diff || return 1
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+	make prefix=$startdir/pkg/usr install-dev
+	make prefix=$startdir/pkg/usr install-lib
+	mv $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/dmapi-$DMAPI
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+	make prefix=$startdir/pkg/usr install-dev
+	make prefix=$startdir/pkg/usr install-lib
+	mv $startdir/pkg/usr/share/doc/dmapi $startdir/pkg/usr/doc/dmapi-$DMAPI
+
+	cd $startdir/src/acl-$ACL
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+	make prefix=$startdir/pkg/usr install-dev
+	make prefix=$startdir/pkg/usr install-lib
+	mv $startdir/pkg/usr/share/doc/acl $startdir/pkg/usr/doc/acl-$ACL
+
+	# xfsdump requires dmapi to be installed first
+	cd $startdir/src/xfsdump-$XFSDUMP
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+	mv $startdir/pkg/usr/share/doc/xfsdump $startdir/pkg/usr/doc/xfsdump-$XFSDUMP
+
+	rmdir $startdir/pkg/usr/share/doc
+	mv $startdir/pkg/usr/sbin $startdir/pkg
+	mv $startdir/pkg/usr/lib  $startdir/pkg
+	rm $startdir/pkg/lib/*.a
+	rm $startdir/pkg/lib/*.la
+	chmod 0755 $startdir/pkg/lib/*
+	mkdir $startdir/pkg/usr/sbin
+	mv $startdir/pkg/usr/bin/xfs_*		$startdir/pkg/usr/sbin
+	mv $startdir/pkg/usr/libexec		$startdir/pkg/usr/lib
+	mv $startdir/pkg/usr/bin/xfsinvutil	$startdir/pkg/usr/sbin
+	mv $startdir/pkg/usr/bin/xfsrq		$startdir/pkg/usr/sbin
+	rm $startdir/pkg/usr/lib/*.so
+	rm $startdir/pkg/usr/bin/xfsdump
+	rm $startdir/pkg/usr/bin/xfsrestore
+	ln -s /lib/libattr.so.1		$startdir/pkg/usr/lib/libattr.so
+	ln -s /lib/libdm.so.0		$startdir/pkg/usr/lib/libdm.so
+	ln -s /lib/libhandle.so.1	$startdir/pkg/usr/lib/libhandle.so
+	ln -s /lib/libacl.so.1		$startdir/pkg/usr/lib/libacl.so
+	ln -s /sbin/xfsdump		$startdir/pkg/usr/sbin/xfsdump
+	ln -s /sbin/xfsrestore		$startdir/pkg/usr/sbin/xfsrestore
+	chown -R root.bin $startdir/pkg/sbin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

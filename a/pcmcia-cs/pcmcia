@@ -1,0 +1,128 @@
+#!/bin/bash
+
+# Should be either i82365, i82092, tcic, or yenta_socket.
+# Can also be set to "probe" (a Slackware addition) which loads
+# each module until one of them works.  (this is the default)
+PCIC=probe
+#PCIC=i82365
+#PCIC=tcic
+#PCIC=yenta_socket
+# The i82092 is found in old laptops and evaluation boards and will
+# not be automatically probed for.
+#PCIC=i82092
+# Put pcmcia_core options here
+CORE_OPTS=
+# Put cardmgr options here
+CARDMGR_OPTS="-q"
+# To set the PCMCIA scheme at startup...
+SCHEME=
+
+. /etc/rubixlib
+
+cleanup()
+{
+	while read SN CLASS MOD INST DEV EXTRA ; do
+		if [ "$SN" != "Socket" ] ; then
+			/etc/pcmcia/$CLASS stop $DEV 2> /dev/null
+		fi
+	done
+}
+
+KERN_VER=`uname -r | cut -d. -f2`
+EXITCODE=1
+
+for x in "1" ; do
+	if [ "$PCIC" = "" ] ; then
+		stat_err "PCIC not defined in /etc/rc.d/pcmcia!"
+		break
+	fi
+	case "$1" in
+		'start')
+			SC=/var/run/pcmcia-scheme
+			if [ -L $SC -o ! -O $SC ]; then
+				rm -f $SC
+			fi
+			if [ ! -f $SC ]; then
+				umask 022
+				echo > $SC
+			fi
+			if [ "$SCHEME" ]; then
+				umask 022
+				echo $SCHEME > $SC
+			fi
+			fgrep -q pcmcia /proc/devices
+			if [ $? -ne 0 ] ; then
+				if [ -d "/lib/modules/`uname -r`/pcmcia" ]; then
+					PC="/lib/modules/`uname -r`/pcmcia"
+				elif [ -d "/lib/modules/`uname -r`/kernel/drivers/pcmcia" ]; then
+					PC="/lib/modules/`uname -r`/kernel/drivers/pcmcia"
+				fi
+				if [ -d $PC ] ; then
+					stat_busy "loading pcmcia modules"
+					/sbin/modprobe pcmcia_core $CORE_OPTS 2> /dev/null
+					if [ "$PCIC" = "probe" ]; then
+						/sbin/modprobe i82365 2> /dev/null
+						if [ ! $? = 0 ]; then
+							/sbin/modprobe tcic 2> /dev/null
+						fi
+						if [ ! $? = 0 ]; then
+							/sbin/modprobe yenta_socket 2> /dev/null
+						fi
+					else
+						/sbin/modprobe $PCIC 2> /dev/null
+					fi
+					/sbin/modprobe ds 2> /dev/null
+					stat_done
+				else
+					stat_err "no pcmcia kernel modules for `uname -r` found!"
+					break
+				fi
+			fi
+			# Check kernel version. Kernel 2.6 doesn't need cardmgr
+			if [ $KERN_VER -lt 6 ]; then
+				if [ -r /var/run/stab ] ; then
+					cat /var/run/stab | cleanup
+				fi
+				start_daemon pcmcia /sbin/cardmgr
+			else
+				EXITCODE=0
+			fi
+			;;
+		'stop')
+			if [ $KERN_VER -lt 6 ]; then
+				stop_daemon pcmcia /sbin/cardmgr
+			fi
+			if fgrep -q "ds  " /proc/modules ; then
+				/sbin/modprobe -r ds
+				if [ "$PCIC" = "probe" ]; then
+					if grep i82365 /proc/modules 1> /dev/null 2> /dev/null ; then
+						/sbin/modprobe -r i82365
+					elif grep yenta_socket /proc/modules 1> /dev/null 2> /dev/null ; then
+						/sbin/modprobe -r yenta_socket
+					elif grep tcic /proc/modules 1> /dev/null 2> /dev/null ; then
+						/sbin/modprobe -r tcic
+					fi
+				else
+					/sbin/modprobe -r $PCIC
+				fi
+				/sbin/modprobe -r pcmcia_core
+			fi
+			EXITCODE=0
+			;;
+		'restart')
+			$0 stop
+			$0 start
+			;;
+		status)
+			check_daemon pcmcia /sbin/cardmgr
+			;;
+		*)
+			stat_err "usage: $0 {start|stop|restart|status}"
+			;;
+		esac
+done
+
+# Only exit if we're in our own subshell
+if [ "${0##*/}" = "pcmcia" ] ; then
+	exit $EXITCODE
+fi

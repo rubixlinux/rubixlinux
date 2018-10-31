@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=arch
+pkgver=1.3.3
+pkgrel=1
+pkgdesc="GNU arch is a revision control system, similar in purpose to tools such as CVS, SCCS, and Subversion. It is used to keep track of the changes made to a source tree and to help programmers combine and otherwise manipulate changes made by multiple people or at different times."
+url="http://www.gnu.org/software/gnu-arch"
+depends=('glibc' 'expat' 'zlib')
+source=(ftp://ftp.gnu.org/gnu/gnu-arch/tla-$pkgver.tar.gz	\
+	arch-gpg-check.gz					)
+md5sums=('61d5dea41e071f78a8319401ee07ab0b' \
+	 '4609bdb053b6e63c225cdef273bd93f5' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.3.3 2005.08.28
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/tla-$pkgver/src
+
+	mkdir	build
+	cd	build
+
+	../configure --prefix /usr
+	make || return 1
+	make test || return 1
+	make prefix=$startdir/pkg/usr install
+
+	cd $startdir/src/tla-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		web/gnu-arch/*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp $startdir/src/arch-gpg-check $startdir/pkg/usr/bin
+
+	chown -R root.bin $startdir/pkg/usr/bin
+	chmod 0755 $startdir/pkg/usr/bin/*
+
+}

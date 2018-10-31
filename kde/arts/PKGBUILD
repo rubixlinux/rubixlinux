@@ -1,0 +1,60 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=arts
+pkgver=1.5.1
+pkgrel=1
+pkgdesc="arts (Analog Realtime Synthesizer) aRts is the core sound system for KDE, and is short for \"analog realtime synthesizer\".  aRts is designed to create or process sound using small specialized modules.  These may create a waveform, play samples, filter data, add signals, perform effects (like delay, flanger or chorus), or output the data to the soundcard."
+url="http://www.arts-project.org"
+groups=('kde')
+depends=('glibc' 'esound' 'fontconfig' 'x11' 'expat' 'libogg' 'zlib' 'alsa-lib' 'qt' 'freetype2' 'libjpeg' 'audiofile' 'libvorbis' 'libmad' 'glib2' 'libmng' 'gcc' 'libpng')
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('71c4996de36aa7f8726e54bb3d5bf059')
+install=$pkgname.install
+
+## Todo:
+##   None
+
+##Notes:
+##   arts does not like pie or ssp!
+##   arts also uses -O2 by default so we omit -Os
+
+## Changelog:
+##   rel1: Upgraded to arts 1.5.1 2006.01.31
+##   rel1: Upgraded to arts 1.5.0 2005.12.18
+##   rel1: Upgraded to arts 1.4.3 2005.10.14
+##   rel1: Upgraded to arts 1.4.2 2005.07.29
+##   rel1: Upgraded to arts 1.4.1 2005.06.01
+##   rel1: Upgraded to arts 1.4.0 2005.03.16
+##   rel2: Rebuild withouth libGL.la reference 2005.02.19
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--with-alsa		\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		COPYING.LIB	\
+		INSTALL		\
+		doc/NEWS	\
+		doc/README	\
+		doc/TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

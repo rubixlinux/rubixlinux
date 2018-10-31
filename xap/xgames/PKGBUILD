@@ -1,0 +1,205 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+CUCKOO=1.1
+MINE=2.1
+SNOW=1.40
+
+pkgname=xgames
+pkgver=1.0
+pkgrel=1
+pkgdesc="xgames (small X games collection) A few small games and toys for X. Includes maze, spider, xcolormap, xlander, xminesweep, xroach, xsnow."
+depends=('glibc' 'x11')
+source=(maze.diff.gz		\
+	maze.tar.gz		\
+	spider.tar.gz		\
+	xcolormap.diff.gz	\
+	xcolormap.tar.gz	\
+	xcuckoo-$CUCKOO.tar.gz	\
+	xlander.tar.gz		\
+	xminesweep$MINE.tar.gz	\
+	xneko.tar.gz		\
+	xroach.tar.gz		\
+	xsnow-$SNOW.tar.gz	)
+md5sums=('05949afc1ee4753e9c5b262a7b9c01f0' \
+	 '4c733b0c4213afa75c31caf8919eeb2e' \
+	 '57f97729956311a08a44abad0aeaedbf' \
+	 'dd782c55b2fefe186917eb0c7e571835' \
+	 '2160092ee9d8055c498dfb2b2494fc85' \
+	 '0c6c51e836c834db1ee07db23d5d9965' \
+	 '2209e6bcfe7798f17d331b7f6832d14c' \
+	 '375353185360e610d93a2c32067c120d' \
+	 '74f330c26783f8b4a195ccfd5041e773' \
+	 'b11f9a64cd16eb7edc05c41260f4020b' \
+	 '54538d97f7a58d0a3c32d29b559b83bb' )
+
+## Todo:
+##   get spider, cuckoo and xlander to build
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release 2005.09.19
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/X11R6/bin
+	mkdir -p $startdir/pkg/usr/X11R6/man/man6
+
+#	makespider	## DOES NOT BUILD PROPERLY
+	makemaze
+	makexcolormap
+#	makexcuckoo	## DOES NOT BUILD PROPERLY
+#	makexlander	## DOES NOT BUILD PROPERLY
+	makexminesweep
+	makexneko
+	makexroach
+	makexsnow
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+}
+
+makespider() {
+
+	cd $startdir/src/spider
+
+	xmkmf
+	make || return 1
+
+	cp spider	$startdir/pkg/usr/X11R6/bin
+	cp spider.man	$startdir/pkg/usr/X11R6/man/man6/spider.6
+
+	mkdir -p	$startdir/pkg/usr/doc/$pkgname-$pkgver/spider
+	cp -a README*	$startdir/pkg/usr/doc/$pkgname-$pkgver/spider
+
+}
+
+makemaze() {
+
+	cd $startdir/src/maze
+
+	patch -p1 < $startdir/src/maze.diff || return 1
+
+	xmkmf
+	make || return 1
+
+	cp maze		$startdir/pkg/usr/X11R6/bin/maze
+	cp maze.man	$startdir/pkg/usr/X11R6/man/man6/maze.6
+	chmod 644	$startdir/pkg/usr/X11R6/man/man6/*
+
+	mkdir -p	$startdir/pkg/usr/doc/$pkgname-$pkgver/maze
+	cp -a README	$startdir/pkg/usr/doc/$pkgname-$pkgver/maze
+	chmod 644	$startdir/pkg/usr/doc/$pkgname-$pkgver/maze/*
+
+}
+
+makexcolormap() {
+
+	cd $startdir/src/xcolormap
+
+	patch -p1 < $startdir/src/xcolormap.diff || return 1
+
+	make || return 1
+
+	cp xcolormap	$startdir/pkg/usr/X11R6/bin
+
+	mkdir -p	$startdir/pkg/usr/doc/$pkgname-$pkgver/xcolormap
+	cp -a README	$startdir/pkg/usr/doc/$pkgname-$pkgver/xcolormap
+
+}
+
+makexcuckoo() {
+
+	cd $startdir/src/xcuckoo
+
+	xmkmf
+	make || return 1
+
+	cp xcuckoo	$startdir/pkg/usr/X11R6/bin
+	cp xcuckoo.man	$startdir/pkg/usr/X11R6/man/man6/xcuckoo.6
+
+	mkdir -p	$startdir/pkg/usr/doc/$pkgname-$pkgver/xcuckoo
+	cp -a CHANGES	$startdir/pkg/usr/doc/$pkgname-$pkgver/xcuckoo
+
+}
+
+makexlander() {
+
+	cd $startdir/src/xlander
+
+	xmkmf
+	make || return 1
+
+	cp xlander	$startdir/pkg/usr/X11R6/bin
+	cp xlander.man	$startdir/pkg/usr/X11R6/man/man6/xlander.6
+
+	mkdir -p	$startdir/pkg/usr/doc/$pkgname-$pkgver/xlander
+	cp -a README	$startdir/pkg/usr/doc/$pkgname-$pkgver/xlander
+
+}
+
+makexminesweep() {
+
+	cd $startdir/src/xminesweep$MINE
+
+	xmkmf
+	make || return 1
+
+	cp xminesweep		$startdir/pkg/usr/X11R6/bin
+	cp xminesweep.man	$startdir/pkg/usr/X11R6/man/man6/xminesweep.6
+	chmod 644		$startdir/pkg/usr/X11R6/man/man6/xminesweep.6
+
+	mkdir -p		$startdir/pkg/usr/doc/$pkgname-$pkgver/xminesweep
+	cp -a README		$startdir/pkg/usr/doc/$pkgname-$pkgver/xminesweep
+	chmod 644		$startdir/pkg/usr/doc/$pkgname-$pkgver/xminesweep/*
+
+}
+
+makexneko() {
+
+	cd $startdir/src/xneko
+
+	xmkmf
+	make || return 1
+
+	cp xneko	$startdir/pkg/usr/X11R6/bin
+	cp xneko.man	$startdir/pkg/usr/X11R6/man/man6/xneko.6
+	chmod 644	$startdir/pkg/usr/X11R6/man/man6/xneko.6
+
+	mkdir -p	$startdir/pkg/usr/doc/$pkgname-$pkgver/xneko
+	cp -a README	$startdir/pkg/usr/doc/$pkgname-$pkgver/xneko
+
+}
+
+makexroach() {
+
+	cd $startdir/src/xroach
+
+	xmkmf
+	make || return 1
+
+	cp xroach		$startdir/pkg/usr/X11R6/bin
+	cp xroach.man		$startdir/pkg/usr/X11R6/man/man6/xroach.6
+
+	mkdir -p		$startdir/pkg/usr/doc/$pkgname-$pkgver/xroach
+	cp -a README.linux	$startdir/pkg/usr/doc/$pkgname-$pkgver/xroach
+
+}
+
+makexsnow() {
+
+	cd $startdir/src/xsnow-$SNOW
+
+	xmkmf
+	make || return 1
+
+	cp xsnow	$startdir/pkg/usr/X11R6/bin/xsnow
+	cp xsnow.man	$startdir/pkg/usr/X11R6/man/man6/xsnow.6
+	chmod 644	$startdir/pkg/usr/X11R6/man/man6/xsnow.6
+
+	mkdir -p	$startdir/pkg/usr/doc/$pkgname-$pkgver/xsnow
+	cp -a README	$startdir/pkg/usr/doc/$pkgname-$pkgver/xsnow
+	chmod 644	$startdir/pkg/usr/doc/$pkgname-$pkgver/xsnow/*
+
+}

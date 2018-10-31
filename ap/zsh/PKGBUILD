@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=zsh
+pkgver=4.2.6
+pkgrel=1
+pkgdesc="zsh (the Z shell) Zsh is a UNIX command interpreter (shell) which of the standard shells most resembles the Korn shell (ksh), although it is not completely compatible.  It includes enhancements of many types, notably in the command-line editor, options for customizing its behavior, filename globbing, features to make C-shell (csh) users feel more at home and extra features drawn from tcsh (another 'custom' shell).  Zsh was written by Paul Falstad."
+url="http://www.zsh.org"
+depends=('glibc' 'ncurses' 'libtermcap')
+source=(ftp://ftp.zsh.org/pub/$pkgname-$pkgver.tar.bz2		\
+	ftp://ftp.zsh.org/pub/$pkgname-$pkgver-doc.tar.bz2	)
+md5sums=('2cefebf742c190cbc611baded825db64' \
+	 '3ca3b7c199db6eb942f2a296e3fad270' )
+install=$pkgname.install
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mv $startdir/pkg/usr/bin $startdir/pkg
+
+	rm $startdir/pkg/bin/$pkgname-$pkgver
+	ln -s $pkgname $startdir/pkg/bin/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc
+	ln -s profile $startdir/pkg/etc/zprofile
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/html-docs
+	cp	-a		\
+		INSTALL		\
+		LICENCE		\
+		META-FAQ	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a Doc/*.html $startdir/pkg/usr/doc/$pkgname-$pkgver/html-docs
+
+	mkdir -p $startdir/pkg/usr/info
+	cp -a Doc/*info* $startdir/pkg/usr/info
+
+	chown -R root.bin $startdir/pkg/bin
+
+}

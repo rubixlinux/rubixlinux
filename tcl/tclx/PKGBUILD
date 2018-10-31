@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=tclx
+pkgver=8.4
+pkgrel=1
+pkgdesc="tclx (Extended Tcl) Extended Tcl (TclX), is a set of extensions to Tcl, the Tool Command Language invented by Dr. John Ousterhout. Extended Tcl is oriented towards Unix system programming tasks and large application development. Many additional interfaces to the Unix operating system are provided. Extended Tcl was designed and implemented by Karl Lehenbauer (karl@NeoSoft.com) and Mark Diekhans (markd@Grizzly.com), with help in the early stages from Peter da Silva (peter@NeoSoft.com)."
+depends=('glibc' 'x11' 'tcl' 'tk')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname$pkgver.tar.bz2)
+url="http://tclx.sourceforge.net"
+md5sums=('395c2fbe35e1723570b005161b9fc8f8')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 8.4 2005.12.21
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname$pkgver
+	cp	-a			\
+		ChangeLog		\
+		README			\
+	$startdir/pkg/usr/doc/$pkgname$pkgver
+
+	./configure --prefix=/usr --enable-tk=YES
+	make || return 1
+	make INSTALL_ROOT=$startdir/pkg install
+	make clean
+
+	./configure --prefix=/usr --enable-tk=YES --enable-shared
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rmdir $startdir/pkg/usr/bin
+
+}

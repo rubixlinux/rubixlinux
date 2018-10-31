@@ -1,0 +1,42 @@
+--- ./etc/hotplug/scsi.agent.orig	2004-11-03 21:47:47.000000000 -0800
++++ ./etc/hotplug/scsi.agent	2004-11-03 21:48:21.000000000 -0800
+@@ -14,7 +14,7 @@
+ add)
+     # 2.5.50 kernel bug: this happens sometimes
+     if [ ! -d /sys/$DEVPATH ]; then
+-	mesg "bogus sysfs DEVPATH=$DEVPATH"
++	debug_mesg "bogus sysfs DEVPATH=$DEVPATH"
+ 	exit 1
+     fi
+ 
+@@ -33,7 +33,7 @@
+ 
+     if [ ! -f $TYPE_ATTR ]
+     then
+-    	mesg "Attribute $TYPE_ATTR does not exist"
++    	debug_mesg "Attribute $TYPE_ATTR does not exist"
+ 	exit 1
+     fi
+ 
+@@ -54,8 +54,8 @@
+     14)		TYPE=enclosure ;;
+     esac
+     if [ "$MODULE" != "" ]; then
+-	mesg "$TYPE at $DEVPATH"
+-	modprobe $MODULE
++	debug_mesg "$TYPE at $DEVPATH"
++	modprobe -q $MODULE
+     else
+ 	debug_mesg "how to add device type=$TYPE at $DEVPATH ??"
+     fi
+--- ./etc/hotplug/usb.rc.orig	2004-11-03 21:48:49.000000000 -0800
++++ ./etc/hotplug/usb.rc	2004-11-03 21:49:14.000000000 -0800
+@@ -213,7 +213,7 @@
+     # Some modules are statically loaded, perhaps because they are
+     # needed to activate filesystem device nodes.
+     for MODULE in $STATIC_MODULE_LIST; do
+-	modprobe $MODULE
++	modprobe -q $MODULE
+     done
+ 
+     # we did everything we could ...

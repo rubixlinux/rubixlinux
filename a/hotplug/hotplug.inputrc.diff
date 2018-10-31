@@ -1,0 +1,13 @@
+--- ./etc/hotplug/input.rc.orig	2003-10-13 16:46:58.000000000 -0700
++++ ./etc/hotplug/input.rc	2004-02-21 23:16:57.000000000 -0800
+@@ -51,7 +51,9 @@
+ input_boot_events ()
+ {
+     if [ ! -r $PROCDIR/devices ]; then
+-	    echo $"** can't synthesize input events - $PROCDIR/devices missing"
++            # This might just mean the machine isn't running 2.6...  probably doesn't
++            # justify an error message
++	    #echo $"** can't synthesize input events - $PROCDIR/devices missing"
+ 	    return
+     fi
+ 

@@ -1,0 +1,47 @@
+# Maintainer: dorphell <dorphell@archlinux.org>
+
+pkgname=normalize
+pkgver=0.7.6
+pkgrel=1
+pkgdesc="normalize (adjusts volume levels of audio files) normalize is a tool for adjusting the volume of audio files to a standard level.  This is useful for things like creating mix CDs from mp3 collections, where different recording levels on different albums can cause the volume to vary greatly from song to song.  The package also contains an XMMS plugin. Chris Vaill is the author of normalize."
+source=(http://www.cs.columbia.edu/~cvaill/normalize/$pkgname-$pkgver.tar.gz)
+depends=('libmad' 'xmms')
+url="http://www.cs.columbia.edu/~cvaill/normalize"
+md5sums=('02186731e7cf68f1430b76fe0c592926')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure		\
+		--prefix=/usr	\
+		--enable-xmms	\
+		--with-mad	\
+		--without-audiofile
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+		THANKS	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

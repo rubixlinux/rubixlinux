@@ -1,0 +1,40 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=xxgdb
+pkgver=1.12
+pkgrel=1
+pkgdesc="xxgdb (graphical program debugger interface) Xxgdb is a graphical user interface to the gdb debugger under the X Window System.  It provides visual feedback and mouse input for the user to control program execution through breakpoints, to examine and traverse the function call stack, and to display values of variables and data structures."
+depends=('glibc' 'x11' 'gdb' 'ncurses')
+source=($pkgname-$pkgver.tar.gz)
+md5sums=('d7e447aeb9cab29a90d9d65f8f9a306c')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	xmkmf
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/X11R6/bin
+	cp xxgdb $startdir/pkg/usr/X11R6/bin
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	mkdir -p $startdir/pkg/etc/X11/app-defaults
+	cp XDbx.ad $startdir/pkg/etc/X11/app-defaults/XDbx
+	chmod 644 $startdir/pkg/etc/X11/app-defaults/XDbx
+
+	mkdir -p $startdir/pkg/usr/X11R6/man/man1
+	cp xxgdb.man $startdir/pkg/usr/X11R6/man/man1/xxgdb.1
+	chmod 644 $startdir/pkg/usr/X11R6/man/man1/xxgdb.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		README			\
+		README.NEW_INTERFACE	\
+		XDBX_README		\
+		XDbx.NEW_INTERFACE	\
+		XXGDB_README 		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

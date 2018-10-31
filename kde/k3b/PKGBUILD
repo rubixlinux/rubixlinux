@@ -1,0 +1,69 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=k3b
+pkgver=0.12.12
+pkgrel=1
+pkgdesc="k3b (The CD Creator) K3b makes writing cds under Linux easy.  It has an easy to use interface and supports CD burning (including on-the-fly), copying, erasing, ripping, and more. K3b was written by Sebastian Trueg, Thomas Froescher, Christian Kvasny, and Klaus-Dieter Krannich. For more information, visit:  http://www.k3b.org"
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+url="http://k3b.sourceforge.net"
+depends=('qt' 'glibc' 'lame' 'faac' 'flac' 'hal' 'faad2' 'xfsprogs' 'x11' 'fontconfig' 'expat' 'libogg' 'zlib'	\
+	 'libart_lgpl' 'alsa-lib' 'libmusicbrainz' 'taglib' 'freetype2' 'ffmpeg' 'libjpeg' 'libidn' 'libvorbis'	\
+	 'dbus' 'arts' 'libmad' 'libmng' 'gcc' 'kdelibs' 'libpng' 'dvd+rw-tools' 'cdrtools' 'cdrdao'		)
+md5sums=('75257fa05bfc5504a07d12959cdc6342')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.12.12 2006.02.16
+##   rel2: rebuilt after finding some bad memory in build computer 2006.02.15
+##   rel1: Upgraded to 0.12.11 2006.02.14
+##   rel2: added dvd+rw-tools, cdrtools and cdrdao to deps 2006.01.30
+##   rel1: Upgraded to 0.12.10 2005.12.20
+##   rel1: Upgraded to 0.12.8  2005.11.25
+##   rel1: Upgraded to 0.12.7  2005.11.02
+##   rel1: Upgraded to 0.12.6  2005.10.30
+##   rel1: Upgraded to 0.12.5  2005.10.20
+##   rel1: Upgraded to 0.12.4a 2005.09.18
+##   rel1: Upgraded to 0.12.3  2005.08.01
+##   rel1: Upgraded to 0.12.1  2005.06.24
+##   rel1: Upgraded to 0.11.24 2005.06.02
+##   rel1: Upgraded to 0.11.23 2005.03.27
+##   rel1: Upgraded to 0.11.20 2005.02.21
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/opt/kde
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		FAQ		\
+		INSTALL		\
+		KNOWNBUGS	\
+		PERMISSIONS	\
+		README		\
+		TODO		\
+		k3b.lsm		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

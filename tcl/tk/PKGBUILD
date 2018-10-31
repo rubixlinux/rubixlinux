@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=tk
+pkgver=8.4.12
+pkgrel=1
+pkgdesc="tk (Tk toolkit for Tcl) Tk is an extension to Tcl that allows you to quickly and easily build X11 applications that have the look and feel of Motif apps."
+depends=('glibc' 'x11' 'tcl')
+source=(http://dl.sourceforge.net/sourceforge/tcl/$pkgname$pkgver-src.tar.gz)
+md5sums=('316491cb82d898b434842353aed1f0d6')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 8.4.12 2005.12.21
+##   rel1: Upgraded to 8.4.11 2005.08.08
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/tk$pkgver/unix
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname$pkgver
+
+	cp -a README license.terms $startdir/pkg/usr/doc/$pkgname$pkgver
+
+	./configure --prefix=/usr --disable-shared --enable-man-symlinks --enable-man-compression=gzip
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+	make DESTDIR=$startdir/pkg install-private-headers
+	make clean
+
+	./configure --prefix=/usr --enable-shared --enable-man-symlinks --enable-man-compression=gzip
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+	make DESTDIR=$startdir/pkg install-private-headers
+
+	cd $startdir/pkg/usr/bin
+	ln -s wish8.4 wish
+
+	cd $startdir/pkg/usr/lib
+	ln -s libtk8.4.a libtk.a
+	ln -s libtk8.4.so libtk.so
+	ln -s libtkstub8.4.a libtkstub.a
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

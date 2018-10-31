@@ -1,0 +1,123 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=tetex
+pkgver=3.0
+pkgrel=4
+pkgdesc="tetex (teTeX binaries and support files) This package contains the binaries and support files required for the teTeX TeX distribution, such as input files for TeX, runtime configuration files, hyphenation tables, manpages, and the computer modern fonts."
+depends=('lesstif' 'zlib')
+url="ftp://dante.ctan.org/pub/tex/systems/unix/teTeX/2.0/distrib"
+source=(ftp://tug.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/$pkgname-src-$pkgver.tar.gz	\
+	ftp://tug.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/$pkgname-texmf-$pkgver.tar.gz	\
+	tetex.sh											\
+	tetex.csh											\
+	tetex.CVE-2005-3193.diff									\
+	tetex.amstex.fmtutil.diff									\
+	tetex.browsers.diff										\
+	tetex.dvipdfm.mkstemp.diff									\
+	tetex.etex.diff											\
+	tetex.scripts.mktemp.diff									\
+	tetex.tmp.cleanup.diff										\
+	tetex.var.fonts.diff										)
+md5sums=('944a4641e79e61043fdaf8f38ecbb4b3' \
+	 'ed9d30d9162d16ac8d5065cde6e0f6fa' \
+	 '77abc7b768fbdd3466544c0cebf40c6a' \
+	 'e334bf214071ec0773039e4ee9bea4cb' \
+	 'aaa40a494cb30778f56f3b5c6590477e' \
+	 '74083b53fa611692df7cdfbb4d10df34' \
+	 'a855b1023ba98177c44a5e7b2f8245b3' \
+	 'caab6b09d2d79aeb3d70383dc6059dcf' \
+	 'a1efb5105f6c25e89e8933f41f11cb4e' \
+	 'eddcacf006da8bcd47ecec1e04dd377e' \
+	 'a718b22b5137b30a421160e1b488b3ba' \
+	 '46e0f1f366a6e5cc398e48919850b065' )
+install=$pkgname.install
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: added slackware security patches 2006.06.05
+##   rel3: fixed install script to init tetex system wide 2005.10.09
+##   rel2: removed shared fontcache scheme 2005.03.03
+##   rel1: upgraded to 3.0 and gzipped man pages 2005.02.28
+##   rel1: Initial Rubix release
+	
+build() {
+
+	mkdir	-p					\
+		$startdir/pkg/var/cache/fonts/pk	\
+		$startdir/pkg/var/cache/fonts/source	\
+		$startdir/pkg/var/cache/fonts/tfm
+
+	chmod 1777					\
+		$startdir/pkg/var/cache/fonts/pk	\
+		$startdir/pkg/var/cache/fonts/source	\
+		$startdir/pkg/var/cache/fonts/tfm
+
+	mkdir -p $startdir/pkg/usr/share/texmf
+	mkdir -p $startdir/pkg/usr/doc
+
+	cd $startdir/pkg/usr/share/texmf
+	umask 000
+	tar xzf $startdir/src/$pkgname-texmf-$pkgver.tar.gz
+	umask 0022
+	chown -R root.root *
+	cd $startdir/pkg/usr/doc
+	ln -sf /usr/share/texmf/doc $pkgname-$pkgver
+
+	cd $startdir/src/$pkgname-src-$pkgver
+
+	patch -p1 < $startdir/src/tetex.CVE-2005-3193.diff	|| return 1
+	patch -p1 < $startdir/src/tetex.var.fonts.diff		|| return 1
+	patch -p1 < $startdir/src/tetex.dvipdfm.mkstemp.diff	|| return 1
+	patch -p1 < $startdir/src/tetex.scripts.mktemp.diff	|| return 1
+	patch -p1 < $startdir/src/tetex.browsers.diff		|| return 1
+	patch -p1 < $startdir/src/tetex.amstex.fmtutil.diff	|| return 1
+	patch -p1 < $startdir/src/tetex.tmp.cleanup.diff	|| return 1
+
+	./configure				\
+		--prefix=/usr/share/texmf	\
+		--datadir=/usr/share		\
+		--disable-multiplatform		\
+		--disable-a4			\
+		--without-dialog		\
+		--without-texinfo		\
+		--with-system-ncurses		\
+		--with-system-pnglib		\
+		--with-system-t1lib		\
+		--with-system-tifflib		\
+		--with-system-zlib		\
+		--with-ps=gs			\
+		--enable-ipc			\
+		--enable-freetype		\
+		--with-etex
+	patch -p1 < $startdir/src/tetex.etex.diff		|| return 1
+	make all || return 1
+	make prefix=$startdir/pkg/usr/share/texmf texmf=$startdir/pkg/usr/share/texmf install
+
+	mkdir -p $startdir/pkg/etc/profile.d
+	cp -a $startdir/src/tetex.sh  $startdir/pkg/etc/profile.d
+	cp -a $startdir/src/tetex.csh $startdir/pkg/etc/profile.d
+	chmod 755 $startdir/pkg/etc/profile.d/tetex.*
+
+	cd $startdir/pkg/usr/share/texmf/doc
+	for file in `find . -name "*.dvi"` ; do
+		rm -f `dirname $file`/`basename $file .dvi`.pdf
+	done
+
+	find $startdir/pkg/usr/share/texmf/man -type f 2>/dev/null | while read i ; do
+		ext="${i##*.}"
+		fn="${i##*/}"
+		if [ "$ext" != "gz" -a "$ext" != "bz2" ]; then
+			find $startdir/pkg/usr/share/texmf/man -lname "$fn" 2> /dev/null | while read ln ; do
+				rm -f "$ln"
+				ln -sf "${fn}.gz" "${ln}.gz"
+			done
+			gzip -9 "$i"
+		fi
+	done
+
+}

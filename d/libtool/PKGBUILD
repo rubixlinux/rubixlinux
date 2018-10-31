@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libtool
+pkgver=1.5.22
+pkgrel=1
+pkgdesc="libtool (a generic library support script) This is GNU Libtool, a generic library support script. Libtool hides the complexity of using shared libraries behind a consistent, portable interface.  To use libtool, add the new generic library building commands to your Makefile, Makefile.in, or Makefile.am.  See the documentation for details. You must install the "m4" package to be able to use libtool."
+url="http://www.gnu.org/software/libtool"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('8e0ac9797b62ba4dcc8a2fb7936412b0')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 1.5.22 2005.12.19
+##   rel1: Upgraded to 1.5.20 2005.09.16
+##   rel1: Upgraded to 1.5.16 2005.05.12
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	CC=gcc LTCC=gcc ./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/share/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+		THANKS	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

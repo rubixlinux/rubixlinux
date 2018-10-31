@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdewebdev
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdewebdev (web development package for the K Desktop Environment) The kdewebdev package contains Quanta Plus and other applications which are useful for web development."
+url="http://www.kdewebdev.org"
+depends=('qt' 'glibc' 'kdesdk' 'fontconfig' 'xfsprogs' 'x11' 'expat' 'zlib' 'libart_lgpl' 'freetype2' 'libxslt'	\
+	 'libjpeg' 'libidn' 'libxml2' 'pcre' 'libgcrypt' 'libgpg-error' 'libmng' 'gcc' 'kdelibs' 'libpng'	)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('0faea4e8088005ae60f58b21c60b32ea')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 3.5.1 2006.01.31
+##   rel1: Upgraded to 3.5.0 2005.12.18
+##   rel1: Upgraded to 3.4.3 2005.10.16
+##   rel1: Upgraded to 3.4.2 2005.08.01
+##   rel2: added security patch 2005.05.19
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

@@ -1,0 +1,37 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=sqlite
+pkgver=3.2.8
+pkgrel=1
+pkgdesc="SQLite is a small C library that implements a self-contained, embeddable, zero-configuration, award-winning SQL database engine."
+url="http://www.sqlite.org"
+depends=('glibc' 'ncurses' 'readline')
+source=(http://www.sqlite.org/$pkgname-$pkgver.tar.gz)
+md5sums=('9f2c014aaa46565b8163e047166a5686')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 3.2.8 2005.12.19
+##   rel1: upgraded to 3.2.7 2005.09.30
+##   rel1: upgraded to 3.2.5 2005.09.12
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a README $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

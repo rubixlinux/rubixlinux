@@ -1,0 +1,21 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kde-i18n-cs
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kde-i18n-cs Czech language support for KDE."
+depends=('kdebase')
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
+md5sums=('1bd6e2b120b674e492d60990223b084f')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/opt/kde
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+}

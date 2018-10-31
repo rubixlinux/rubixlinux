@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=utempter
+pkgver=1.1.3
+pkgrel=1
+pkgdesc="utempter (utmp updating library and utility) The utempter package provides a utility and shared library that allows terminal applications such as xterm and screen to update /var/run/utmp and /var/log/wtmp without requiring root privileges."
+depends=('glibc')
+source=(ftp://ftp.altlinux.org/pub/people/ldv/$pkgname/lib$pkgname-$pkgver.tar.bz2	\
+	lib$pkgname.diff.gz								\
+	makefile.diff.gz								)
+md5sums=('70254cc70906a8c031c55539afdfae2b' \
+	 'cc8118a2c0196c159899c4d794366dcf' \
+	 '76e6fdc52741e87fcb91195f492512d5' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 1.1.3
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/lib$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/libutempter.diff	|| return 1
+	patch -p1 < $startdir/src/makefile.diff		|| return 1
+
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	rm $startdir/pkg/usr/lib/libutempter.a
+
+	chown root.utmp	$startdir/pkg/usr/sbin/utempter
+	chmod 2755	$startdir/pkg/usr/sbin/utempter
+	chown root.bin	$startdir/pkg/usr/sbin
+	chmod 644	$startdir/pkg/usr/include/utempter.h
+
+	mkdir -p	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

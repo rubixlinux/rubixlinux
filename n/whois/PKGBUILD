@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=whois
+pkgver=4.7.2
+pkgrel=1
+pkgdesc="whois (whois directory client) This is an enhanced whois (RFC 954) client derived from the BSD and RIPE whois programs.  It can automatically select the appropriate whois server for most queries. This version of whois was written by Marco d'Itri For more information, see:  http://www.linux.it/~md/software"
+depends=('glibc')
+url="http://www.linux.it/~md/software"
+source=(http://ftp.debian.org/debian/pool/main/w/$pkgname/${pkgname}_$pkgver.tar.gz)
+md5sums=('d05fddf828be83f007ece656e6d9a41f')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp whois		$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/whois
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	cd po
+	make
+	for n in 	\
+		de.mo	\
+		el.mo	\
+		es.mo	\
+		fr.mo	\
+		it.mo	\
+		no.mo	\
+		pl.mo
+	do
+		l=`basename $n .mo`
+		install -c -m 755 -d $startdir/pkg/usr/share/locale/$l
+		install -c -m 755 -d $startdir/pkg/usr/share/locale/$l/LC_MESSAGES; \
+		install -c -m 644 $n $startdir/pkg/usr/share/locale/$l/LC_MESSAGES/whois.mo; \
+	done
+	cd ..
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+	cp whois.1	$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

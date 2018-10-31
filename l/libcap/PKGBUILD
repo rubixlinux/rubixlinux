@@ -1,0 +1,31 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libcap
+pkgver=1.10
+pkgrel=1
+pkgdesc="POSIX 1003.1e capabilities"
+depends=('glibc')
+source=(http://www.kernel.org/pub/linux/libs/security/linux-privs/kernel-2.4/$pkgname-$pkgver.tar.gz)
+md5sums=('2c09eea823f67cfdde96177a959bc39b')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	chmod 755 $startdir/pkg/usr/lib/libcap.so.$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGELOG	\
+		License		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

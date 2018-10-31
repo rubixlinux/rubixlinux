@@ -1,0 +1,40 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libmikmod
+pkgver=3.1.11
+pkgrel=1
+pkgdesc="libmikmod This is libmikmod, a portable sound library.  This is used by XMMS to support some uncommon sound formats. Supported file formats include mod, stm, s3m, mtm, xm, and it."
+depends=('glibc')
+source=(http://mikmod.raphnet.net/files/$pkgname-$pkgver.tar.gz	\
+	http://mikmod.raphnet.net/files/$pkgname-$pkgver-a.diff	)
+md5sums=('705106da305e8de191549f1e7393185c' \
+	 '5e56be5a32eecf3cfa195379a5ecb0ef' )
+url="http://mikmod.raphnet.net"
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver-a.diff
+
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --disable-static $CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	chmod 755 $startdir/pkg/usr/lib/libmik*
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		NEWS	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

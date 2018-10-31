@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=netpbm
+pkgver=10.26.7
+pkgrel=1
+pkgdesc="netpbm (graphics conversion utilities) The netpbm package contains a library and tools for converting between many different graphics formats."
+depends=('gcc' 'libjpeg' 'libpng' 'libtiff')
+url="http://netpbm.sourceforge.net"
+source=(http://download.sourceforge.net/$pkgname/$pkgname-$pkgver.tgz	\
+	netpbm-manpages.tar.bz2						\
+	Makefile.config.gz						)
+md5sums=('ad584702b0f8893ee2b3a9a054f69188' \
+	 'fae398fce8a17340fcc324726e387ed4' \
+	 '3a39f8591a0a9990d83e3eaa74820d94' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 660 -exec chmod 644 {} \;
+
+	cp $startdir/src/Makefile.config .
+
+	make || return 1
+	make package pkgdir=$startdir/pkg/usr
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		README			\
+		doc/COPYRIGHT.PATENT	\
+		doc/GPL_LICENSE.txt	\
+		doc/HISTORY		\
+		doc/copyright_summary	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr
+	chown -R root.bin bin
+	mv link/* lib
+	rm -r link
+	rm -r man
+	tar xjf $startdir/src/netpbm-manpages.tar.bz2
+	rm bin/doc.url bin/manweb
+	rm -r misc README VERSION pkginfo
+
+}

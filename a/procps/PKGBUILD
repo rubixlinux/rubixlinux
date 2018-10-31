@@ -1,0 +1,170 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PROCINFO=18
+PSMISC=21.6
+
+pkgname=procps
+pkgver=3.2.6
+pkgrel=1
+pkgdesc="procps (utilities for displaying process information) The procps package provides the classic set of utilities used to display information about the processes currently running on the machine."
+url="http://procps.sf.net"
+depends=('glibc' 'ncurses' 'perl')
+source=(http://procps.sourceforge.net/$pkgname-$pkgver.tar.gz			\
+	ftp://ftp.cistron.nl/pub/people/00-OLD/svm/procinfo-$PROCINFO.tar.gz	\
+	http://dl.sourceforge.net/psmisc/psmisc-$PSMISC.tar.gz			\
+	procinfo.gcc3.diff							\
+	procps.w.showfrom.diff							)
+md5sums=('7ce39ea27d7b3da0e8ad74dd41d06783' \
+	 '27658d0a69040aca05a65b9888599d50' \
+	 '6994f227b38b09cb3f3bdd3bc5fc65fe' \
+	 '03937a3ac1e17c31b05cee955398cd33' \
+	 '1faf114f4e6ec8b135e8742d50f94e67' )
+
+## Todo:
+##   None
+
+## Notes:
+##   The procps.w.showfrom patch displays the location from which the user is logged in by default.
+##   The psmisc patch changes pstree to use ncurses termcap not libtermcap's.
+
+## Changelog:
+##   rel1: upgraded to 3.2.6 2006.02.15
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS 		\
+		COPYING		\
+		COPYING.LIB	\
+		NEWS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	patch -p1 < $startdir/src/procps.w.showfrom.diff || return 1
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/lib $startdir/pkg/bin $startdir/pkg/sbin $startdir/pkg/usr/bin
+
+	cp free				$startdir/pkg/bin
+	cp ps/ps			$startdir/pkg/bin
+	cp proc/libproc-$pkgver.so	$startdir/pkg/lib
+	cp pkill			$startdir/pkg/usr/bin
+	cp skill			$startdir/pkg/usr/bin
+	cp pmap				$startdir/pkg/usr/bin
+	cp slabtop			$startdir/pkg/usr/bin
+	cp sysctl			$startdir/pkg/sbin
+	cp tload			$startdir/pkg/usr/bin
+	cp top				$startdir/pkg/usr/bin
+	cp uptime			$startdir/pkg/usr/bin
+	cp vmstat			$startdir/pkg/usr/bin
+	cp w				$startdir/pkg/usr/bin
+	cp watch			$startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/bin
+
+	ln -s pkill pgrep
+	ln -s skill snice
+	ln -s /bin/free .
+	ln -s /bin/ps .
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	cp -a ps/ps.1 .
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	for page in		\
+		free.1		\
+		pgrep.1		\
+		pkill.1		\
+		ps.1		\
+		slabtop.1	\
+		skill.1		\
+		snice.1		\
+		tload.1		\
+		top.1		\
+		uptime.1	\
+		w.1		\
+		watch.1
+	do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+
+	mkdir -p $startdir/pkg/usr/man/man5
+	cp sysctl.conf.5 $startdir/pkg/usr/man/man5
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	for page in		\
+		vmstat.8	\
+		sysctl.8
+	do
+		cp $page $startdir/pkg/usr/man/man8
+	done
+
+	cd $startdir/src/psmisc-$PSMISC
+
+	mkdir -p $startdir/pkg/usr/doc/psmisc-$PSMISC
+	cp 	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/psmisc-$PSMISC
+	chmod 644 $startdir/pkg/usr/doc/psmisc-$PSMISC/*
+
+	./configure --prefix=/usr --disable-nls
+	make || return 1
+
+	cd src
+
+	cp fuser	$startdir/pkg/usr/bin
+	cp pstree	$startdir/pkg/usr/bin
+	cp killall	$startdir/pkg/bin
+
+	cd ../doc
+
+	for page in		\
+		fuser.1		\
+		killall.1	\
+		pstree.1
+	do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+
+	cd $startdir/src/procinfo-$PROCINFO
+
+	patch -p1 < $startdir/src/procinfo.gcc3.diff || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/procinfo-$PROCINFO
+	cp	-a	\
+		CHANGES	\
+		README	\
+	$startdir/pkg/usr/doc/procinfo-$PROCINFO
+	chmod 644 $startdir/pkg/usr/doc/procinfo-$PROCINFO/*
+	chown root.root $startdir/pkg/usr/doc/procinfo-$PROCINFO/*
+
+	make LDLIBS=-lncurses || return 1
+
+	cp procinfo	$startdir/pkg/usr/bin
+	cp lsdev.pl	$startdir/pkg/usr/bin/lsdev
+	cp socklist.pl	$startdir/pkg/usr/bin/socklist
+
+	for page in		\
+		procinfo.8	\
+		lsdev.8		\
+		socklist.8
+	do
+		cp $page $startdir/pkg/usr/man/man8
+	done
+
+	chmod 755 $startdir/pkg/lib/* $startdir/pkg/bin/* $startdir/pkg/sbin/* $startdir/pkg/usr/bin/*
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/sbin $startdir/pkg/usr/bin
+
+}

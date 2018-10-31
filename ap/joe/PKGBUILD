@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=joe
+pkgver=3.3
+pkgrel=1
+pkgdesc="joe (Joe text editor) Joseph H. Allen's easy to use text editor, similar to WordStar[tm]."
+depends=('ncurses')
+source=(http://dl.sourceforge.net/joe-editor/$pkgname-$pkgver.tar.gz)
+backup=(etc/{jmacsrc,joerc,jpicorc,jstarrc,rjoerc})
+url="http://sourceforge.net/projects/joe-editor"
+md5sums=('02221716679c039c5da00c275d61dbf4')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 3.3 2005.05.23
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	chown -R root.root .
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--program-prefix=""	\
+		--program-suffix=""	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		HINTS			\
+		LIST			\
+		NEWS			\
+		README*			\
+		TODO			\
+		docs/help-system.html	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

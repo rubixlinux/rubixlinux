@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-lingua-en-numbers-ordinate
+pkgver=1.02
+pkgrel=2
+pkgdesc="Lingua::EN::Numbers::Ordinate -- go from cardinal number (3) to ordinal ("3rd")"
+url="http://search.cpan.org/~sburke/Lingua-EN-Numbers-Ordinate-$pkgver/lib/Lingua/EN/Numbers/Ordinate.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/S/SB/SBURKE/Lingua-EN-Numbers-Ordinate-$pkgver.tar.gz)
+md5sums=('e92078fafd9108a137972c4e9bae9e99')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Lingua-EN-Numbers-Ordinate-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Lingua-EN-Numbers-Ordinate-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Lingua-EN-Numbers-Ordinate-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/Lingua-EN-Numbers-Ordinate-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

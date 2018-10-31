@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=zziplib
+pkgver=0.13.45
+pkgrel=1
+pkgdesc="The zziplib library is intentionally lightweight, it offers the ability to easily extract data from files archived in a single zip file."
+url="http://zziplib.sourceforge.net"
+depends=('glibc' 'zlib')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('687e6e487795680dd1e8ea9c1670e0ab')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+	cp	-a		\
+		COPYING.LIB	\
+		ChangeLog	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp docs/*.htm* $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

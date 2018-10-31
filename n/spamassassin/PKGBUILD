@@ -1,0 +1,88 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+
+pkgname=spamassassin
+pkgver=3.1.0
+pkgrel=2
+pkgdesc="spamassassin is a spam filter for email which can be invoked from mail delivery agents"
+url="http://spamassassin.apache.org"
+backup=(etc/mail/init.pre	\
+	etc/mail/local.cf	\
+	etc/rc.d/spamassassin	)
+depends=(perl			\
+	 perl-html-parser	\
+	 perl-digest-sha1	\
+	 perl-net-dns		\
+	 perl-mail-spf-query	\
+	 perl-ip-country	\
+	 perl-net-ident		\
+	 perl-io-socket-ssl	\
+	 razor			\
+	 dcc			\
+	 glibc			\
+	 openssl		)
+source=(http://www.mirrormonster.com/apache.org/$pkgname/source/Mail-SpamAssassin-$pkgver.tar.bz2	\
+	$pkgname											)
+md5sums=('d28bd7e83d01b234144e336bbfde0caa' \
+	 '2892f5c7aead8d6b3ab66d4e2dd0d2a0' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog
+##   rel2: updated rc script to new format 2006.01.16
+##   rel1: upgraded to 3.1.0 2005.09.30
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: upgraded to 3.0.4 2005.06.13
+##   rel2: added etc/rc.d/spamassassin to backup files 2005.04.03
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Mail-SpamAssassin-$pkgver
+
+	yes n | perl Makefile.PL ENABLE_SSL="yes" CONTACT_ADDRESS="root@localhost" || return 1
+	make || return 1
+#	make test || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		BUGS			\
+		CREDITS			\
+		Changes			\
+		INSTALL			\
+		INSTALL.VMS		\
+		LICENSE			\
+		MANIFEST		\
+		MANIFEST.SKIP		\
+		NOTICE			\
+		PACKAGING		\
+		README			\
+		STATUS			\
+		TRADEMARK		\
+		UPGRADE			\
+		USAGE			\
+		procmailrc.example	\
+		sample-nonspam.txt	\
+		sample-spam.txt		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -type f -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -type f -perm 555 -exec chmod 755 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+}

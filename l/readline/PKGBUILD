@@ -1,0 +1,69 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=readline
+pkgver=5.1
+pkgrel=1
+pkgdesc="readline (line input library with editing features) The GNU Readline library provides a set of functions for use by applications that allow users to edit command lines as they are typed in.  Both Emacs and vi editing modes are available.  The Readline library includes additional functions to maintain a list of previously entered command lines, to recall and perhaps edit those lines, and perform csh-like history expansion on previous commands."
+url="http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/gnu/readline/readline-$pkgver.tar.gz			\
+	ftp://ftp.gnu.org/gnu/readline/readline-$pkgver-patches/readline51-001	)
+md5sums=('7ee5a692db88b30ca48927a13fd60e46' \
+	 '63faf622820ca0828131c8b5aeac1e6a' )
+
+## Todo:
+##   None
+
+## Notes:
+##   MOST things work with PIE, but not all...
+##   All patches are official readline patches
+
+## Changelog:
+##   rel1: upgraded to 5.1
+##   rel2: Rebuilt since CFLAGS were causing all sorts of problems 2005.09.06
+##   rel1: Initial rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 | xargs chmod 644
+	find . -perm 775 | xargs chmod 755
+
+	for file in $startdir/src/readline51-* ; do
+		patch -p0 < $file || return 1
+	done
+
+	./configure --prefix=/usr --with-curses $CHOST
+	make static shared || return 1
+	make install DESTDIR=$startdir/pkg
+
+	rm $startdir/pkg/usr/info/dir
+
+	chmod 755 $startdir/pkg/usr/lib/lib*.so.*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGELOG	\
+		CHANGES		\
+		COPYING		\
+		INSTALL		\
+		MANIFEST	\
+		README		\
+		USAGE		\
+		examples	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/lib
+	rm libhistory.so libhistory.so.5 libreadline.so libreadline.so.5
+	ln -s libreadline.so.5.1 libreadline.so.5
+	ln -s libreadline.so.5.1 libreadline.so
+	ln -s libhistory.so.5.1  libhistory.so.5
+	ln -s libhistory.so.5.1  libhistory.so
+
+	find $startdir/pkg -perm 660 -exec chmod 644 {} \;
+
+}

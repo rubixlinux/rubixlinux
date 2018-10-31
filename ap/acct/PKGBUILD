@@ -1,0 +1,71 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=acct
+pkgver=6.3.2
+pkgrel=1
+pkgdesc="acct (process accounting utilities) This is a set of utilities which reports and summarizes data about user connect times and process execution statistics.  To activate process accounting, create the log file (touch /var/log/pacct), and then use the accton command to start it (accton /var/log/pacct). Be aware that the log file can grow to be quite large. The GNU process accounting utilities were written by Noel Cragg."
+url="http://www.gnu.org/software/acct"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz	\
+	acct.files.diff.gz						)
+md5sums=('da0055b254f7da8b8920db83ef1ebba1' \
+	 'd02837a19ab33caab39127c28b7f7d67' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+
+	patch -p1 < $startdir/src/acct.files.diff
+
+	make
+	mkdir -p		$startdir/pkg/sbin
+	cp accton		$startdir/pkg/sbin
+	chown -R root.bin	$startdir/pkg/sbin
+	chmod 755		$startdir/pkg/sbin/*
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp ac			$startdir/pkg/usr/bin
+	cp lastcomm		$startdir/pkg/usr/bin
+	cp sa			$startdir/pkg/usr/bin
+	chown -R root.bin	$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/*
+
+	mkdir -p		$startdir/pkg/usr/sbin
+	cp dump-acct		$startdir/pkg/usr/sbin
+	cp dump-utmp		$startdir/pkg/usr/sbin
+	chown -R root.bin	$startdir/pkg/usr/sbin
+	chmod 755		$startdir/pkg/usr/sbin/*
+
+	mkdir -p		$startdir/pkg/usr/info
+	cp accounting.info	$startdir/pkg/usr/info
+
+	mkdir -p		$startdir/pkg/usr/man/man1
+	cp ac.1			$startdir/pkg/usr/man/man1
+	cp lastcomm.1		$startdir/pkg/usr/man/man1
+
+	mkdir -p		$startdir/pkg/usr/man/man8
+	cp accton.8		$startdir/pkg/usr/man/man8
+	cp sa.8			$startdir/pkg/usr/man/man8
+
+	mkdir -p		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		NEWS	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

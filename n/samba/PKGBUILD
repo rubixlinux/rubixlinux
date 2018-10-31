@@ -1,0 +1,155 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=samba
+pkgver=3.0.22
+pkgrel=1
+pkgdesc="samba (SMB file and print server) Samba is an SMB file and print server for SMB and CIFS clients.  It allows you to make file space or printers on a Samba host available to any PCs running SMB clients (such as PCs running Windows). If you have any SMB servers (such as Windows NT/2K Server), you may be able to replace them by or supplement them with Samba. One of Samba's big strengths is integration, so you can use it to tie together your Linux hosts and Windows PC clients."
+url="http://www.samba.org"
+backup=(etc/rc.d/samba)
+depends=('glibc' 'ncurses' 'db' 'heimdal' 'e2fsprogs' 'xfsprogs' 'openssl' 'cups' 'openldap' 'readline' 'popt' 'cyrus-sasl' 'perl-crypt-smbhash')
+source=(http://us1.samba.org/$pkgname/ftp/$pkgname-$pkgver.tar.gz	\
+	smb.conf.default						\
+	samba								)
+md5sums=('5c39505af17cf5caf3d6ed8bab135036' \
+	 '11f10e0f3ad34010b08d93dce4aac1fe' \
+	 'fe3102caa374792339f6844c63f02869' )
+
+## Todo:
+##   None
+
+## Notes:
+##   Does not build with multiple jobs
+##   Though it builds fine with PIE, other applications like kdebase can not use it,
+##      so PIE is disabled.
+
+## Changelog:
+##   rel1: upgraded to 3.0.22 *security* 2006.04.02
+##   rel1: upgraded to 3.0.21b 2006.02.15
+##   rel1: upgraded to 3.0.21a 2005.12.31
+##   rel1: upgraded to 3.0.21 2005.12.28
+##   rel1: upgraded to 3.0.20b 2005.10.17
+##   rel2: Fixed symlink 2005.09.16
+##   rel1: Upgraded to 3.0.20 2005.09.03
+##   rel2: Recompiled with openldap 2005.06.03
+##   rel1: Upgraded to 3.0.14a 2005.05.13
+##   rel1: Upgraded to 3.0.13 2005.03.27
+##   rel2: Added real rc script 2005.02.26
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	cd source
+
+	./configure					\
+		--enable-cups				\
+		--enable-static=no			\
+		--enable-shared=yes			\
+		--with-fhs				\
+		--with-acl-support			\
+		--with-automount			\
+		--prefix=/usr				\
+		--localstatedir=/var			\
+		--bindir=/usr/bin			\
+		--sbindir=/usr/sbin			\
+		--with-lockdir=/var/cache/samba		\
+		--sysconfdir=/etc			\
+		--with-configdir=/etc/samba		\
+		--with-privatedir=/etc/samba/private	\
+		--with-swatdir=/usr/share/swat		\
+		--with-smbmount				\
+		--with-quotas				\
+		--with-syslog				\
+		--with-utmp				\
+		--with-libsmbclient			\
+		--with-winbind				\
+		--with-smbwrapper			\
+		--with-ldap				\
+		--with-ldapsam				\
+		--with-ads				\
+		--with-krb5				\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir	-p						\
+		$startdir/pkg/usr/doc/$pkgname-$pkgver/swat	\
+		$startdir/pkg/var/spool/samba			\
+		$startdir/pkg/var/log/samba			\
+		$startdir/pkg/etc/samba/private			\
+		$startdir/pkg/var/cache/samba
+
+	chmod 0700 $startdir/pkg/etc/samba/private
+	chmod 1777 $startdir/pkg/var/spool/samba
+
+	mkdir -p $startdir/pkg/lib
+	cp -a nsswitch/libnss_winbind.so	$startdir/pkg/lib/libnss_winbind.so.2
+	cp -a nsswitch/libnss_wins.so		$startdir/pkg/lib/libnss_wins.so.2
+
+	cd $startdir/pkg/lib
+	ln -s libnss_winbind.so.2	libnss_winbind.so
+	ln -s libnss_wins.so.2		libnss_wins.so
+
+	mkdir -p $startdir/pkg/sbin
+	cd $startdir/pkg/sbin
+	rm mount.smbfs
+	ln -s /usr/bin/smbmount mount.smbfs
+	chown -R root.bin .
+
+	cd $startdir/pkg/usr/lib/samba
+	mv libsmbclient.so ../libsmbclient.so.0.0
+	ln -s ../libsmbclient.so.0.0 libsmbclient.so
+	cd ..
+	ln -s libsmbclient.so.0.0 libsmbclient.so.0
+	ln -s libsmbclient.so.0.0 libsmbclient.so
+
+	chmod 644	$startdir/pkg/usr/include/libsmbclient.h
+  
+	cp $startdir/src/smb.conf.default $startdir/pkg/etc/samba/smb.conf-sample
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/samba $startdir/pkg/etc/rc.d/samba
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+
+	cd $startdir/src/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		Manifest		\
+		README			\
+		Read-Manifest-Now	\
+		Roadmap			\
+		WHATSNEW.txt		\
+		docs			\
+		examples		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp $startdir/pkg/usr/doc/$pkgname-$pkgver/examples/LDAP/smbldap-tools-*/smbldap-*		$startdir/pkg/usr/sbin
+	cp $startdir/pkg/usr/doc/$pkgname-$pkgver/examples/LDAP/smbldap-tools-*/smbldap_tools.pm	$startdir/pkg/usr/sbin
+	rm $startdir/pkg/usr/sbin/*.spec
+	chmod 755 $startdir/pkg/usr/sbin/*
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	rm	-r							\
+		$startdir/pkg/usr/doc/$pkgname-$pkgver/docs/htmldocs	\
+		$startdir/pkg/usr/doc/$pkgname-$pkgver/docs/manpages
+
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver/docs
+	ln -s /usr/share/swat/help/using_samba .
+	ln -s /usr/share/swat/help htmldocs
+
+	rm $startdir/pkg/usr/doc/$pkgname-$pkgver/docs/*.pdf
+
+	find $startdir/pkg/usr/doc -type d -exec chmod 0755 {} \;
+	find $startdir/pkg/usr/doc -type f -exec chmod 0644 {} \;
+
+}

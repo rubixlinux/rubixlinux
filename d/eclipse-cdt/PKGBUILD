@@ -1,0 +1,19 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=eclipse-cdt
+pkgver=3.0.1
+pkgrel=1
+pkgdesc="eclipse-cdt is a fully functional C and C++ Integrated Development Environment (IDE) for the Eclipse platform."
+url="http://www.eclipse.org/cdt"
+depends=('eclipse')
+source=(http://download.eclipse.org/tools/cdt/releases/eclipse3.1/dist/$pkgver/org.eclipse.cdt-$pkgver-linux.x86.tar.gz		\
+	http://download.eclipse.org/tools/cdt/releases/eclipse3.1/dist/$pkgver/org.eclipse.cdt.sdk-$pkgver-linux.x86.tar.gz	)
+md5sums=('7d415fdde2249f15774ea6bdbe87c08c' \
+	 'eab0b40b99b0d37dd0f1b0d963cd554a' )
+
+build() {
+
+	mkdir -p $startdir/pkg/opt
+	mv $startdir/src/eclipse $startdir/pkg/opt
+
+}

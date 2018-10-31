@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=autoconf
+pkgver=2.59
+pkgrel=1
+pkgdesc="autoconf (generate configuration scripts) GNU autoconf is an extensible package of m4 macros that produce shell scripts to automatically configure software source code packages. These scripts can adapt the packages to many kinds of UNIX-like systems without manual user intervention.  Autoconf creates a configuration script for a package from a template file that lists the operating system features that the package can use, in the form of m4 macro calls.  You must install the "m4" package to be able to use autoconf."
+url="http://www.gnu.org/software/autoconf"
+depends=('m4')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('d4d45eaa1769d45e59dcb131a4af17a0')
+
+#Todo:
+#depends
+#makedepends
+#review slackware install script
+#rebuild with emacs installed
+
+#Notes:
+#While not a makedepends, emacs should be installed when building this
+
+#Changelog:
+#Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 666 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+
+	make
+
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		BUGS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+		THANKS	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-timedate
+pkgver=1.16
+pkgrel=1
+pkgdesc="perl-timedate Parse date strings into time values"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/TimeDate-$pkgver.tar.gz)
+md5sums=('b3cc35a7cabd106ac8829d2f2ff4bd9d')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/TimeDate-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/TimeDate-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/TimeDate-$pkgver
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,0 +1,53 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=htdig
+pkgver=3.2.0b6
+pkgrel=1
+pkgdesc="htdig (web indexing and searching system) The ht://Dig system is a complete world wide web indexing and searching system for a small domain or intranet. This system is not meant to replace the need for powerful internet-wide search systems like Lycos, Infoseek, Webcrawler and AltaVista. Instead it is meant to cover the search needs for a single company, campus, or even a particular sub section of a web site."
+url="http://www.htdig.org"
+backup=('opt/www/htdig/conf/htdig.conf')
+depends=('glibc' 'gcc' 'zlib')
+source=(http://www.htdig.org/files/$pkgname-$pkgver.tar.gz)
+md5sums=('8a6952f5b97e305dbb7489045bad220f')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure								\
+		--prefix=/usr							\
+		--with-cgi-bin-dir=/opt/www/cgi-bin				\
+		--with-image-dir=/opt/www/htdocs/htdig				\
+		--with-search-dir=/opt/www/htdocs/htdig				\
+		--with-config-dir=/opt/www/htdig/conf				\
+		--with-default-config-file=/opt/www/htdig/conf/htdig.conf	\
+		--with-database-dir=/opt/www/htdig/db				\
+		--with-common-dir=/opt/www/htdig/common				\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+		contrib		\
+		htdoc		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/bin
+	ln -s /opt/www/cgi-bin/htsearch .
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

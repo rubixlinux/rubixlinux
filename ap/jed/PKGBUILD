@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=jed
+pkgver=0.99.16
+pkgrel=1
+pkgdesc="jed (programmer's editor) JED (by John E. Davis) is an extremely powerful but small emacs-like programmer's editor that is extensible in a C-like macro language and can do color syntax highlighting.  Among the many features: Emacs, wordstar, EDT emulation; C, Fortran, TeX, text editing modes;  Full undo; GNU Emacs compatible info reader, and lots more. JED is also 8 bit clean, so you can even edit binary files!"url="http://www.jedsoft.org/jed"
+depends=('slang')
+source=(ftp://space.mit.edu:21/pub/davis/$pkgname/v0.99/$pkgname-0.99-16.tar.bz2	\
+	$pkgname.mouse.diff.gz								)
+md5sums=('c2bcd89c92a120559865a539c2705999' \
+	 '96b88b55565a5e47e31d6f630dd2e133' )
+
+build() {
+
+	cd $startdir/src/$pkgname-0.99-16
+
+	patch -p1 < $startdir/src/$pkgname.mouse.diff
+
+	JED_ROOT=/usr/share/jed \
+	./configure --prefix=/usr
+	make clean
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/doc
+
+	cd $startdir/pkg/usr/doc
+	ln -sf /usr/share/$pkgname $pkgname-$pkgver
+
+	cd $startdir/pkg/usr/share/$pkgname
+	rm -r info
+	ln -sf /usr/info info
+
+	cd $startdir/src/$pkgname-0.99-16
+	cp	-a		\
+		COPYING		\
+		COPYRIGHT	\
+		INSTALL		\
+		INSTALL.unx	\
+		README		\
+		changes.txt	\
+	$startdir/pkg/usr/share/$pkgname
+
+	mkdir -p $startdir/pkg/usr/info
+	for file in info/jed* ; do
+		cp $file $startdir/pkg/usr/$file
+	done
+
+}

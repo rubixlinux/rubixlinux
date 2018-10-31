@@ -1,0 +1,26 @@
+#!/bin/bash
+
+URL="ldap://"
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/slapd
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG -h "$URL"
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

@@ -1,0 +1,139 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=thunderbird
+pkgver=1.5.0.4
+pkgrel=1
+pkgdesc="mozilla-thunderbird (Mozilla Thunderbird mail application) Mozilla Thunderbird is a redesign of the Mozilla mail component written using the XUL user interface language.  Thunderbird makes emailing safer, faster, and easier than ever before with the industry's best implementations of features such as intelligent spam filters, built-in RSS reader, quick search, and much more. Visit the Mozilla Thunderbird project online: http://www.mozilla.org/projects/thunderbird/"
+url="http://www.mozilla.org/projects/thunderbird"
+depends=('glibc' 'gtk+2' 'atk' 'fontconfig' 'x11' 'expat' 'zlib' 'libidl' 'freetype2' 'pango' 'cairo' 'libjpeg' \
+	 'glib2' 'firefox' 'gcc' 'libpng'									)
+source=(ftp://ftp.mozilla.org/pub/mozilla.org/$pkgname/releases/$pkgver/source/$pkgname-$pkgver-source.tar.bz2	\
+	mozilla-thunderbird.desktop										\
+	thunderbird.png												\
+	pangoxft.diff												\
+	rubix-default-prefs.js											)
+md5sums=('ada9c163f5b26fe81958e7a85340811e' \
+	 'a5d22e84f6c1caf0b6d4328e9e5365a6' \
+	 'b890a4768b2ae3cdde506e0c49b3224a' \
+	 '91661761f2f232b08b74f5adc4f1eff0' \
+	 '5103e46274bfdc20e4f75f56b116dab1' )
+
+## Todo:
+##   None
+
+## Notes:
+##   Cannot be built with either PIE or SSP,
+##     mozilla also already adds -pipe and O2.
+
+
+## Changelog:
+##   rel1: upgraded to 1.5.0.4 2006.06.04 *security*
+##   rel1: upgraded to 1.5.0.2 2006.05.03 *security*
+##   rel2: made firefox the default http, https and ftp handler 2006.01.16
+##   rel1: upgraded to thunderbird 1.5, enigmail is no longer included
+##         again built with official branding, mozilla's decision on rubix's
+##         appeal is still pending 2006.01.12
+##   rel1: upgraded to 1.0.7 enigmail 0.92.1 2005.09.30
+##   rel1: upgraded to 1.0.6 enigmail 0.92.0 2005.07.28
+##   rel2: added --enable-ldap-experimental 2005.06.04
+##   rel1: upgraded to 1.0.2 2005.03.27
+##   rel3: Removed --enable-official-branding, see firefox note, 2005.03.08
+##   rel2: Moved a few more libs to /usr/lib 2005.02.21
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS=""
+	export CXXFLAGS=""
+	export OPTIMIZE="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+	export MOZ_CO_PROJECT="mail"
+	export MOZILLA_OFFICIAL="1"
+	export BUILD_OFFICIAL="1"
+
+	cd $startdir/src/mozilla
+
+	patch -p1 < $startdir/src/pangoxft.diff || return 1
+
+	sed -i "s@destdir@DESTDIR@" $startdir/src/mozilla/mail/app/Makefile.in	|| return 1
+
+	./configure								\
+		--prefix=/usr							\
+ 		--enable-application=mail					\
+		--enable-crypto							\
+		--enable-default-toolkit=gtk2					\
+		--enable-extensions=default					\
+		--enable-ldap							\
+		--enable-ldap-experimental					\
+		--enable-mathml							\
+		--enable-official-branding					\
+		--enable-oji							\
+		--enable-optimize="$OPTIMIZE"					\
+		--enable-pango							\
+		--enable-reorder						\
+		--enable-single-profile						\
+		--enable-strip							\
+		--enable-svg							\
+		--enable-svg-renderer-cairo					\
+		--enable-system-cairo						\
+		--enable-xinerama						\
+		--enable-xft							\
+		--disable-debug							\
+		--disable-freetype2						\
+		--disable-gnomeui						\
+		--disable-gnomevfs						\
+		--disable-installer						\
+		--disable-pedantic						\
+		--disable-profilesharing					\
+		--disable-tests							\
+		--disable-xprint						\
+		--with-default-mozilla-five-home=/usr/lib/$pkgname-$pkgver	\
+		--with-system-jpeg						\
+		--with-system-mng						\
+		--with-system-png						\
+		--with-system-zlib
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/include/$pkgname-$pkgver/nss
+	find security/nss/lib -name "*.h" -type f -exec cp -a {} $startdir/pkg/usr/include/$pkgname-$pkgver/nss \;
+	chmod 644 $startdir/pkg/usr/include/$pkgname-$pkgver/nss/*
+
+	# I dont know if I am missing a configure option... but this is the only voodoo
+	#    I could figure out to enable rss and movemail accounts
+	cp -Lr dist/bin/defaults/isp $startdir/pkg/usr/lib/$pkgname-$pkgver/defaults
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		LEGAL		\
+		LICENSE		\
+		README.txt	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/pkg/usr/lib/$pkgname-$pkgver
+	for lib in		\
+		libldap50.so	\
+		libprldap50.so
+	do
+		mv $lib ..
+		ln -s ../$lib .
+	done
+
+	ln -s $pkgname-$pkgver $startdir/pkg/usr/lib/$pkgname
+	ln -s $pkgname-$pkgver $startdir/pkg/usr/include/$pkgname
+	ln -s $pkgname-$pkgver $startdir/pkg/usr/share/idl/$pkgname
+
+	rm -r $startdir/pkg/usr/share/aclocal
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/share/applications
+	cp $startdir/src/mozilla-thunderbird.desktop $startdir/pkg/usr/share/applications
+
+	mkdir -p $startdir/pkg/usr/share/pixmaps
+	cp $startdir/src/thunderbird.png $startdir/pkg/usr/share/pixmaps
+
+	cp $startdir/src/rubix-default-prefs.js $startdir/pkg/usr/lib/$pkgname-$pkgver/greprefs/all-rubix.js
+	cp $startdir/src/rubix-default-prefs.js $startdir/pkg/usr/lib/$pkgname-$pkgver/defaults/pref/all-rubix.js
+
+}

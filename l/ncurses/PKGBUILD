@@ -1,0 +1,129 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=ncurses
+pkgver=5.5
+pkgrel=1
+pkgdesc="ncurses The ncurses (new curses) library is a free software emulation of curses in System V Release 4.0, and more.  It uses terminfo format, supports pads and color and multiple highlights and forms characters and function-key mapping, and has all the other SYSV-curses enhancements over BSD curses."
+url="http://www.gnu.org/software/ncurses/ncurses.html"
+depends=('glibc' 'gpm')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz	\
+	Eterm.ti.gz							\
+	rxvt.terminfo.gz						\
+	screeninfo.src.gz						\
+	terminfo.link.sh.gz						)
+md5sums=('e73c1ac10b4bfc46db43b2ddfd6244ef' \
+	 'a34fc9a6acc4228098620919bce3b90f' \
+	 '3a049a7f4fa180bb34a0592fb909ead9' \
+	 '5c93ef2b28fe2e90e5de407cf51123f8' \
+	 'cd2a9ff62e7d526ec9ef8c4dbd9d30de' )
+
+## Todo:
+##   None
+
+## Notes:
+##   clear and reset are provided by util-linux so they are not provided here
+##   when compiled with -pie -fPIE, incompatible binaries are produced
+
+## Changelog:
+##   rel1: upgraded to 5.5 2005.11.09
+##   rel1: Initial Rubix release
+
+build() {
+
+	#Disable PIE
+	CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all"
+	CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--with-gpm		\
+		--disable-termcap	\
+		--with-normal		\
+		--with-shared		\
+		--enable-symlinks	\
+		--without-debug		\
+		--without-profile	\
+		--without-ada		\
+		--program-prefix=""	\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+	make clean
+
+	./configure			\
+		--prefix=/usr		\
+		--with-gpm		\
+		--disable-termcap	\
+		--with-normal		\
+		--with-shared		\
+		--enable-symlinks	\
+		--without-debug		\
+		--without-profile	\
+		--without-ada		\
+		--program-prefix=""	\
+		--enable-widec		\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cd $startdir/pkg/usr/include
+	mkdir ncurses
+	mv *.h ncurses
+	for file in ncurses/* ; do
+		ln -s $file .
+	done
+	rm termcap.h
+
+	mkdir -p $startdir/pkg/lib
+	cd $startdir/pkg/usr/lib
+	chmod 755 *.so
+	chmod 644 *.a
+	mv libncurses.so.5*	$startdir/pkg/lib
+	mv libncursesw.so.5*	$startdir/pkg/lib
+	rm libncurses.so
+	ln -s /lib/libncurses.so.5 libncurses.so
+	rm libncursesw.so
+	ln -s /lib/libncursesw.so.5 libncursesw.so
+	rm libcurses.so
+	ln -s libncurses.so libcurses.so
+	rm libcursesw.so
+	ln -s libncursesw.so libcursesw.so
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	export TERMINFO=$startdir/pkg/usr/share/terminfo
+
+	progs/tic -v /usr/X11R6/lib/X11/etc/xterm.terminfo
+	progs/tic -v $startdir/src/screeninfo.src
+	progs/tic -v $startdir/src/rxvt.terminfo
+	progs/tic -v $startdir/src/Eterm.ti
+
+	unset TERMINFO
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ANNOUNCE	\
+		INSTALL		\
+		MANIFEST	\
+		NEWS		\
+		README*		\
+		TO-DO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/c++
+	cp	-a			\
+		c++/NEWS		\
+		c++/PROBLEMS		\
+		c++/README-first	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/c++
+
+	rm $startdir/pkg/usr/bin/clear
+	rm $startdir/pkg/usr/bin/reset
+	rm $startdir/pkg/usr/man/man1/clear.1.gz
+	rm $startdir/pkg/usr/man/man1/reset.1.gz
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

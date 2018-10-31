@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=bootsplash
+pkgver=3.0.7
+pkgrel=1
+pkgdesc="bootsplash -- graphical backgrounds for frame buffer consoles"
+url="http://www.bootsplash.org"
+depends=('glibc' 'freetype2' 'libmng' 'libjpeg' 'zlib')
+source=(ftp://ftp.openbios.org/pub/$pkgname/rpm-sources/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('d7c7cdab692fb2edc5cf5ebb554f20a1')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		Documentation/*	\
+		Scripts		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd Utilities
+
+	cp README* $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	make || return 1
+	mkdir -p $startdir/pkg/sbin
+	cp	-a		\
+		fbmngplay	\
+		fbresolution	\
+		fbtruetype	\
+		splash		\
+	$startdir/pkg/sbin
+	chown -R root.bin $startdir/pkg/sbin
+
+}

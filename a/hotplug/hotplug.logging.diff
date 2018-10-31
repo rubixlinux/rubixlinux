@@ -1,0 +1,29 @@
+--- ./etc/rc.d/init.d/hotplug.orig	2003-03-27 16:25:03.000000000 -0800
++++ ./etc/rc.d/init.d/hotplug	2004-11-03 21:30:08.000000000 -0800
+@@ -13,6 +13,11 @@
+ 
+ PATH=/sbin:/bin:/usr/sbin:/usr/bin
+ 
++# Put a mark in the system logs as we enter this script:
++if [ /var/run/syslogd.pid -a -x /usr/bin/logger ]; then
++       echo "/etc/rc.d/rc.hotplug $1 (entering script)" | logger
++fi
++
+ # source function library
+ if [ -f /etc/init.d/functions ]; then
+ 	. /etc/init.d/functions
+@@ -48,7 +53,13 @@
+         ;;
+ 
+     *)
+-	echo $"Usage: $0 {start|stop|restart|status|force_reload}"
++	echo $"Usage: $0 {start|stop|restart|status|force-reload}"
+ 	exit 3
+ 	;;
+ esac
++
++# Put a mark in the system logs as we exit this script:
++if [ /var/run/syslogd.pid -a -x /usr/bin/logger ]; then
++       echo "/etc/rc.d/rc.hotplug $1 (exiting script)" | logger
++fi
++

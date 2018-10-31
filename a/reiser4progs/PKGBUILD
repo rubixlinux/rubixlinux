@@ -1,0 +1,86 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=reiser4progs
+pkgver=1.0.5
+pkgrel=2
+pkgdesc="reiser4progs contains the library for reiser4 filesystem access and manipulation and reiser4 utilities."
+url="http://www.namesys.com"
+depends=('ncurses' 'e2fsprogs' 'glibc' 'readline')
+source=(ftp://ftp.namesys.com/pub/$pkgname/$pkgname-$pkgver.tar.gz	\
+	ftp://ftp.namesys.com/pub/$pkgname/libaal-$pkgver.tar.gz	)
+md5sums=('b0756831e16b2395d5f443526d640792' \
+	 '6c55201acd2a2c0a1f46addf248da6a2' )
+
+## Todo:
+##   reiser4progs will not configure with pie (libaal does fine though)
+
+## Notes:
+##   building with ssp is fine, but grub will not build then
+
+## Changelog:
+##   rel2: rebuilt without ssp 2006.02.01
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -Wa,--noexecstack"
+
+	makelibaal		|| return 1
+	makereiser4progs	|| return 1
+
+}
+
+makelibaal() {
+
+	cd $startdir/src/libaal-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/libaal-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		BUGS		\
+		COPYING		\
+		CREDITS		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/libaal-$pkgver
+
+}
+
+makereiser4progs() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mv $startdir/pkg/usr/sbin $startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		AUTHORS			\
+		BUGS			\
+		COPYING			\
+		CREDITS			\
+		CUSTOM_INSTALL_README	\
+		ChangeLog		\
+		INSTALL			\
+		INSTALL_README		\
+		NEWS			\
+		README			\
+		THANKS			\
+		TODO			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/sbin
+
+}

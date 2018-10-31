@@ -1,0 +1,29 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mpeg2dec
+pkgver=0.4.0
+pkgrel=1
+pkgdesc="mpeg2dec The mpeg2dec utility is used to decode MPEG video streams.  This package also includes libmpeg2, a free (GPLed) library for decoding MPEG2 and MPEG1 video streams."
+url="http://libmpeg2.sourceforge.net"
+depends=('sdl')
+source=(http://libmpeg2.sourceforge.net/files/$pkgname-$pkgver.tar.gz)
+md5sums=('49a70fef1b0f710ed7e64ed32ee82d4d')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+}

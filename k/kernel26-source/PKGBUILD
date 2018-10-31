@@ -1,0 +1,117 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+## DONT FORGET TO UPDATE THE INSTALL SCRIPT!!!!
+
+pkgname=kernel26-source
+pkgver=2.6.15.5
+pkgrel=1
+url="http://www.kernel.org"
+pkgdesc="kernel26-source (Linux kernel source) Source code for Linus Torvalds' Linux kernel. This is the complete and unmodified source code for the Linux kernel."
+install=$pkgname.install
+source=(http://kernel.org/pub/linux/kernel/v2.6/linux-$pkgver.tar.bz2	\
+	logo_linux_clut224.ppm						\
+	reiser4.diff							\
+	squashfs.diff							\
+	suspend2.diff							\
+	bootsplash.diff							\
+	ibm_acpi.diff							\
+	quiet_suspend.diff						\
+	ieee80211.diff							\
+	bluetooth.diff							\
+	nfs.diff							\
+	config								)
+md5sums=('1b9d99238a2f8516101462b37f4679c3' \
+	 '8cabdaa35412908edda7b851e4bb1632' \
+	 '496a124efe9206d4ecaab6abea71f33e' \
+	 'a2be7e4e201846e2a25088bf916d7a5e' \
+	 '275e08f727986c610a5c8019eb973b9f' \
+	 'bf176bd018bb5b28265191a5e1a5cce5' \
+	 'bdee870f19d819a16690100f47bacfc2' \
+	 'f70aab1cb8546f01f742fe1ede7e38d3' \
+	 '774e7e1207056d68cf2746809b3f343e' \
+	 '75ad6c384b51f5445355e58dc1f454b7' \
+	 'd3f3f5eb2e415a26c9c0d5bf2a51eab4' \
+	 '0a564ec897843c3772d0f504be0e28ea' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.6.15.5 2006.03.03
+##   rel1: upgraded to 2.6.15.4 2006.02.12
+##   rel1: upgraded to 2.6.15.3 2006.02.06
+##   rel1: upgraded to 2.6.15.2 2006.01.31
+##   rel1: upgraded to 2.6.15.1 2006.01.17
+##   rel3: upgraded to 2.6.15 (rel1, rel2 were only used for internal development) 2006.01.10
+##   rel1: upgraded to 2.6.14 2005.10.27
+##   rel2: removed ieee80211.h 2005.09.21
+##   rel1: upgraded to 2.6.13 2005.09.01
+##   rel1: upgraded to 2.6.12.1 2005.06.23
+##   rel2: rebuilt with new config 2005.06.22
+##   rel1: upgraded to 2.6.12, added make modules so we have Module.symvers 2005.06.18
+##   rel2: This is now the default Rubix kernel and /usr/src/linux will 
+##         point to it 2005.05.16
+##   rel1: Upgraded to 2.6.11.9 2005.05.15
+##   rel1: Upgraded to 2.6.11.7 2005.04.13
+##   rel1: Upgraded to 2.6.11
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/linux-$pkgver
+
+	patch -p1 < $startdir/src/reiser4.diff		|| return 1
+	patch -p1 < $startdir/src/squashfs.diff		|| return 1
+	patch -p1 < $startdir/src/suspend2.diff		|| return 1
+	patch -p1 < $startdir/src/bootsplash.diff	|| return 1
+	patch -p1 < $startdir/src/ibm_acpi.diff		|| return 1
+	patch -p1 < $startdir/src/quiet_suspend.diff	|| return 1
+	patch -p1 < $startdir/src/bluetooth.diff	|| return 1
+	patch -p1 < $startdir/src/nfs.diff		|| return 1
+
+	cp $startdir/src/config .config
+	cp $startdir/src/logo_linux_clut224.ppm drivers/video/logo
+
+	make silentoldconfig
+
+	patch -p1 < $startdir/src/ieee80211.diff || return 1
+
+	make bzImage || return 1
+	make modules || return 1
+	cp vmlinux $startdir/pkg
+	make clean
+	rm .version
+
+	mkdir -p $startdir/pkg/usr/src
+	cd $startdir/pkg/usr/src
+	cp -a $startdir/src/linux-$pkgver linux-$pkgver-Rubix
+
+	find $startdir/pkg -perm 0664 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0775 -exec chmod 0755 {} \;
+
+	cd linux-$pkgver-Rubix
+	mv $startdir/pkg/vmlinux .
+
+	## provided by the ieee80211 package
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_module.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_crypt_ccmp.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_geo.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_crypt_tkip.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_rx.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_tx.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_wx.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_crypt.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/net/ieee80211/ieee80211_crypt_wep.c
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/include/net/ieee80211_radiotap.h
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/include/net/ieee80211_crypt.h
+	rm $startdir/pkg/usr/src/linux-$pkgver-Rubix/include/net/ieee80211.h
+
+	ln -s linux-$pkgver-Rubix $startdir/pkg/usr/src/linux26
+
+	find $startdir/pkg -perm 777 -exec chmod 755 {} \;
+	find $startdir/pkg -perm 666 -exec chmod 644 {} \;
+
+}

@@ -1,0 +1,25 @@
+diff -ru netkit-base-0.17/ping/ping.c netkit-base-0.17-new/ping/ping.c
+--- netkit-base-0.17/ping/ping.c	Sun Jul 23 13:46:21 2000
++++ netkit-base-0.17-new/ping/ping.c	Tue Nov  6 09:10:42 2001
+@@ -636,16 +636,16 @@
+ 	u_int8_t *cp, *dp;
+ 	int i;
+ 
+-	cp = INPACK_PAYLOAD;
+-	dp = OUTPACK_PAYLOAD;
++	cp = INPACK_DATA;
++	dp = OUTPACK_DATA;
+ 
+-	for (i=0; i<datalen-ICMP_MINLEN; i++) {
++	for (i=0; i<datalen-(timing?sizeof(struct timeval):0); i++) {
+ 		if (cp[i] != dp[i]) {
+ 			printf("\n");
+ 			printf("wrong data byte #%d should be 0x%x "
+-			       "but was 0x%x",
++			       "but was 0x%x: ",
+ 			       i, dp[i], cp[i]);
+-			for (i=0; i<datalen-ICMP_MINLEN; i++) {
++			for (i=0; i<datalen-(timing?sizeof(struct timeval):0); i++) {
+ 				if ((i % 32) == 8)
+ 					printf("\n\t");
+ 				printf("%x ", cp[i]);

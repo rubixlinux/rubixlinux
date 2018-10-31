@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Start/stop/restart the system logging daemons.
+
+# Written for Rubix Linux by Joshua Rubin <joshua@rubixlinux.org>.
+# '-m 0' = disable the default 20 minute mark interval
+# '-c 3' = display level 'error' or higher messages on console
+# '-x'   = turn off broken EIP translation
+
+SYSLOGD=/usr/sbin/syslogd
+KLOGD=/usr/sbin/klogd
+SYSLOGARGS="-m 0"
+KLOGARGS="-c 3 -x"
+
+SCRIPT=`basename $0`
+
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		rm -f /dev/log
+		if [ -d /var/named/dev ]; then
+		        rm -f /var/named/dev/log
+		        SYSLOGARGS="$SYSLOGARGS -a /var/named/dev/log"
+		fi
+		start_daemon $SCRIPT $SYSLOGD $SYSLOGARGS
+		if [ $? -eq 0 ]; then
+			sleep 1
+			start_daemon klog $KLOGD $KLOGARGS
+		fi
+		;;
+	stop)
+		stop_daemon klog $KLOGD
+		stop_daemon $SCRIPT $SYSLOGD
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $SYSLOGD
+		daemon_status klog $KLOGD
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

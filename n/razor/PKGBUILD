@@ -1,0 +1,66 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=razor
+pkgver=2.67
+pkgrel=3
+pkgdesc="Vipul's Razor is a distributed, collaborative, spam detection and filtering network. Through user contribution, Razor establishes a distributed and constantly updating catalogue of spam in propagation that is consulted by email clients to filter out known spam. Detection is done with statistical and randomized signatures that efficiently spot mutating spam content. User input is validated through reputation assignments based on consensus on report and revoke assertions which in turn is used for computing confidence values associated with individual signatures."
+url="http://razor.sourceforge.net"
+depends=('perl' 'perl-net-dns' 'perl-digest-sha1' 'perl-uri' 'perl-digest-nilsimsa')
+source=(http://dl.sourceforge.net/sourceforge/razor/$pkgname-agents-$pkgver.tar.gz)
+md5sums=('0118b6030ea261ea85e73a55cc7eac8e')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release 2005.05.12
+
+build() {
+
+	cd $startdir/src/$pkgname-agents-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make DESTDIR=$startdir/pkg install || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS		\
+		CREDITS		\
+		Changes		\
+		FAQ		\
+		INSTALL		\
+		MANIFEST	\
+		README		\
+		SERVICE_POLICY	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -type f -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -type f -perm 0555 -exec chmod 0755 {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	mv $startdir/pkg/man/man5 $startdir/pkg/usr/man
+	rmdir $startdir/pkg/man
+
+	cd $startdir/pkg/usr/bin
+	ln -s razor-client razor-admin
+	ln -s razor-client razor-check
+	ln -s razor-client razor-report
+	ln -s razor-client razor-revoke
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+SUBVER=200601081938
+
+pkgname=gradm
+pkgver=2.1.8
+pkgrel=1
+pkgdesc="gradm - administration program for the grsecurity rbac system"
+url="http://www.grsecurity.net"
+source=(http://grsecurity.net/$pkgname-$pkgver-$SUBVER.tar.gz)
+groups=('grsec')
+md5sums=('f1fc1153e1b5593c9805e287d29b92eb')
+depends=('glibc')
+backup=('etc/grsec/policy')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.1.8 2006.01.17
+##   rel1: upgraded to 2.1.7 2005.11.17
+##   rel1: upgraded to 2.1.6 2005.06.18
+##   rel2: changed backup files supplied default policy 2005.04.13
+##   rel1: upgraded to 2.1.5 2005.04.13
+##   rel1: upgraded to 2.1.3 2005.03.08
+##   Initial rubix release
+
+build() {
+
+	cd $startdir/src/${pkgname}2
+
+	make nopam || return 1
+	make DESTDIR=$startdir/pkg install
+
+	rm -r $startdir/pkg/dev
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		README	\
+		policy	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/sbin
+
+}

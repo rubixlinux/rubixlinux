@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=lyx
+pkgver=1.3.7
+pkgrel=1
+pkgdesc="LyX is an advanced, open-source \"document processor\". Unlike standard word processors, LyX encourages writing based on the structure of your documents, not their appearance. It lets you concentrate on writing, leaving details of visual layout to the software."
+url="http://www.lyx.org"
+depends=('glibc' 'aspell' 'qt' 'freetype2' 'libjpeg' 'x11' 'fontconfig' 'expat' 'libmng' 'gcc' 'zlib' 'libpng' 'tetex' 'python' 'perl' 'imagemagick')
+source=(ftp://ftp.lyx.org/pub/$pkgname/stable/$pkgname-$pkgver.tar.gz)
+md5sums=('67c137195634ba862e8381765bb25b0d')
+
+## Todo:
+##   None
+
+## Notes:
+##   lyx builds with SSP, but crashes all the time
+
+## Changelog:
+##   rel1: upgraded to 1.3.6 2005.08.26
+##   rel1: Initial Rubix release 2005.02.28
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie"
+
+	cd $startdir/src/lyx-$pkgver
+
+	./configure					\
+		--prefix=/usr				\
+		--with-qt-dir=/usr/lib/qt		\
+		--with-qt-includes=/usr/lib/qt/include	\
+		--with-qt-libraries=/usr/lib/qt/lib	\
+		--with-frontend=qt
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		ABOUT-NLS		\
+		ANNOUNCE		\
+		COPYING			\
+		ChangeLog		\
+		INSTALL			\
+		INSTALL.OS2		\
+		INSTALL.autoconf	\
+		NEWS			\
+		README*			\
+		UPGRADING		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

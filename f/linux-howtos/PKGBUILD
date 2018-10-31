@@ -1,0 +1,18 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=linux-howtos
+pkgver=20050718
+pkgrel=1
+pkgdesc="linux-howtos (HOWTOs from the Linux Documentation Project) Documentation on many tasks relating to Linux setup and operation. These documents will be installed in /usr/doc/Linux-HOWTOs/."
+source=(ftp://ftp.slackware.com/pub/slackware/slackware-current/slackware/f/$pkgname-$pkgver-noarch-1.tgz)
+md5sums=('e5ad7a260bba0f87bb665776264c8573')
+
+build() {
+
+	cd $startdir/pkg
+
+	tar zxpvf $startdir/src/$pkgname-$pkgver-noarch-1.tgz
+
+	rm -r install
+
+}

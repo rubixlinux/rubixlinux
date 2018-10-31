@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# hotplug This scripts starts hotpluggable subsystems.
+#
+# description:	Starts and stops each hotpluggable subsystem. \
+#		On startup, may simulate hotplug events for devices \
+#		that were present at boot time, before filesystems \
+#		(or other resources) used by hotplug agents were available.
+#
+
+SCRIPT=`basename $0`
+PROG=do_hotplug
+
+. /etc/rubixlib
+
+SYSLOG=0
+/etc/rc.d/syslog status > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	SYSLOG=1
+	echo "/etc/rc.d/hotplug $1 (entering script)" | logger
+fi
+
+do_hotplug() {
+	for RC in /etc/hotplug/*.rc
+	do
+		$RC $1
+	done
+}
+
+case "$1" in
+	start)
+		# If 'nohotplug' was given at boot, then do not start hotplug
+		# Turning off hotplug is *not* recommended, and will break some things.
+		if [ -w /proc/sys/kernel/hotplug ]; then
+			if grep -w nohotplug /proc/cmdline 1> /dev/null 2> /dev/null ; then
+				stat_err "hotplug disabled, not starting"
+			else
+				# Check kernel version. Kernel 2.6.15+ don't need hotplug
+				KERN_VER=`uname -r | cut -d. -f2`
+				if [ $KERN_VER -lt 6 ]; then
+					start_daemon $SCRIPT $PROG start
+				fi
+			fi
+		fi
+		;;
+	stop)
+		# Check kernel version. Kernel 2.6.15+ don't need hotplug
+		KERN_VER=`uname -r | cut -d. -f2`
+		if [ $KERN_VER -lt 6 ]; then
+			stop_daemon $SCRIPT $PROG stop
+		fi
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status hotplug
+		;;
+	*)
+		stat_err $"usage: $0 {start|stop|restart|status}"
+esac
+
+# Put a mark in the system logs as we exit this script:
+if [ $SYSLOG ]; then
+	echo "/etc/rc.d/hotplug $1 (exiting script)" | logger
+fi

@@ -1,0 +1,109 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=cups
+pkgver=1.1.23
+pkgrel=4
+pkgdesc="CUPS (Common UNIX Printing System) The Common UNIX Printing System provides a portable printing layer for UNIX(R)-like operating systems. It has been developed by Easy Software Products to promote a standard printing solution for all UNIX vendors and users.  CUPS uses the Internet Printing Protocol ("IPP") as the basis for managing print jobs and queues.  The CUPS package includes System V and Berkeley command-line interfaces, a PostScript RIP package for supporting non-PostScript printer drivers, and tools for creating additional printer drivers and other CUPS services."
+url="http://www.cups.org"
+depends=('openssl' 'libtiff' 'libjpeg' 'libpng')
+source=(ftp://ftp3.easysw.com/pub/cups/$pkgver/$pkgname-$pkgver-source.tar.bz2	\
+	cups									)
+md5sums=('4ce09b1dce09b6b9398af0daae9adf63')
+backup=('etc/rc.d/cups'			\
+	'etc/cups/classes.conf'		\
+	'etc/cups/client.conf'		\
+	'etc/cups/cupsd.conf'		\
+	'etc/cups/mime.convs'		\
+	'etc/cups/mime.types'		\
+	'etc/cups/printers.conf'	)
+md5sums=('4ce09b1dce09b6b9398af0daae9adf63' \
+	 'a62768e1c25e89a62f887208c81d7291' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: updated rc script to new format 2006.01.15
+##   rel3: rebuilt with new execstack flag 2005.03.04
+##   rel2: Changed spacing in rc script 2005.02.22
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --disable-pam
+	make
+
+	mkdir -p $startdir/pkg/etc/cups
+	mkdir -p $startdir/pkg/var/spool
+
+	make BUILDROOT=$startdir/pkg install
+
+	cd $startdir/pkg/usr/lib/cups/backend
+	ln -sf /usr/bin/smbspool smb
+
+	cd $startdir/pkg/usr/share/man
+	find . -type d -name "cat*" | xargs rm -rf
+
+	cd $startdir/pkg/usr/share
+	mv man ..
+
+	cd $startdir/pkg/etc/rc.d
+	cp $startdir/src/cups .
+	rm -r init.d rc*.d
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cd $startdir/pkg/usr/doc
+	ln -sf $pkgname-$pkgver $pkgname
+
+	cd $startdir/pkg/usr/doc
+	find . -name "*.pdf" -exec rm -f {} \;
+
+	SUFFIX=cups
+	for file in		\
+		usr/bin/cancel	\
+		usr/bin/lp	\
+		usr/bin/lpq	\
+		usr/bin/lpr	\
+		usr/bin/lprm	\
+		usr/bin/lpstat	\
+		usr/sbin/lpc
+	do
+		cd $startdir/pkg
+		mv ${file} ${file}-${SUFFIX}
+		cd `dirname ${file}`
+		ln -sf `basename ${file}`-${SUFFIX} `basename ${file}`
+	done
+
+	mv $startdir/pkg/usr/man/man1/cancel.1	$startdir/pkg/usr/man/man1/cancel-${SUFFIX}.1
+	mv $startdir/pkg/usr/man/man1/lp.1	$startdir/pkg/usr/man/man1/lp-${SUFFIX}.1
+	mv $startdir/pkg/usr/man/man1/lpq.1	$startdir/pkg/usr/man/man1/lpq-${SUFFIX}.1
+	mv $startdir/pkg/usr/man/man1/lpr.1	$startdir/pkg/usr/man/man1/lpr-${SUFFIX}.1
+	mv $startdir/pkg/usr/man/man1/lprm.1	$startdir/pkg/usr/man/man1/lprm-${SUFFIX}.1
+	mv $startdir/pkg/usr/man/man1/lpstat.1	$startdir/pkg/usr/man/man1/lpstat-${SUFFIX}.1
+	mv $startdir/pkg/usr/man/man8/lpc.8	$startdir/pkg/usr/man/man8/lpc-${SUFFIX}.8
+
+	cd $startdir/pkg/usr/man/man1
+	ln -sf cancel-${SUFFIX}.1.gz	cancel.1.gz
+	ln -sf lp-${SUFFIX}.1		lp.1
+	ln -sf lpq-${SUFFIX}.1		lpq.1
+	ln -sf lpr-${SUFFIX}.1		lpr.1
+	ln -sf lprm-${SUFFIX}.1		lprm.1
+	ln -sf lpstat-${SUFFIX}.1	lpstat.1
+
+	cd $startdir/pkg/usr/man/man8
+	ln -sf lpc-${SUFFIX}.8		lpc.8
+
+	rmdir $startdir/pkg/usr/share/doc
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	chown lp.sys    $startdir/pkg/usr/bin/lppasswd
+	chmod 4755      $startdir/pkg/usr/bin/lppasswd
+
+}

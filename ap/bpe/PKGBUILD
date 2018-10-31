@@ -1,0 +1,31 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=bpe
+pkgver=2.01.00
+pkgrel=1
+pkgdesc="bpe (Binary Patch Editor) bpe is a simple, screen-oriented editor for searching and editing ordinary files in either ASCII or hexadecimal modes. bpe was written by Andreas Pleschutznig.  Bill Davidsen contributed additional features, as did Ralphe Neill (the current maintainer)."
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+depends=('ncurses')
+md5sums=('4b4054ddef08546001c3e9fd590e8d65')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		HISTORY		\
+		LICENSE		\
+		README-bpe	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

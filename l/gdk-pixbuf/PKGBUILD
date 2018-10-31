@@ -1,0 +1,34 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gdk-pixbuf
+pkgver=0.22.0
+pkgrel=1
+pkgdesc="gdk-pixbuf The GdkPixBuf library provides a number of features, including : GdkPixbuf structure for representing images. Image loading facilities. Rendering of a GdkPixBuf into various formats: drawables (windows, pixmaps), GdkRGB buffers. Fast scaling and compositing of pixbufs. Simple animation loading (ie. animated gifs) GdkPixBuf is required by many GTK+ programs such as GNOME and xfce."
+depends=('gtk+')
+source=(ftp://ftp.gnome.org/pub/gnome/sources/$pkgname/0.22/$pkgname-$pkgver.tar.bz2)
+md5sums=('05fcb68ceaa338614ab650c775efc2f2')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

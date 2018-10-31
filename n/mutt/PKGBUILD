@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mutt
+pkgver=1.4.2.1i
+pkgrel=1
+pkgdesc="The mutt mail client. Mutt is a small but very powerful text-based MIME mail client.  Mutt is highly configurable, and is well suited to the mail power user with advanced features like key bindings, keyboard macros, mail threading, regular expression searches and a powerful pattern matching language for selecting groups of messages."
+url="http://www.mutt.org"
+depends=('ncurses' 'openssl')
+makedepends=('gnupg')
+source=(ftp://ftp.mutt.org/mutt/$pkgname-$pkgver.tar.gz)
+md5sums=('710bd56d3c4c4bcd1403bc4e053f7476')
+backup=('etc/mutt/Muttrc')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-`basename $pkgver i`
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc/mutt		\
+		--with-mailpath=/var/spool/mail	\
+		--enable-pop			\
+		--enable-imap			\
+		--with-ssl			\
+		--enable-locales-fix		\
+		--without-wc-funcs		\
+		$CHOST
+
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/doc
+	ln -sf mutt $pkgname-$pkgver
+
+}

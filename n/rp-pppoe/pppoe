@@ -1,0 +1,25 @@
+#!/bin/bash
+
+SCRIPT=`basename $0`
+START=/usr/sbin/pppoe-start
+STOP=/usr/sbin/pppoe-stop
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $START
+		;;
+	stop)
+		stop_daemon $SCRIPT $STOP
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

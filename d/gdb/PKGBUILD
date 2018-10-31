@@ -1,0 +1,63 @@
+# Maintainer: 
+
+pkgname=gdb
+pkgver=6.3
+pkgrel=1
+pkgdesc="gdb (the GNU symbolic debugger) The purpose of a debugger such as GDB is to allow you to see what is going on "inside" another program while it executes -- or what another program was doing at the moment it crashed.  GDB can help you catch bugs in the act.  You can use GDB to debug programs written in C, C++, Modula-2, and Fortran 77."
+depends=('glibc' 'ncurses')
+source=(http://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://sources.redhat.com/$pkgname"
+md5sums=('812de9e756d53c749ea5516d9ffa5905')
+
+build() {
+ 
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+
+	cd readline
+	make
+	cd ..
+
+	make
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/$pkgname
+	cp	-a		\
+		COPYING		\
+		COPYING.LIB	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd gdb
+	cp	-a	\
+		NEWS	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/$pkgname
+
+	cp -a gdbserver/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.gdbserver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+	mkdir -p $startdir/pkg/usr/bin
+
+	cp gdb $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp gdb.1 $startdir/pkg/usr/man/man1
+
+	cd doc
+	mkdir -p $startdir/pkg/usr/info
+	for file in gdb.info* gdbint.info* ; do
+		cp $file $startdir/pkg/usr/info/$file
+	done
+
+	cd ../gdbserver
+	make
+	cp gdbserver $startdir/pkg/usr/bin
+
+	chmod 755 $startdir/pkg/usr/bin/*
+	chown -R root.bin $startdir/pkg/usr/bin
+	cp gdbserver.1 $startdir/pkg/usr/man/man1
+
+}

@@ -1,0 +1,56 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=cracklib
+pkgver=2.8.5
+pkgrel=2
+pkgdesc="cracklib - a proactive password sanity library"
+url="http://sourceforge.net/projects/cracklib"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz	\
+	http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-words.gz	\
+	cracklib.diff.gz							)
+md5sums=('68674db41be7569099b7aa287719b248' \
+	 'd18e670e5df560a8745e1b4dede8f84f' \
+	 '6a04abcbb09c8ae821333e2c770d8202' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: fixed dict path 2005.11.03
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/cracklib.diff || return 1
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/share/dict
+	cp $startdir/src/$pkgname-words $startdir/pkg/usr/share/dict
+
+	cracklib-format $startdir/pkg/usr/share/dict/cracklib-words | cracklib-packer $startdir/pkg/usr/share/dict/cracklib_dict
+
+	rm -r $startdir/pkg/usr/share/$pkgname
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

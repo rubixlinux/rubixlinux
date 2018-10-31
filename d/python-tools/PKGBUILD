@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=python-tools
+pkgver=2.4.2
+pkgrel=1
+pkgdesc="python-tools (Tools for building or extending Python) python-tools: This package installs several optional development tools into your python-tools: Python site-packages directory."
+url="http://www.python.org"
+depends=('python')
+source=(http://www.python.org/ftp/python/$pkgver/Python-$pkgver.tgz)
+md5sums=('07cfc759546f6723bb367be5b1ce9875')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 2.4.2 2005.09.30
+#rel1: Upgraded to python 2.4.1 2005.05.12
+#rel1: Initial Rubix release 2005.04.12
+
+build() {
+
+	cd $startdir/src/Python-$pkgver
+
+	find . -type d -exec chmod 755 {} \;
+	find . -type f -perm 775 -exec chmod 755 {} \;
+	find . -type f -perm 664 -exec chmod 644 {} \;
+	find . -type d -name CVS -exec rm -r {} \;
+
+	mkdir -p $startdir/pkg/usr/lib/python$pkgver/site-packages
+	cd Tools
+	cp -a * $startdir/pkg/usr/lib/python$pkgver/site-packages
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/python-$pkgver
+
+	mv $startdir/pkg/usr/lib/python$pkgver/site-packages/README $startdir/pkg/usr/doc/python-$pkgver/README.$pkgname
+	cd $startdir/pkg/usr/doc/python-$pkgver
+	ln -sf /usr/lib/python$pkgver/site-packages Tools
+
+	mkdir -p $startdir/pkg/usr/bin
+	cd $startdir/pkg/usr/bin
+	ln -sf /usr/lib/python$pkgver/site-packages/modulator/modulator.py modulator
+	ln -sf /usr/lib/python$pkgver/site-packages/pynche/pynche pynche
+	ln -sf /usr/lib/python$pkgver/site-packages/i18n/msgfmt.py .
+	ln -sf /usr/lib/python$pkgver/site-packages/i18n/pygettext.py .
+
+	chown -R root.bin $startdir/pkg/usr/bin
+}

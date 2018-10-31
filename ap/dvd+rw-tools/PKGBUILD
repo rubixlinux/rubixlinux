@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=dvd+rw-tools
+pkgver=5.21.4.10.8
+pkgrel=1
+pkgdesc="dvd+rw-tools A collection of tools to master DVD+RW/+R/-R/-RW media.  For further information see http://fy.chalmers.se/~appro/linux/DVD+RW/. The DVD+RW tools were written by Andy Polyakov."
+url="http://fy.chalmers.se/~appro/linux/DVD+RW"
+depends=('gcc')
+source=(http://fy.chalmers.se/~appro/linux/DVD+RW/tools/$pkgname-$pkgver.tar.gz)
+md5sums=('b931c02e2b23342f664276ef26d1502c')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make
+
+	mkdir -p $startdir/pkg/usr/bin
+
+	cp dvd+rw-booktype	$startdir/pkg/usr/bin
+	cp dvd+rw-format	$startdir/pkg/usr/bin
+	cp dvd+rw-mediainfo	$startdir/pkg/usr/bin
+	cp dvd-ram-control	$startdir/pkg/usr/bin
+	cp growisofs		$startdir/pkg/usr/bin
+
+	chmod 755 $startdir/pkg/usr/bin/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	cp growisofs.1 $startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		index.html	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

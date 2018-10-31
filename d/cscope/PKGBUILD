@@ -1,0 +1,35 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=cscope
+pkgver=15.5
+pkgrel=1
+pkgdesc="cscope (source code browsing tool) Cscope is a text screen based source browsing tool.  Although it is primarily designed to search C code (including lex and yacc files), it can also be used for C++ code. For more information, see http://cscope.sourceforge.net."
+source=(http://dl.sourceforge.net/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('beb6032a301bb11524aec74bfb5e4840')
+url="http://cscope.sourceforge.net/index.html"
+depends=('ncurses')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 666 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

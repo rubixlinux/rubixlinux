@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=madplay
+pkgver=0.15.2b
+pkgrel=1
+pkgdesc="madplay (MPEG audio decoder and player) madplay is a command-line MPEG audio decoder and player based on the MAD library (libmad).  For details about MAD, see the libmad package distributed separately. madplay was written by Robert Leslie."
+depends=('esound' 'libid3tag' 'libmad')
+source=(ftp://ftp.mars.org/pub/mpeg/$pkgname-$pkgver.tar.gz)
+url="http://www.underbit.com/products/mad"
+md5sums=('6814b47ceaa99880c754c5195aa1aac1')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--disable-debugging	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		COPYING		\
+		COPYRIGHT	\
+		CREDITS		\
+		README		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

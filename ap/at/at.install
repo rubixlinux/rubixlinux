@@ -1,0 +1,19 @@
+post_install() {
+	if [ ! -r var/spool/atjobs/.SEQ ]; then
+		touch var/spool/atjobs/.SEQ > /dev/null 2>&1
+		chmod 600 var/spool/atjobs/.SEQ > /dev/null 2>&1
+		chown daemon.daemon var/spool/atjobs/.SEQ > /dev/null 2>&1
+	fi
+}
+
+post_upgrade() {
+	post_install
+}
+
+pre_remove() {
+	rm -f var/spool/atjobs/.SEQ
+}
+
+op=$1
+shift
+$op $*

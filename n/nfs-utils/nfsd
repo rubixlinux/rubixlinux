@@ -1,0 +1,60 @@
+#!/bin/bash
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		if [ ! -f /var/run/daemons/portmap ]; then
+			stat_err "error! portmap is not running!"
+			exit 1
+		fi
+		if [ ! -r /etc/exports ]; then
+			stat_err "error! you need an /etc/exports!"
+			exit 1
+		elif ! grep -v '^#' /etc/exports | grep '/' 1> /dev/null 2> /dev/null ; then
+			stat_err "error! you need at least one uncommented line in /etc/exports!"
+			exit 1
+		fi
+		if [ -z "`/sbin/lsmod | grep "^nfsd "`" ]; then
+			stat_busy "loading nfsd module"
+			/sbin/modprobe nfsd
+			stat_done
+		fi
+		start_daemon exportfs /usr/sbin/exportfs -r
+		start_daemon rquotad /usr/sbin/rpc.rquotad
+		start_daemon nfsd /usr/sbin/rpc.nfsd 8
+		start_daemon mountd /usr/sbin/rpc.mountd
+		start_daemon lockd /usr/sbin/rpc.lockd
+		start_daemon statd /usr/sbin/rpc.statd
+		;;
+	stop)
+		stop_daemon statd /usr/sbin/rpc.statd
+		stop_daemon lockd lockd
+		stop_daemon mountd /usr/sbin/rpc.mountd
+		stop_daemon nfsd /bin/kill `pidof -o %PPID nfsd`
+		sleep 1
+		PID=`pidof -o %PPID nfsd`
+		if [ ! -z "$PID" ]; then
+			stat_busy "terminating nfsd processes"
+			/bin/kill -9 $PID
+			stat_done
+		fi
+		stop_daemon rquotad /usr/sbin/rpc.rquotad
+		stop_daemon exportfs /usr/sbin/exportfs -au
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status exportfs /usr/sbin/exportfs
+		/usr/sbin/exportfs -v
+		daemon_status rquotad /usr/sbin/rpc.rquotad
+		daemon_status nfsd nfsd
+		daemon_status mountd /usr/sbin/rpc.mountd
+		daemon_status lockd lockd
+		daemon_status statd /usr/sbin/rpc.statd
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

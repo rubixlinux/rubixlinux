@@ -1,0 +1,26 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=qca-tls
+pkgver=1.0
+pkgrel=1
+pkgdesc="qca-tls is a plugin to provide SSL/TLS capability to programs that utilize the Qt Cryptographic Architecture (QCA)."
+depends=('glibc' 'qt' 'freetype2' 'libjpeg' 'fontconfig' 'x11' 'expat' 'openssl' 'libmng' 'gcc' 'zlib' 'libpng')
+url="http://psi.affinix.com/beta"
+source=(http://psi.affinix.com/beta/$pkgname-$pkgver.tar.bz2)
+md5sums=('886b1f60fc31de3b1a0bd93281e27b73')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure
+	make || return 1
+	make INSTALL_ROOT=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

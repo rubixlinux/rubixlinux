@@ -1,0 +1,53 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+
+pkgname=perl-compress-zlib
+pkgver=1.34
+pkgrel=3
+pkgdesc="Compress::Zlib - Interface to zlib compression library"
+url="http://search.cpan.org/~pmqs/Compress-Zlib-1.34/Zlib.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/P/PM/PMQS/Compress-Zlib-$pkgver.tar.gz)
+md5sums=('dbdbf491f8ce66e613545c4d4e82a763')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: removed the .packlist file 2005.12.22
+##   rel2: rebuilt with perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Compress-Zlib-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Compress-Zlib-$pkgver
+	cp	-a		\
+		ANNOUNCE	\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Compress-Zlib-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/Compress-Zlib-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name '.packlist' -exec rm {} \;
+
+}

@@ -1,0 +1,80 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=hostapd
+pkgver=0.4.7
+pkgrel=2
+pkgdesc="hostapd is a user space daemon for access points, including, e.g., IEEE 802.1X/WPA/EAP Authenticator for number of Linux and BSD drivers, RADIUS client, integrated EAP server, and RADIUS authentication server"
+url="http://hostap.epitest.fi"
+depends=('glibc' 'openssl')
+backup=('etc/hostapd/hostapd.accept'		\
+	'etc/hostapd/hostapd.conf'		\
+	'etc/hostapd/hostapd.deny'		\
+	'etc/hostapd/hostapd.eap_user'		\
+	'etc/hostapd/hostapd.radius_clients'	\
+	'etc/hostapd/hostapd.sim_db'		\
+	'etc/hostapd/hostapd.wpa_psk'		\
+	'etc/rc.d/hostapd'	)
+source=(http://hostap.epitest.fi/releases/$pkgname-$pkgver.tar.gz	\
+	config								\
+	$pkgname							)
+md5sums=('b299211691fe8a6840e7adafda351d2b' \
+	 '0727144e5368b13cd0fac0fc74a8eac6' \
+	 'ffa3799b8a3ff1ae8f1d1f52cf70b2c4' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added rc script in new format 2006.01.16
+##   rel1: upgraded to 0.4.7 2005.12.18
+##   rel1: upgraded to 0.4.6 2005.10.27
+##   rel1: Initial rubix release 0.4.4 2005.09.20
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+		developer.txt	\
+		madwifi.conf	\
+		wired.conf	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp $startdir/src/config .config
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/sbin
+	cp $pkgname $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp ${pkgname}_cli $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/etc/$pkgname
+	cp	-a			\
+		$pkgname.conf		\
+		$pkgname.accept		\
+		$pkgname.deny		\
+		$pkgname.eap_user	\
+		$pkgname.radius_clients	\
+		$pkgname.sim_db		\
+		$pkgname.wpa_psk	\
+	$startdir/pkg/etc/$pkgname
+
+	mkdir -p		$startdir/pkg/usr/man/man{1,8}
+	cp $pkgname.8		$startdir/pkg/usr/man/man8
+	cp ${pkgname}_cli.1	$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

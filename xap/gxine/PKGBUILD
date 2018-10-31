@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <josuha@rubixlinux.org>
+
+pkgname=gxine
+pkgver=0.5.4
+pkgrel=1
+pkgdesc="gxine (GTK+ media player based on Xine) Xine is a free multimedia player.  It plays back CDs, DVDs, and VCDs, multimedia files, and multimedia streamed over a network. The gxine package contains a GTK+ graphical user interface for the Xine multimedia player."
+depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'atk' 'pango' 'fontconfig' 'x11' 'expat'	\
+	 'lirc' 'xine-lib' 'glib2' 'firefox' 'zlib' 'libpng'				)
+url="http://xinehq.de"
+source=(http://dl.sourceforge.net/sourceforge/xine/$pkgname-$pkgver.tar.bz2	\
+	gxine.desktop								)
+md5sums=('05003ea98fb7e953bdee6582a7f7e4c5' \
+	 '8a85628844126abab6e524b4e9fce3d2' )
+
+## Todo:
+##  None
+
+## Notes:
+##  None
+
+## Changelog:
+##  rel1: upgraded to 0.5.4 2006.02.15
+##  rel1: upgraded to 0.5.2 2005.12.23
+##  rel1: upgraded to 0.4.6 2005.07.29
+##  rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc		\
+		--localstatedir=/var/lib	\
+		--disable-static		\
+		--with-browser-plugin		\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cp $startdir/src/gxine.desktop $startdir/pkg/usr/share/applications
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/lib/mozilla
+	mv $startdir/pkg/usr/lib/gxine $startdir/pkg/usr/lib/mozilla/plugins
+
+}

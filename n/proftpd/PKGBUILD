@@ -1,0 +1,85 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=proftpd
+pkgver=1.2.10
+pkgrel=3
+pkgdesc="proftpd (FTP server daemon) ProFTPD is the Professional File Transfer Protocol (FTP) server daemon.  ProFTPD grew out of the desire to have a secure and configurable FTP server, and out of a significant admiration of the Apache web server."
+depends=('glibc' 'openssl' 'gpm' 'ncurses')
+url="http://www.proftpd.org"
+backup=('etc/proftpd.conf'	\
+	'etc/ftpusers'		)
+source=(ftp://ftp.proftpd.org/distrib/source/$pkgname-$pkgver.tar.bz2	\
+	ftpusers							\
+	proftpd.conf							\
+	openssl.diff							\
+	proftpd								)
+md5sums=('5feb4a7348e12faefc25e34fd92efdd6' \
+	 'c5b399596701bfc899d2ab768b964cf5' \
+	 '861463f271390040dca682ed0817d087' \
+	 '3a1b94764d09a533100dbed34343e11f' \
+	 '9f72c20d08493bac57371df82fb6a671' )
+
+## Todo:
+##   None
+
+## Notes:
+##   this is included because slackware included it
+##     I am inclined to recommend vsftpd for security reasons
+##     this package will remain subject to user response
+##     if most prople use vsftpd, we will no longer provide proftpd
+##   proftpd does not like pie :(
+
+## Changelog:
+##   rel3: updated rc script to new format 2006.01.16
+##   rel2: recompiled with --enable-ctrls 2005.08.19
+##   rel1: Initial Rubix release 2005.04.20
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/openssl.diff || return 1
+
+	./configure									\
+		--prefix=/usr								\
+		--sysconfdir=/etc							\
+		--enable-autoshadow							\
+		--enable-ctrls								\
+		--enable-ipv6								\
+		--localstatedir=/var/run						\
+		--with-modules=mod_readme:mod_ratio:mod_tls:mod_wrap:mod_ctrls_admin	\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	rm -f $startdir/pkg/etc/*
+	cp $startdir/src/proftpd.conf	$startdir/pkg/etc/proftpd.conf
+	cp $startdir/src/ftpusers	$startdir/pkg/etc/ftpusers
+
+	mkdir -p $startdir/pkg/home/ftp
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		CREDITS			\
+		ChangeLog		\
+		INSTALL			\
+		NEWS			\
+		README*			\
+		contrib/README.mod_wrap	\
+		contrib/README.ratio 	\
+		doc			\
+		sample-configurations	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a contrib/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.contrib
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -perm 744 -exec chmod 755 {} \;
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+}

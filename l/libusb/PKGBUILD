@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libusb
+pkgver=0.1.10a
+pkgrel=1
+depends=('glibc' 'gcc')
+pkgdesc="libusb (USB library) This is libusb, a library which allows userspace application access to USB devices.  It is used to connect to USB devices like scanners."
+source=(http://dl.sourceforge.net/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('c6062b29acd2cef414bcc34e0decbdd1')
+url="http://libusb.sourceforge.net"
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.1.10a 2006.01.01
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --disable-build-docs
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

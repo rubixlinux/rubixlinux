@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=x3270
+pkgver=334p6
+pkgrel=1
+pkgdesc="x3270 (IBM host access tool for X) x3270 opens a telnet connection to an IBM host in an X window.  Since the window created by x3270 can use its own font for displaying characters, is a fairly accurate representation of an IBM 3278."
+url="http://x3270.bgp.nu"
+depends=('glibc' 'x11' 'openssl')
+source=(http://x3270.bgp.nu/download/$pkgname-$pkgver.tgz)
+md5sums=('f8a770dca736699f0a30571c9db45e56')
+
+build() {
+
+	cd $startdir/src/$pkgname-3.3
+
+	./configure --prefix=/usr/X11R6
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	find $startdir/pkg -name fonts.dir -exec rm {} \;
+
+	mkdir -p	$startdir/pkg/etc/X11/app-defaults
+	cp X3270.xad	$startdir/pkg/etc/X11/app-defaults/X3270
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	mkdir -p $startdir/pkg/usr/X11R6/man/man{1,5}
+	for file in x3270-script.man x3270.man x3270if.man ; do
+		cp $file $startdir/pkg/usr/X11R6/man/man1/`basename $file .man`.1
+	done
+
+	cp ibm_hosts.man $startdir/pkg/usr/X11R6/man/man5/ibm_hosts.5
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		README*		\
+		Examples	\
+		html		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+}

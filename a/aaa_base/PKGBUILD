@@ -1,0 +1,280 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=aaa_base
+pkgver=1.0
+pkgrel=17
+pkgdesc="aaa_base (Basic Linux filesystem package). Sets up the empty directory tree for Rubix and adds an email to root's mailbox welcoming them to Linux. :)  This package should be installed first, and never uninstalled."
+url="http://www.rubix-os.org"
+install=aaa_base.install
+source=(rubix-version	\
+	encryptfs	\
+	securefstab	\
+	root.email	\
+	afterboot.8	)
+md5sums=('e9dd768a73a97936b5fe0554f4c90f3d' \
+	 '411010dd977e7ce94c9342549a737606' \
+	 'f4d54bf55a2419b2fba7527e9068f7f6' \
+	 '41ffb44f7cc79ca6051d6d0d5160cb1c' \
+	 '24c90dd20d7c699d69b0f26e458653a2' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel17: finished the afterboot man page, fixed /var/run permissions 2006.01.22
+##   rel16: added /var/log/daemon dir 2006.01.17
+##   rel15: chmod 400 for keyfile generated from encryptfs 2005.11.18
+##   rel14: updated securefstab to allow devs 2005.10.28
+##   rel13: fixed another small typo in securefstab 2005.10.17
+##   rel12: fixed perms of fstab in securefstab 2005.10.09
+##   rel11: removed noexec options from fstab for /tmp 2005.09.30
+##   rel10: one more fstab output fix for encryptfs 2005.09.25
+##   rel9:  fixed fstab output in encryptfs 2005.09.25
+##   rel8:  fixed 2 small typos in encryptfs 2005.09.25
+##   rel7:  added VERY untested encryptfs and securefs programs 2005.09.23
+##   rel6:  fixed root email 2005.09.16
+##   rel5:  added afterboot manpage and real rubix email 2005.08.29
+##   rel4:  removed some symlinks that conflicted with the x11 package 2005.03.08
+##   rel3:  added var/lib/hwclock 2005.02.26
+##   rel1:  Initial rubix release
+
+build() {
+
+	cd $startdir/pkg
+
+	for dir in			\
+		bin			\
+		boot			\
+		dev			\
+		etc/X11/app-defaults	\
+		etc/X11/fs		\
+		etc/X11/lbxproxy	\
+		etc/X11/proxymngr	\
+		etc/X11/rstart		\
+		etc/X11/twm		\
+		etc/X11/xdm		\
+		etc/X11/xinit		\
+		etc/X11/xkb		\
+		etc/X11/xserver		\
+		etc/X11/xsm		\
+		home			\
+		lib			\
+		mnt/cdrom		\
+		mnt/floppy		\
+		mnt/hd			\
+		proc			\
+		root			\
+		sbin			\
+		sys			\
+		tmp			\
+		usr/X11R6		\
+		usr/X11R6/bin		\
+		usr/X11R6/include/X11	\
+		usr/X11R6/lib/X11/fonts	\
+		usr/X11R6/man/man1	\
+		usr/X11R6/man/man2	\
+		usr/X11R6/man/man3	\
+		usr/X11R6/man/man4	\
+		usr/X11R6/man/man5	\
+		usr/X11R6/man/man6	\
+		usr/X11R6/man/man7	\
+		usr/X11R6/man/man8	\
+		usr/X11R6/man/man9	\
+		usr/X11R6/man/mann	\
+		usr/bin			\
+		usr/dict		\
+		usr/doc			\
+		usr/etc			\
+		usr/include		\
+		usr/info		\
+		usr/lib			\
+		usr/local/bin		\
+		usr/local/etc		\
+		usr/local/games		\
+		usr/local/include	\
+		usr/local/info		\
+		usr/local/lib		\
+		usr/local/man/cat1	\
+		usr/local/man/cat2	\
+		usr/local/man/cat3	\
+		usr/local/man/cat4	\
+		usr/local/man/cat5	\
+		usr/local/man/cat6	\
+		usr/local/man/cat7	\
+		usr/local/man/cat8	\
+		usr/local/man/cat9	\
+		usr/local/man/catn	\
+		usr/local/man/man1	\
+		usr/local/man/man2	\
+		usr/local/man/man3	\
+		usr/local/man/man4	\
+		usr/local/man/man5	\
+		usr/local/man/man6	\
+		usr/local/man/man7	\
+		usr/local/man/man8	\
+		usr/local/man/man9	\
+		usr/local/man/mann	\
+		usr/local/sbin		\
+		usr/local/src		\
+		usr/man/man1		\
+		usr/man/man2		\
+		usr/man/man3		\
+		usr/man/man4		\
+		usr/man/man5		\
+		usr/man/man6		\
+		usr/man/man7		\
+		usr/man/man8		\
+		usr/man/man9		\
+		usr/man/mann		\
+		usr/sbin		\
+		usr/share		\
+		usr/src			\
+		var/X11R6		\
+		var/cache/pacman	\
+		var/empty		\
+		var/lib/pacman		\
+		var/lib/hwclock		\
+		var/lock		\
+		var/log/daemon		\
+		var/man/cat1		\
+		var/man/cat2		\
+		var/man/cat3		\
+		var/man/cat4		\
+		var/man/cat5		\
+		var/man/cat6		\
+		var/man/cat7		\
+		var/man/cat8		\
+		var/man/cat9		\
+		var/man/catn		\
+		var/run/daemons		\
+		var/spool/mail		\
+		var/tmp
+	do
+		mkdir -p $startdir/pkg/$dir
+	done
+
+	cp $startdir/src/rubix-version	$startdir/pkg/etc
+	cp $startdir/src/root.email	$startdir/pkg/var/spool/mail/root.new
+
+	chown -R root.mail $startdir/pkg/var/spool/mail
+
+	chmod 0750 $startdir/pkg/var/log/daemon
+	chmod 0660 $startdir/pkg/var/spool/mail/root.new
+	chmod 0710 $startdir/pkg/root
+	chmod 1777 $startdir/pkg/var/spool/mail
+	chmod 1777 $startdir/pkg/var/lock
+	chmod 1777 $startdir/pkg/var/tmp
+	chmod 0755 $startdir/pkg/var/run
+	chmod 0700 $startdir/pkg/var/man/cat1
+	chmod 0700 $startdir/pkg/var/man/cat2
+	chmod 0700 $startdir/pkg/var/man/cat3
+	chmod 0700 $startdir/pkg/var/man/cat4
+	chmod 0700 $startdir/pkg/var/man/cat5
+	chmod 0700 $startdir/pkg/var/man/cat6
+	chmod 0700 $startdir/pkg/var/man/cat7
+	chmod 0700 $startdir/pkg/var/man/cat8
+	chmod 0700 $startdir/pkg/var/man/cat9
+	chmod 0700 $startdir/pkg/var/man/catn
+	chmod 1777 $startdir/pkg/tmp
+
+	# The following is commented out as per:
+	# http://www.rubix-os.org/bugs/?do=details&id=2
+
+	#for dir in		\
+	#	app-defaults	\
+	#	fs		\
+	#	lbxproxy	\
+	#	proxymngr	\
+	#	rstart		\
+	#	twm		\
+	#	xdm		\
+	#	xinit		\
+	#	xkb		\
+	#	xserver		\
+	#	xsm
+	#do
+	#	ln -sf ../../../.././etc/X11/$dir $startdir/pkg/usr/X11R6/lib/X11/$dir
+	#done
+
+	cd $startdir/pkg/usr/bin
+	ln -sf /usr/X11R6/bin X11
+
+	cd $startdir/pkg/usr/lib
+	ln -sf /usr/X11R6/lib/X11 X11
+
+	cd $startdir/pkg/usr/include
+	ln -sf /usr/X11R6/include/X11 X11
+
+	cd $startdir/pkg/usr
+	ln -sf X11R6 X11
+
+	cd $startdir/pkg/var/X11R6
+	ln -sf ../../usr/X11R6/lib/X11 lib
+
+	cd $startdir/pkg/usr/X11R6/lib
+	ln -sf X11/fonts fonts
+
+	cd $startdir/pkg/usr/X11R6/man
+	ln -sf /var/man/cat1 cat1
+	ln -sf /var/man/cat2 cat2
+	ln -sf /var/man/cat3 cat3
+	ln -sf /var/man/cat4 cat4
+	ln -sf /var/man/cat5 cat5
+	ln -sf /var/man/cat6 cat6
+	ln -sf /var/man/cat7 cat7
+	ln -sf /var/man/cat8 cat8
+	ln -sf /var/man/cat9 cat9
+	ln -sf /var/man/catn catn
+
+	cd $startdir/pkg/usr/man
+	ln -sf /var/man/cat1 cat1
+	ln -sf /var/man/cat2 cat2
+	ln -sf /var/man/cat3 cat3
+	ln -sf /var/man/cat4 cat4
+	ln -sf /var/man/cat5 cat5
+	ln -sf /var/man/cat6 cat6
+	ln -sf /var/man/cat7 cat7
+	ln -sf /var/man/cat8 cat8
+	ln -sf /var/man/cat9 cat9
+	ln -sf /var/man/catn catn
+
+	cd $startdir/pkg/usr
+	ln -sf /var/adm adm
+	ln -sf /var/spool spool
+	ln -sf /var/tmp tmp
+
+	cd $startdir/pkg/var
+	ln -sf /var/spool/rwho rwho
+	ln -sf log adm
+
+	cd $startdir/pkg/bin
+	ln -sf bash sh
+
+	cd $startdir/pkg/var
+	ln -sf spool/mail mail
+
+	cd $startdir/pkg/usr/share
+	ln -sf ../man man
+	ln -sf ../doc doc
+
+	for dir in		\
+		bin		\
+		sbin		\
+		usr/bin		\
+		usr/sbin	\
+		usr/X11R6/bin	\
+		usr/local/bin	\
+		usr/local/sbin
+	do
+		chown -R root.bin $startdir/pkg/$dir
+	done
+
+	cp $startdir/src/afterboot.8	$startdir/pkg/usr/man/man8
+	cp $startdir/src/encryptfs	$startdir/pkg/usr/sbin
+	cp $startdir/src/securefstab	$startdir/pkg/usr/sbin
+	chown -R root.bin		$startdir/pkg/usr/sbin
+
+}

@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libvorbis
+pkgver=1.1.2
+pkgrel=1
+pkgdesc="libvorbis (Ogg Vorbis library) This library supports the Vorbis General Audio Compression Codec (commonly known as Ogg Vorbis).  Ogg Vorbis is a fully open, non-proprietary, patent-and-royalty-free, general-purpose compressed audio format for audio and music at fixed and variable bitrates. The libvorbis library requires libao and libogg.  You'll find some basic tools for creating and using Ogg Vorbis files in the vorbis-tools package."
+pkgurl="http://www.xiph.org/vorbis"
+depends=('glibc' 'libogg')
+source=(http://downloads.xiph.org/releases/vorbis/$pkgname-$pkgver.tar.gz)
+md5sums=('37847626b8e1b53ae79a34714c7b3211')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.1.2 2005.12.05
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure  --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

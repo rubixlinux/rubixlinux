@@ -1,0 +1,67 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=tin
+pkgver=1.6.2
+pkgrel=1
+pkgdesc="tin (the Tin newsreader) Tin is a full-screen, easy-to-use Netnews reader.  It can read news locally (i.e. /var/spool/news) or remotely (rtin or tin -r option) via a NNTP (Network News Transport Protocol) server.  It will automatically utilize NOV (news overview) style index files if available locally or via the nntp xover command. Tin was written by Iain Lea <iain@ecrc.de> and is currently maintained by Urs Janssen <urs@tin.org>."
+depends=('ncurses')
+source=(ftp://ftp.tin.org/pub/news/clients/tin/v1.6/$pkgname-$pkgver.tar.bz2)
+url="http://www.tin.org"
+md5sums=('3ab61ba7c7d3b7a3596ba199c570c4e4')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure					\
+		--prefix=/usr				\
+		--with-metamail=/usr/bin/metamail	\
+		--with-ispell=/usr/bin/ispell		\
+		--with-defaults-dir=/etc/tin		\
+		--with-libdir=/var/lib/news		\
+		--with-ncurses
+	make clean
+	make build
+	make install DESTDIR=$startdir/pkg
+	make install_sysdefs DESTDIR=$startdir/pkg
+
+	cat << EOF > $startdir/pkg/etc/$pkgname/README
+
+To complete TIN setup, edit /etc/nntpserver to the name of your NNTP server,
+then edit tin.defaults to set your domain name (and other options).
+
+Happy newsreading! :^)
+
+EOF
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		README	\
+		doc/*	\
+		tools	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm $startdir/pkg/usr/doc/$pkgname-$pkgver/{CHANGES.old,*.1,*.3,*.5}
+	rm $startdir/pkg/usr/bin/metamutt
+	rm $startdir/pkg/usr/bin/opt-case.pl
+	rm $startdir/pkg/usr/bin/url_handler.sh
+	rm $startdir/pkg/usr/bin/w2r.pl
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	chmod 644 $startdir/pkg/usr/man/man?/*.?
+
+	cd $startdir/pkg/usr/man/man1
+	mv			\
+		opt-case.pl.1	\
+		w2r.pl.1	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/tools
+
+	cd $startdir/pkg/usr/man/man1
+	ln -s tin.1.gz rtin.1.gz
+
+	## remove this manpage since it exists in mutt and I think mutt is a more common
+	## package for most people
+	rm $startdir/pkg/usr/man/man5/mbox.5
+
+}

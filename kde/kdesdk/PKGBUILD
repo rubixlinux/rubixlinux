@@ -1,0 +1,56 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdesdk
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdesdk KDE Software Development Kit.  This is a collection of applications and tools used by KDE developers.  It also has example code for use in learning KDE programming or starting a new KDE application."
+url="http://www.kde.org"
+groups=('kde')
+depends=('kdepim' 'qt' 'glibc' 'heimdal' 'db' 'gdbm' 'subversion' 'e2fsprogs' 'xfsprogs' 'x11' 'fontconfig'	\
+	 'openssl' 'expat' 'zlib' 'libart_lgpl' 'freetype2' 'libjpeg' 'libidn' 'pcre' 'libxml2' 'libmng' 'gcc'	\
+	 'kdelibs' 'libpng'											)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('93199b8bf5793681fdb2e5cbcfcfbd93')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 3.5.1 2006.01.31
+##   rel2: rebuilt against the new subversion 2006.01.13
+##   rel1: Upgraded to 3.5.0 2005.12.18
+##   rel1: Upgraded to 3.4.3 2005.10.16
+##   rel1: Upgraded to 3.4.2 2005.08.01
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel2: Rebuilt against new db 2005.02.23
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

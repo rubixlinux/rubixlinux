@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+
+pkgname=perl-lwp
+pkgver=5.805
+pkgrel=1
+pkgdesc="LWP - The World-Wide Web library for Perl"
+url="http://search.cpan.org/~gaas/libwww-perl-$pkgver/lib/LWP.pm"
+depends=('perl-compress-zlib')
+source=(http://search.cpan.org/CPAN/authors/id/G/GA/GAAS/libwww-perl-$pkgver.tar.gz)
+md5sums=('db1eb693eee45d251966ad2bab49dbbf')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 5.805 2006.02.21
+##   rel2: rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/libwww-perl-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/libwww-perl-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		Changes		\
+		MANIFEST	\
+		README		\
+		README.SSL	\
+	$startdir/pkg/usr/doc/perl-$PERL/libwww-perl-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/libwww-perl-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

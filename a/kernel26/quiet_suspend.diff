@@ -1,0 +1,19 @@
+--- linux-2.6.15.3/kernel/power/suspend.c.orig	2006-02-07 21:47:51.000000000 -0700
++++ linux-2.6.15.3/kernel/power/suspend.c	2006-02-07 21:49:00.000000000 -0700
+@@ -950,16 +950,6 @@
+ 		 * Without a usable storage device we can do nothing - 
+ 		 * even if noresume is given
+ 		 */
+-
+-		if (!num_writers)
+-			printk(KERN_ALERT name_suspend
+-				"No writers have been registered.\n");
+-		else
+-			printk(KERN_ALERT name_suspend
+-				"Missing or invalid storage location "
+-				"(resume2= parameter). Please correct and "
+-				"rerun lilo (or equivalent) before "
+-				"suspending.\n");
+ 		suspend2_deactivate_storage(0);
+ 		return 1;
+ 	}

@@ -1,0 +1,27 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=aspell-en
+pkgver=6.0
+pkgrel=1
+pkgdesc="GNU Aspell 0.60 English Dictionary Package."
+depends=('aspell')
+url="http://www.aspell.net"
+source=(ftp://ftp.gnu.org/gnu/aspell/dict/en/aspell6-en-$pkgver-0.tar.bz2)
+md5sums=('16449e0a266e1ecc526b2f3cd39d4bc2')
+
+build() {
+
+	cd $startdir/src/aspell6-en-$pkgver-0
+
+	./configure
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		README		\
+		Copyright	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

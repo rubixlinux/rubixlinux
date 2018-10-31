@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=xv
+pkgver=3.10a
+pkgrel=1
+pkgdesc="xv (John Bradley's interactive image viewer) xv is an interactive image manipulation program. NOTICE:  This program is unregistered shareware.  Please read the  license information included."
+url="http://www.trilon.com/xv"
+depends=('glibc' 'x11' 'libtiff' 'libjpeg' 'zlib' 'libpng')
+source=(ftp://ftp.cis.upenn.edu/pub/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname-$pkgver-jumbo-fix-patch-20050410.txt.bz2		\
+	$pkgname-$pkgver-jumbo-enh-patch-20050501.txt.bz2		\
+	$pkgname.prefix.diff.gz						)
+md5sums=('2d4fbeec1561304362781cc8e2f7f72d' \
+	 'dce06d889e2ef09862d307c3146870cb' \
+	 '9d3fcd5803b028cc3063591507ba0a87' \
+	 '627ba23a293e5b1a3398cd9db7a83399' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver-jumbo-fix-patch-20050410.txt	|| return 1
+	patch -p1 < $startdir/src/$pkgname-$pkgver-jumbo-enh-patch-20050501.txt	|| return 1
+	patch -p1 < $startdir/src/$pkgname.prefix.diff				|| return 1
+
+	make -f Makefile.std || return 1
+
+	mkdir -p $startdir/pkg/usr/X11R6/bin
+
+	cp bggen	$startdir/pkg/usr/X11R6/bin/bggen
+	cp vdcomp	$startdir/pkg/usr/X11R6/bin/vdcomp
+	cp xcmap	$startdir/pkg/usr/X11R6/bin/xcmap
+	cp xv		$startdir/pkg/usr/X11R6/bin/xv
+	cp xvpictoppm	$startdir/pkg/usr/X11R6/bin/xvpictoppm
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	mkdir -p $startdir/pkg/usr/X11R6/man/man1
+
+	for page in docs/xv.man docs/bggen.man docs/xcmap.man docs/xvp2p.man ; do
+		cp $page $startdir/pkg/usr/X11R6/man/man1/`basename $page .man`.1
+	done
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS		\
+		IDEAS		\
+		INSTALL		\
+		README		\
+		README.jumbo	\
+		README.pcd	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd docs
+
+	cp	-a		\
+		penn.policy	\
+		xv.blurb	\
+		xv.ann		\
+		xvdocs.ps	\
+    $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+    bzip2 -9 $startdir/pkg/usr/doc/$pkgname-$pkgver/xvdocs.ps
+
+}

@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=most
+pkgver=4.10.1
+pkgrel=1
+pkgdesc="most (another pager, like 'more' and 'less') most is a paging program that displays, one windowful at a time,  the contents of a file on a terminal.  Unlike other well-known paging programs, most supports multiple windows and can scroll left and right.  Why settle for less? 'most' was written by John E. Davis."
+depends=('slang')
+source=(ftp://space.mit.edu/pub/davis/$pkgname/$pkgname-$pkgver.tar.gz)
+url="ftp://space.mit.edu/pub/davis/most"
+md5sums=('3feeb1855e0e902b5a4decde68f9159e')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/usr/doc/most $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	for file in $startdir/pkg/usr/doc/$pkgname-$pkgver/* ; do
+		if [ -r `basename $file` ]; then
+			cp -a `basename $file` $file
+		fi
+	done
+
+}

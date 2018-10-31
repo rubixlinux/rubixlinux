@@ -1,0 +1,67 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=bootp
+pkgver=2.4.3
+pkgrel=1
+pkgdesc="bootp This is an enhanced version of the CMU BOOTP server which was derived from the original BOOTP server created by Bill Croft at Stanford. BOOTP allows a network administrator to setup networking information for clients via an /etc/bootptab on a server so that the clients can automatically get their networking information."
+backup=('etc/bootptab')
+depends=('glibc')
+source=(http://ftp.debian.org/debian/pool/main/b/$pkgname/${pkgname}_$pkgver.orig.tar.gz	\
+	http://ftp.debian.org/debian/pool/main/b/$pkgname/${pkgname}_$pkgver-13.diff.gz		\
+	bootptab.gz										)
+md5sums=('2a12d862f11908acf84652387be4e03b' \
+	 'a64de52fa5536d9a928b67287686ceda' \
+	 '98a37ea6882f65635e977bfbce1812c4' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/bootp_2.4.3-13.diff || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		Announce	\
+		Announce.old	\
+		Changes		\
+		ConvOldTab.sh	\
+		Installation	\
+		Problems	\
+		README		\
+		ToDo		\
+		bootptab.cmu	\
+		bootptab.mcs	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+	chmod 755 $startdir/pkg/usr/doc/$pkgname-$pkgver/ConvOldTab.sh
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/sbin
+	for file in		\
+		bootpd		\
+		bootpef		\
+		bootpgw		\
+		bootptest
+	do
+		cp $file $startdir/pkg/usr/sbin
+	done
+
+	mkdir -p $startdir/pkg/usr/man/man5
+	cp bootptab.5 $startdir/pkg/usr/man/man5
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	for file in		\
+		bootpd.8	\
+		bootpef.8	\
+		bootptest.8
+	do
+		cp $file $startdir/pkg/usr/man/man8
+	done
+
+	mkdir -p $startdir/pkg/etc
+	cp $startdir/src/bootptab $startdir/pkg/etc
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

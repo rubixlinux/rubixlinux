@@ -1,0 +1,42 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libwmf
+pkgver=0.2.8.3
+pkgrel=1
+pkgdesc="libwmf (WMF graphics format library) libwmf is a library for interpreting metafile images and either displaying them using X or converting them to standard formats such as PNG, JPEG, PS, EPS and SVG."
+url="http://wvware.sourceforge.net/libwmf.html"
+depends=('expat' 'freetype2' 'glib2' 'gtk+2' 'x11')
+source=(http://dl.sourceforge.net/sourceforge/wvware/$pkgname-$pkgver.tar.gz)
+md5sums=('3b058327bb14d2373260a74beb7f3e2f')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-static=no	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc
+
+	mv $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rmdir $startdir/pkg/usr/share/doc
+	cp	-a		\
+		AUTHORS		\
+		BUILDING	\
+		COPYING		\
+		CREDITS		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

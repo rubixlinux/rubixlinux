@@ -1,0 +1,34 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=php-zip
+pkgver=1.0
+pkgrel=2
+pkgdesc="php-zip -- zip management extension for php"
+url="http://pecl.php.net/package/zip"
+source=(http://pecl.php.net/get/zip-$pkgver.tgz)
+md5sums=('255203b19e46c0512e6ab3780ba2d2e5')
+depends=('glibc' 'zlib' 'zziplib' 'php')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added php as a dep, oops 2005.12.23
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/zip-$pkgver
+
+	phpize || return 1
+	./configure --prefix=/usr
+	make || return 1
+	make INSTALL_ROOT=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a CREDITS $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

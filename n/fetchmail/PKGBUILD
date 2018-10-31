@@ -1,0 +1,69 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=fetchmail
+pkgver=6.3.2
+pkgrel=1
+pkgdesc="fetchmail (mail retrieval and forwarding utility) fetchmail is a mail retrieval and forwarding utility.  It fetches mail from a POP, IMAP, or ETRN-capable remote mailserver and forwards it to your local (client) machine's delivery system.  You can then handle the retrieved mail using normal mail user agents such as elm, pine, or mutt.  The fetchmail utility can be run in a daemon mode to repeatedly poll one or more systems at a specified interval."
+depends=('glibc' 'openssl')
+url="http://fetchmail.berlios.de"
+source=(http://download.berlios.de/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('a532134a5e3b35b4f8b78a8184439837')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 6.3.2 for security reasons 2006.02.15
+##   rel1: upgraded to 6.3.1 2005.12.31
+##   rel1: upgraded to 6.3.0 2005.12.05
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure		\
+		--prefix=/usr	\
+		--enable-nls	\
+		--with-ssl
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/man/man1
+	rm fetchmailconf.1
+	ln -s fetchmail.1 fetchmailconf.1
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		COPYING		\
+		FAQ		\
+		FEATURES	\
+		INSTALL		\
+		NEWS		\
+		NOTES		\
+		OLDNEWS		\
+		README*		\
+		TODO		\
+		*.html		\
+		contrib		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

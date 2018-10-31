@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=hostap-utils
+pkgver=0.4.7
+pkgrel=1
+pkgdesc="hostap-utils (utilities for prism based wifi cards) hostap-utils contains various programs for configuring prism based wireless cards."
+url="http://hostap.epitest.fi"
+depends=('glibc' 'hostap-driver')
+source=(http://hostap.epitest.fi/releases/$pkgname-$pkgver.tar.gz)
+md5sums=('afe041581b8f01666e353bec20917c85')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 0.4.7 2005.12.19
+##   rel1: Upgraded to development release 0.4.0 2005.09.02
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/sbin
+	cp	-a			\
+		hostap_crypt_conf	\
+		prism2_param		\
+		hostap_diag		\
+		hostap_fw_load		\
+		hostap_io_debug		\
+		hostap_rid		\
+		prism2_srec		\
+		split_combined_hex	\
+	$startdir/pkg/usr/sbin
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

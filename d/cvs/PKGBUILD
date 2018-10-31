@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=cvs
+pkgver=1.11.21
+pkgrel=1
+pkgdesc="Concurrent Versions System - a source control system"
+depends=('e2fsprogs' 'glibc' 'db' 'openssl' 'heimdal')
+source=(http://ftp.gnu.org/non-gnu/$pkgname/$pkgname-$pkgver.tar.bz2)
+url="http://www.nongnu.org/cvs"
+md5sums=('54dd9eeb0648c9eef680df7cb26c710e')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/info/dir
+
+	cd doc
+	make txt || return 1
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS		\
+		COPYING		\
+		COPYING.LIB	\
+		DEVEL-CVS	\
+		FAQ		\
+		HACKING		\
+		INSTALL		\
+		MINOR-BUGS	\
+		NEWS		\
+		PROJECTS	\
+		README		\
+		TESTS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp doc/cvs.txt		$startdir/pkg/usr/doc/$pkgname-$pkgver/cvs.txt.gz
+	cp doc/cvsclient.txt	$startdir/pkg/usr/doc/$pkgname-$pkgver/cvsclient.txt.gz
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	gzip -9 $startdir/pkg/usr/doc/$pkgname-$pkgver/FAQ
+
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver
+	ln -s ../../share/cvs/contrib contrib
+
+}

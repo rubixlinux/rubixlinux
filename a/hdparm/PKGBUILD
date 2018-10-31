@@ -1,0 +1,35 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=hdparm
+pkgver=6.1
+pkgrel=1
+pkgdesc="hdparm (read/set hard drive parameters) hdparm provides a command line interface to various hard disk ioctls supported by the Linux ATA/IDE device driver subsystem.  This may be required to enable higher-performing disk modes. hdparm was written by Mark Lord."
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://sourceforge.net/projects/hdparm"
+md5sums=('b883944bc26a480dcccae837c4ddf732')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make
+
+	mkdir -p $startdir/pkg/usr/sbin
+
+	cp hdparm $startdir/pkg/usr/sbin
+	chmod 755 $startdir/pkg/usr/sbin/hdparm
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	cp hdparm.8 $startdir/pkg/usr/man/man8
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		LICENSE.TXT	\
+		README.acoustic	\
+		hdparm.lsm	\
+		contrib		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

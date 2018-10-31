@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdegames
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdegames (games for the K Desktop Environment) Included with this package are: atlantik, kasteroids, katomic, kbackgammon, kblackbox, kbounce, kenolaba, kfouleggs, kjumpingcube, klickety, klines, kmahjongg, kmines, kolf, konquest, kpat, kpoker, kreversi, ksame, kshisen, ksirtet, ksmiletris, ksnake, ksokoban, kspaceduel, ktron, ktuberling, kwin4, megami, and lskat."
+url="http://www.kde.org"
+groups=('kde')
+depends=('qt' 'glibc' 'esound' 'fontconfig' 'xfsprogs' 'x11' 'expat' 'libogg' 'zlib' 'libart_lgpl' 'alsa-lib'	\
+	 'freetype2' 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'arts' 'libmad' 'glib2' 'libmng' 'gcc'		\
+	 'kdelibs' 'libpng'											)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('15a4bb4e193e19be7decd4f147a31396')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 3.5.1 2006.01.31
+##   rel1: Upgraded to 3.5.0 2005.12.18
+##   rel1: Upgraded to 3.4.3 2005.10.15
+##   rel1: Upgraded to 3.4.2 2005.07.31
+##   rel1: Upgraded to 3.4.1 2005.06.02
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel2: Rebuild with out reference to libGL.la 2005.02.19
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+		kdegames.lsm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

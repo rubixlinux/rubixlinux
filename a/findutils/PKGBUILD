@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=findutils
+pkgver=4.2.27
+pkgrel=1
+pkgdesc="findutils (utilities to locate files) This package contains the GNU find and xargs programs.  The find and xargs implementations comply with POSIX 1003.2.  They also support some additional options, some borrowed from Unix and some unique to GNU."
+depends=('glibc')
+url="http://www.gnu.org/software/$pkgname"
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('f1e0ddf09f28f8102ff3b90f3b5bc920')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 4.2.27 2005.12.20
+##   rel1: upgraded to 4.2.26 2005.11.25
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/info
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	./configure --prefix=/usr
+	make || return 1
+
+	cp find/find	$startdir/pkg/usr/bin
+	cp xargs/xargs	$startdir/pkg/usr/bin
+
+	cp xargs/xargs.1	$startdir/pkg/usr/man/man1
+	cp find/find.1		$startdir/pkg/usr/man/man1
+
+	cp doc/find.info	$startdir/pkg/usr/info
+
+	cd po
+	for file in *.gmo ; do
+		mkdir -p $startdir/pkg/usr/share/locale/`basename $file .gmo`/LC_MESSAGES
+		cp $file $startdir/pkg/usr/share/locale/`basename $file .gmo`/LC_MESSAGES/findutils.mo
+	done
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

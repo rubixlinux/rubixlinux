@@ -1,0 +1,35 @@
+--- ./src/modules/standard/mod_rewrite.h.orig	2004-02-20 12:38:27.000000000 -0800
++++ ./src/modules/standard/mod_rewrite.h	2004-05-11 19:18:19.000000000 -0700
+@@ -87,7 +87,8 @@
+      * so we also need to know the file extension
+      */
+ #ifndef NO_DBM_REWRITEMAP
+-#include <ndbm.h>
++#define DB_DBM_HSEARCH 1
++#include <db.h>
+ #if defined(DBM_SUFFIX)
+ #define NDBM_FILE_SUFFIX DBM_SUFFIX
+ #elif defined(__FreeBSD__) || (defined(DB_LOCK) && defined(DB_SHMEM))
+--- ./src/modules/standard/mod_auth_dbm.c.orig	2004-02-20 12:37:40.000000000 -0800
++++ ./src/modules/standard/mod_auth_dbm.c	2004-05-11 19:18:19.000000000 -0700
+@@ -38,7 +38,8 @@
+ #define dbm_fetch sdbm_fetch
+ #define dbm_close sdbm_close
+ #else
+-#include <ndbm.h>
++#define DB_DBM_HSEARCH 1
++#include <db.h>
+ #endif
+ 
+ /*
+--- ./src/helpers/find-dbm-lib.orig	2004-02-16 14:23:09.000000000 -0800
++++ ./src/helpers/find-dbm-lib	2004-05-11 19:18:45.000000000 -0700
+@@ -34,6 +34,8 @@
+ 			# Red Hat needs this; ndbm.h lives in db1
+ 			CFLAGS="$CFLAGS -I/usr/include/db1"
+ 		    fi
++                elif ./helpers/TestCompile lib db; then
++			DBM_LIB="-ldb"
+ 		elif ./helpers/TestCompile lib db1 dbm_open; then
+ 		    # For Red Hat 7, if not handled by the ndbm case above
+ 		    DBM_LIB="-ldb1"

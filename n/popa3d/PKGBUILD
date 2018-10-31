@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=popa3d
+pkgver=1.0
+pkgrel=1
+pkgdesc="popa3d (a POP3 daemon) popa3d is a Post Office Protocol version 3 (POP3) server.  A POP3 server operates on local mailboxes on behalf of its remote users. Users can connect at any time to check their mailbox and fetch the mail that has accumulated.  The design goals of this POP3 server are security, reliability, RFC compliance (slightly relaxed to work with real-world POP3 clients), and high performance. The popa3d daemon was written by Solar Designer."
+url="http://www.openwall.com/popa3d"
+depends=('glibc' 'openssl')
+source=(http://www.openwall.com/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname.diff.gz						)
+md5sums=('2e0f91765ff5935bbc24626f02a69ada' \
+	 '69b5bf44ef1247a7b4273da05ebd5e92' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.diff || return 1
+
+	make || return 1
+
+	mkdir -p		$startdir/pkg/usr/sbin
+	cp $pkgname		$startdir/pkg/usr/sbin
+	chown -R root.bin	$startdir/pkg/usr/sbin
+
+	mkdir -p	$startdir/pkg/usr/man/man8
+	cp popa3d.8	$startdir/pkg/usr/man/man8
+	chmod 644	$startdir/pkg/usr/man/man8/*
+
+	mkdir -p $startdir/pkg/var/spool/pop
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		CHANGES	\
+		CONTACT	\
+		DESIGN	\
+		INSTALL	\
+		LICENSE	\
+		VIRTUAL	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Select the services you want started with courier-imap
+# Available options :
+# imapd pop3d imapd-ssl pop3d-ssl
+CI_DAEMONS="imapd pop3d imapd-ssl pop3d-ssl"
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		for daemon in $CI_DAEMONS; do
+			start_daemon $daemon /usr/libexec/courier-imap/${daemon}.rc start
+		done
+		;;
+	stop)
+		for daemon in $CI_DAEMONS; do
+			stop_daemon $daemon /usr/libexec/courier-imap/$daemon.rc stop
+		done
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		for daemon in $CI_DAEMONS; do
+			daemon_status $daemon
+		done
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

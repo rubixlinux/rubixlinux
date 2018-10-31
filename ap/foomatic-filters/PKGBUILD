@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubis-os.org>
+
+pkgname=foomatic-filters
+pkgver=3.0.2
+pkgrel=1
+pkgdesc="foomatic-filters The universal print filter "foomatic-rip", used by spoolers to convert PostScript job data into the printer's native format as described by a printer/driver-specific PPD file."
+depends=('perl' 'libxml2')
+source=(http://www.linuxprinting.org/download/foomatic/$pkgname-$pkgver.tar.gz)
+url="http://www.linuxprinting.org/foomatic.html"
+md5sums=('f0f4c90fa0ae346f53bf19a165e071a6')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		ChangeLog		\
+		README			\
+		STANDARD_installation	\
+		TODO			\
+		USAGE			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

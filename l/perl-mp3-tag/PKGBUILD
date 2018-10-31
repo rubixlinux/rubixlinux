@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-mp3-tag
+pkgver=0.97
+pkgrel=1
+pkgdesc="MP3::Tag - Module for reading tags of MP3 audio files"
+depends=('perl-compress-zlib')
+url="http://search.cpan.org/~ilyaz/MP3-Tag-$pkgver/Tag.pm"
+source=(http://search.cpan.org/CPAN/authors/id/I/IL/ILYAZ/modules/MP3-Tag-$pkgver.tar.gz)
+md5sums=('c6f7b92e6bc76f0a5c78148573196dec')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/MP3-Tag-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/MP3-Tag-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README.txt	\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/MP3-Tag-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

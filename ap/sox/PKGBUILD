@@ -1,0 +1,63 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=sox
+pkgver=12.17.9
+pkgrel=1
+pkgdesc="sox (universal sound sample translator) Sox is a universal sound converter, player, and recorder.  It can play, record, and convert between several sound file formats such as .au, .snd, .voc and .wav."
+depends=('glibc' 'libmad' 'lame' 'libogg' 'libvorbis')
+url="http://sox.sourceforge.net"
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('a463ef9ff2ec00007a3a42ced9572b03')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 12.17.9 2005.12.20
+##   rel1: upgraded to 12.17.8 2005.09.18
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp src/play	$startdir/pkg/usr/bin
+	cp src/sox	$startdir/pkg/usr/bin
+	cp src/soxmix	$startdir/pkg/usr/bin
+	chmod 755	$startdir/pkg/usr/bin/*
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	for file in *.1 ; do
+		cp $file $startdir/pkg/usr/man/man1/$file
+	done
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		INSTALL		\
+		LICENSE*	\
+		README		\
+		TODO		\
+		scripts		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/bin
+	ln -s play rec
+
+	cd $startdir/pkg/usr/man/man1
+	ln -s sox.1  soxmix.1
+	ln -s play.1 rec.1
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

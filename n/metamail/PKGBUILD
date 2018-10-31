@@ -1,0 +1,84 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=metamail
+pkgver=2.7
+pkgrel=1
+pkgdesc="metamail (MIME extensions for mail) Metamail is an implementation of MIME, the Multipurpose Internet Mail Extensions, a proposed standard for multimedia mail on the Internet.  Metamail implements MIME, and also implements extensibility and configuration via the "mailcap" mechanism described in an informational RFC that is a companion to the MIME document."
+depends=('glibc' 'gpm' 'ncurses')
+source=($pkgname-$pkgver.tar.gz	\
+	metamail.fmtbuf.diff.gz	\
+	metamail_2.7-49.diff.gz	)
+md5sums=('c18b6c2d8309686b8bb3390b05b19681' \
+	 '9688d141a74b5c3a9fa4184fdea948d6' \
+	 'c9d8b1a4beb7e4c37a907ee361069ded' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver || return 1
+
+	patch -p1 < $startdir/src/metamail_2.7-49.diff || return 1
+	patch -p1 < $startdir/src/metamail.fmtbuf.diff #|| return 1
+
+	cd $startdir/src/$pkgname-$pkgver/bin || return 1
+	cat showexternal | perl -pi -e 's|sensible-pager|more|' > se || return 1
+	chmod 755 se ; mv se showexternal || return 1
+	cat sun-message | perl -pi -e 's|sensible-pager|more|' > sm || return 1
+	chmod 755 sm ; mv sm sun-message || return 1
+
+	cd $startdir/src/$pkgname-$pkgver/src/metamail || return 1
+	cat mailto.c | perl -pi -e 's|sensible-pager|more|' > m.c || return 1
+	mv m.c mailto.c || return 1
+
+	cd $startdir/src/$pkgname-$pkgver || return 1
+	sh ./configure --prefix=/usr || return 1
+	make || return 1
+
+	cd $startdir/src/$pkgname-$pkgver/bin || return 1
+	cat mailto-hebrew | perl -pi -e 's|/usr/lib/X11/fonts/misc|/usr/lib/metamail/fonts|' > mh || return 1
+	chmod 755 mh ; mv mh mailto-hebrew || return 1
+
+	cd $startdir/src/$pkgname-$pkgver || return 1
+	make DESTDIR=$startdir/pkg install || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver || return 1
+	cp	-a	\
+		CREDITS	\
+		README	\
+		mailcap	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver || return 1
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/* || return 1
+
+	mkdir -p $startdir/pkg/usr/man/man{1,5}
+	cp man/*.1 $startdir/pkg/usr/man/man1 || return 1
+	cp man/*.5 $startdir/pkg/usr/man/man5 || return 1
+
+	cd fonts || return 1
+	make || return 1
+
+	mkdir -p	$startdir/pkg/usr/lib/metamail/fonts || return 1
+	cp *.pcf	$startdir/pkg/usr/lib/metamail/fonts || return 1
+	cp fonts.alias	$startdir/pkg/usr/lib/metamail/fonts || return 1
+	cp fonts.dir	$startdir/pkg/usr/lib/metamail/fonts || return 1
+
+	for file in		\
+		mailserver	\
+		richtoatk	\
+		sun-audio-file	\
+		sun-message	\
+		sun-to-mime	\
+		sun2mime	\
+		sndAppleSingle	\
+		rcvAppleSingle	\
+		sun-message.csh
+	do
+		rm $startdir/pkg/usr/bin/$file || return 1
+	done
+
+	rm $startdir/pkg/usr/lib/libmetamail.a || return 1
+	rm $startdir/pkg/usr/lib/libmetamail.la || return 1
+
+	find $startdir/pkg -perm 600 -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin || return 1
+
+}

@@ -1,0 +1,84 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PCAP=0.9.4
+
+pkgname=tcpdump
+pkgver=3.9.4
+pkgrel=1
+pkgdesc="Tcpdump is a tool for network monitoring and data acquisition.  You can use it to dump information on all the packets on a network that match a boolean expression.  Tcpdump uses libpcap, a system independent interface for user-level packet capture."
+depends=('glibc' 'openssl')
+source=(http://www.tcpdump.org/release/$pkgname-$pkgver.tar.gz	\
+	http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz	)
+url="http://www.tcpdump.org"
+md5sums=('4b64755bbc8ba1af49c747271a6df5b8' \
+	 '79025766e8027df154cb1f32de8a7974' )
+
+#Todo:
+#None
+
+#Notes:
+#the build fails if CFLAGS specifies -Ox
+
+#Changelog:
+#rel1: upgraded to 3.9.4 2005.10.17
+#rel1: upgraded to 3.9.3 2005.07.29
+#rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -fPIE -pie -fstack-protector-all"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -fPIE -pie -fstack-protector-all"
+
+	cd $startdir/src/libpcap-$PCAP
+
+	find . -type d -name CVS -exec rm -rf {} \;
+
+	./configure		\
+		--prefix=/usr	\
+		--enable-ipv6	\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/libpcap-$PCAP
+	cp	-a		\
+		CHANGES		\
+		CREDITS		\
+		FILES		\
+		INSTALL.txt	\
+		LICENSE		\
+		README		\
+		README.aix	\
+		README.linux	\
+		README.tru64	\
+		SUNOS4		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/libpcap-$PCAP
+
+	mkdir -p $startdir/pkg/usr/include/net
+	cd $startdir/pkg/usr/include/net
+	ln -s ../pcap-bpf.h bpf.h
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -type d -name CVS -exec rm -rf {} \;
+
+	./configure		\
+		--prefix=/usr	\
+		--enable-ipv6	\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		CHANGES	\
+		FILES	\
+		INSTALL	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

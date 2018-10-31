@@ -1,0 +1,31 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gd
+pkgver=2.0.33
+pkgrel=1
+pkgdesc="GD is an open source code library for the dynamic creation of images by programmers. GD is written in C, and "wrappers" are available for Perl, PHP and other languages. GD creates PNG, JPEG and GIF images, among other formats. GD is commonly used to generate charts, graphics, thumbnails, and most anything else, on the fly. While not restricted to use on the web, the most common applications of GD involve web site development."
+depends=('libjpeg' 'x11')
+source=(http://www.boutell.com/gd/http/$pkgname-$pkgver.tar.gz)
+url="http://www.boutell.com/gd"
+md5sums=('be0a6d326cd8567e736fbc75df0a5c45')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		INSTALL		\
+		Makefile.in	\
+		README-JPEG.TXT	\
+		README.TXT	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

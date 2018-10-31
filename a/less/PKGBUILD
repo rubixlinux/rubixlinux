@@ -1,0 +1,62 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=less
+pkgver=394
+pkgrel=1
+pkgdesc="less (file pager) Less is a paginator similar to more (1), but which allows backward movement in the file as well as forward movement. Also, less does not have to read the entire input file before starting, so with large input files it starts up faster than text editors like vi (1). Less was written by Mark Nudelman."
+url="http://www.greenwoodsoftware.com/less"
+depends=('glibc' 'ncurses')
+source=(http://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.tar.gz	\
+	less.sysconfdir.diff.gz							\
+	lesspipe.sh.gz								)
+md5sums=('a9f072ccefa0d315b325f3e9cdbd4b97' \
+	 'ed01598ac2684e9e659e6509f812e7e5' \
+	 '7c1d2f8f57859caf0427f660854b4cdb' )
+
+## Todo:
+##   None
+
+## Notes;
+##   None
+
+## Changelog:
+##   rel1: upgraded to 394 2005.12.05
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/less.sysconfdir.diff || return 1
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp less		$startdir/pkg/usr/bin
+	cp lesskey	$startdir/pkg/usr/bin
+	cp lessecho	$startdir/pkg/usr/bin
+
+	cp $startdir/src/lesspipe.sh $startdir/pkg/usr/bin
+	chmod 755 $startdir/pkg/usr/bin/*
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		LICENSE	\
+		README	\
+		NEWS	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	for page in		\
+		less.nro	\
+		lesskey.nro
+	do
+		cp $page $startdir/pkg/usr/man/man1/`basename $page .nro`.1
+	done
+	chmod 644 $startdir/pkg/usr/man/man1/*
+
+}

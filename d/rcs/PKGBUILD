@@ -1,0 +1,89 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=rcs
+pkgver=5.7
+pkgrel=1
+pkgdesc="rcs (Revision Control System) RCS, the Revision Control System, manages multiple revisions of files. RCS can store, retrieve, log, identify, and merge revisions.  It is useful for files that are revised frequently, e.g. programs, documentation, graphics, and papers."
+url="http://www.cs.purdue.edu/homes/trinkle/RCS"
+depends=('glibc')
+source=(http://www.cs.purdue.edu/homes/trinkle/RCS/$pkgname-$pkgver.tar.Z	\
+        $pkgname-$pkgver.diff.gz						)
+md5sums=('423282f0edb353296d9f3498ab683abf' \
+	 'f26073dccf5720cf7a51f44accb9ee31' )
+
+#Todo:
+#None
+
+#Notes:
+#will not build with pie
+
+#Changelog:
+#rel1: Initial Rubix release 2005.04.27
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/$pkgname-$pkgver.diff
+
+	./configure --prefix=/usr
+	make || return 1
+
+	mkdir -p	$startdir/pkg/usr/bin
+
+	cd src
+	cp ci		$startdir/pkg/usr/bin
+	cp co		$startdir/pkg/usr/bin
+	cp ident	$startdir/pkg/usr/bin
+	cp merge	$startdir/pkg/usr/bin
+	cp rcs		$startdir/pkg/usr/bin
+	cp rcsclean	$startdir/pkg/usr/bin
+	cp rcsdiff	$startdir/pkg/usr/bin
+	cp rcsmerge	$startdir/pkg/usr/bin
+	cp rcstest	$startdir/pkg/usr/bin
+	cp rlog		$startdir/pkg/usr/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man{1,5}
+
+	cd ../man
+	for page in		\
+		ci.1		\
+		co.1		\
+		ident.1		\
+		merge.1		\
+		rcs.1		\
+		rcsclean.1	\
+		rcsdiff.1	\
+		rcsfreeze.1	\
+		rcsintro.1	\
+		rcsmerge.1	\
+		rlog.1
+	do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+
+	cp rcsfile.5 $startdir/pkg/usr/man/man5
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		CREDITS		\
+		ChangeLog	\
+		INSTALL		\
+		INSTALL.RCS	\
+		NEWS		\
+		README		\
+		REFS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+}

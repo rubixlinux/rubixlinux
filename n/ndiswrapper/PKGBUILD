@@ -1,0 +1,97 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=ndiswrapper
+pkgver=1.10
+pkgrel=1
+pkgdesc="ndiswrapper provides a linux kernel module that loads and runs NDIS (Windows network driver API) drivers supplied by the vendors"
+url="http://ndiswrapper.sourceforge.net"
+depends=('glibc' 'libusb' 'wireless_tools')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('db2edffb082bda09b27358b6528e5e56')
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+##   Will not build with PIE, and depmod complains about unresolved symbols with SSP
+
+## Changelog:
+##   rel1: upgraded to 1.10, built for 2.6.15.4 2006.03.03
+##   rel4: rebuilt for 2.6.15.4 2006.02.12
+##   rel3: upgraded to 1.9, built for 2.6.15.3 2006.02.07
+##   rel2: rebuilt for 2.6.15.2 2006.01.31
+##   rel1: upgraded to 1.8, built for 2.6.15.1 2006.01.19
+##   rel2: rebuilt for 2.6.15 2006.01.10
+##   rel1: upgraded to 1.7 2005.12.19
+##   rel1: upgraded to 1.6 2005.12.06
+##   rel4: rebuilt for kernels 2.4.32, 2.4.32-grsec 2005.11.17
+##   rel3: rebuilt for changes in 2.4 kernels 2005.11.14
+##   rel2: rebuilt for new 2.6 kernel 2005.11.12
+##   rel1: upgraded to 1.5 2005.11.09
+##   rel2: rebuilt for kernel 2.6.14 2005.10.27
+##   rel1: upgraded to 1.4 2005.10.17
+##   rel4: rebuilt for kernel 2.6.13 2005.09.01
+##   rel3: rebuilt for kernel 2.6.12.1 2005.06.23
+##   rel2: rebuilt for rebuilt kernel26 2005.06.22
+##   rel1: upgraded to 1.2, kernels 2.4.31, 2.4.31-grsec and 2.6.12 2005.06.18
+##   rel2: upgraded to kernel26 2.6.11.9 2005.05.15
+##   rel1: upgraded to 1.1, kernel24 2.4.30, kernel24-grsec 2.4.30-grsec, kernel26 2.6.11.7
+##   rel5: upgraded to kernel26 2.6.11 2005.03.03
+##   rel4: gzip modules 2005.02.26
+##   rel3: Redirect install script to /dev/null 2005.02.26
+##   rel2: Added 2.6 kernel and install script 2005.02.25
+##   rel1: Initial rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -O2 -pipe"
+	export CXXFLAGS="-march=i486 -mtune=i686 -O2 -pipe"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		ChangeLog	\
+		INSTALL		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	cp -a ndiswrapper.8 $startdir/pkg/usr/man/man8
+
+	cd utils
+	make clean
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+	cd ..
+
+	cd driver
+
+	# Make 2.4 vanilla module:
+		make clean
+		make KVERS=$vver24 || return 1
+		make KVERS=$vver24 DESTDIR=$startdir/pkg install
+
+	# Make 2.4 grsec module:
+		make clean
+		make KVERS=$gver24 || return 1
+		make KVERS=$gver24 DESTDIR=$startdir/pkg install
+
+	# Make 2.6 vanilla module:
+		make clean
+		make KVERS=$vver26 || return 1
+		make KVERS=$vver26 DESTDIR=$startdir/pkg install
+
+	cd $startdir/pkg
+	find lib/modules -type f -name *.o -exec gzip {} \;
+	find lib/modules -type f -name *.ko -exec gzip {} \;
+
+	chown -R root.bin $startdir/pkg/sbin $startdir/pkg/usr/sbin
+
+}

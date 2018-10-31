@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=dcc
+pkgver=1.2.74
+pkgrel=1
+pkgdesc=""
+url="http://www.rhyolite.com/anti-spam/dcc"
+depends=('glibc')
+source=(http://www.rhyolite.com/anti-spam/$pkgname/source/$pkgname-$pkgver.tar.Z)
+md5sums=('fafc0b7db8c4fba7180976ac2be90376')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure				\
+		--bindir=/usr/bin		\
+		--libexecdir=/usr/libexec/dcc	\
+		--mandir=/usr/man		\
+		--with-installroot=$startdir/pkg
+	make || return 1
+	make install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		FAQ.txt		\
+		INSTALL.txt	\
+		LICENSE		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.root $startdir/pkg
+
+	find $startdir/pkg -type f -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -type f -perm 555 -exec chmod 755 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	chmod 4755 $startdir/pkg/usr/libexec/dcc/dccsight
+
+}

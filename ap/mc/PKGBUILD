@@ -1,0 +1,63 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mc
+pkgver=4.6.1
+pkgrel=1
+pkgdesc="mc (Midnight Commander file manager) The Midnight Commander is a Norton Commander clone, a program that manipulates and manages files and directories.  Useful, fast, and has color displays on the Linux console.  Mouse support is provided through the gpm mouse server.  This is a lightweight compilation of mc for use on the text console or in an xterm. mc was written by Miguel de Icaza and Mauricio Plaza."
+depends=('glibc' 'e2fsprogs' 'slang' 'glib2' 'gpm' 'ncurses')
+pkgurl="http://www.ibiblio.org/pub/Linux/utils/file/managers/mc"
+source=(http://www.ibiblio.org/pub/Linux/utils/file/managers/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('18b20db6e40480a53bac2870c56fc3c4')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--localstatedir=/var	\
+		--enable-charset	\
+		--with-gpm-mouse	\
+		--with-ext2undel	\
+		--with-x=no		\
+		--with-vfs		\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/etc/profile.d
+	cp $startdir/pkg/usr/share/mc/bin/mc.csh	$startdir/pkg/etc/profile.d/mc.csh
+	cp $startdir/pkg/usr/share/mc/bin/mc.sh		$startdir/pkg/etc/profile.d/mc.sh
+	chmod 755 $startdir/pkg/etc/profile.d/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		FAQ		\
+		INSTALL		\
+		INSTALL.FAST	\
+		MAINTAINERS	\
+		NEWS		\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rmdir $startdir/pkg/usr/sbin
+
+}
+

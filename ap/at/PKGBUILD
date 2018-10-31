@@ -1,0 +1,101 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=at
+pkgver=3.1.8
+pkgrel=2
+pkgdesc="at (delayed command execution) at and batch read shell commands from standard input (or a specified file) storing them as a job to be scheduled for execution at a later time. The 'at' command was written by David Parsons and Thomas Koenig."
+depends=('glibc')
+backup=('etc/at.deny')
+install=$pkgname.install
+source=($pkgname-$pkgver.tar.bz2	\
+	$pkgname.diff			\
+	atd				)
+md5sums=('f5194baac29a30b0d90604422dad7037' \
+	 '4ad52dbea76badc7ec881192b34f6180' \
+	 'b5ce4316cdcc551610fb1a10801c9dfc' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.15
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/usr/doc
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/var/spool/atjobs
+	mkdir -p $startdir/pkg/var/spool/atspool
+
+	chmod 700 $startdir/pkg/var/spool/atjobs
+	chmod 700 $startdir/pkg/var/spool/atspool
+
+	chown daemon.daemon $startdir/pkg/var/spool/atjobs
+	chown daemon.daemon $startdir/pkg/var/spool/atspool
+
+	touch $startdir/pkg/etc/at.deny
+
+	patch -p1 < $startdir/src/at.diff || return 1
+
+	rm y.tab.c y.tab.h
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		Copyright	\
+		Problems	\
+		README		\
+		timespec	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	./configure					\
+		--with-jobdir=/var/spool/atjobs		\
+		--with-atspool=/var/spool/atspool	\
+		$CHOST
+	make || return 1
+
+	cp at		$startdir/pkg/usr/bin
+	cp atrun	$startdir/pkg/usr/sbin
+	cp atd		$startdir/pkg/usr/sbin
+	cp batch	$startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/bin
+	ln -s at atq
+	ln -s at atrm
+	cd $startdir/src/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	chmod 755 $startdir/pkg/usr/bin/*
+	chmod 755 $startdir/pkg/usr/sbin/*
+
+	chmod 4711 $startdir/pkg/usr/bin/at
+
+	cp at.1		$startdir/pkg/usr/man/man1
+	cp atrun.8	$startdir/pkg/usr/man/man8
+	cp atd.8	$startdir/pkg/usr/man/man8
+
+	cd $startdir/pkg/usr/man/man1
+	ln -s at.1 atq.1
+	ln -s at.1 atrm.1
+	ln -s at.1 batch.1
+
+	cp $startdir/src/atd $startdir/pkg/etc/rc.d
+
+}

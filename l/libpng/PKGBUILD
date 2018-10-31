@@ -1,0 +1,60 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libpng
+pkgver=1.2.8
+pkgrel=1
+pkgdesc="libpng (Portable Network Graphics library) PNG (Portable Network Graphics) is an extensible file format for the lossless, portable, well-compressed storage of raster images.  PNG provides a patent-free replacement for GIF and can also replace many common uses of TIFF.  Indexed-color, grayscale, and truecolor images are supported, plus an optional alpha channel.  Sample depths range from 1 to 16 bits."
+url="http://www.libpng.org/pub/png/libpng.html"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('00cea4539bea4bd34cbf8b82ff9589cd')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 1.2.8 2005.09.30
+#rel1: Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	ln -s scripts/makefile.linux ./Makefile
+
+	make prefix=/usr || return 1
+	make install prefix=/usr DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ANNOUNCE	\
+		CHANGES		\
+		INSTALL		\
+		KNOWNBUG	\
+		LICENSE		\
+		README		\
+		TODO		\
+		Y2KINFO		\
+		libpng.txt	\
+		example.c	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

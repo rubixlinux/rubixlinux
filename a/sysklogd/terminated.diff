@@ -1,0 +1,15 @@
+--- ./syslogd.c.orig	2005-03-01 09:08:59.717180608 -0700
++++ ./syslogd.c	2005-03-01 09:10:15.129920976 -0700
+@@ -890,11 +890,11 @@
+ 		dprintf("Checking pidfile.\n");
+ 		if (!check_pid(PidFile))
+ 		{
++			signal (SIGTERM, doexit);
+ 			if (fork()) {
+ 				/*
+ 				 * Parent process
+ 				 */
+-				signal (SIGTERM, doexit);
+ 				sleep(300);
+ 				/*
+ 				 * Not reached unless something major went wrong.  5

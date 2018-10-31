@@ -1,0 +1,72 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+DOCS=1.0.0
+
+pkgname=transcode
+pkgver=1.0.2
+pkgrel=2
+pkgdesc="Transcode is a suite of command line utilities, for transcoding various video, audio, and container formats. It can decode and encode various video/audio formats."
+url="http://inferno.slug.org/cgi-bin/transcode"
+depends=('sdl' 'glibc' 'lame' 'libtiff' 'faac' 'faad2' 'fontconfig' 'x11' 'expat' 'libogg'	\
+	 'lcms' 'zlib' 'libdv' 'freetype2' 'imagemagick' 'glib' 'ffmpeg' 'libjpeg' 'libdvdread'	\
+	 'libvorbis' 'libxml2' 'bzip2' 'avifile' 'gtk+' 'gcc' 'libpng'				)
+source=(http://www.jakemsr.com/$pkgname/$pkgname-$pkgver.tar.gz	\
+	http://www.jakemsr.com/transcode/$pkgname-htdocs-$DOCS.tar.gz)
+md5sums=('e353c0ab7e927a8672528e05a9ae960b' \
+	 '31b90ca6882ecbdae834ab0546f64e0b' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt against new imagemagick 2006.03.03
+##   rel1: upgraded to 1.0.2, rebuilt against xorg 6.9.0 2005.12.23
+##   rel1: upgraded to 1.0.1 2005.10.06
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+	./configure				\
+		--prefix=/usr			\
+		--enable-lame			\
+		--enable-ogg			\
+		--enable-vorbis			\
+		--enable-libdv			\
+		--enable-a52-default-decoder	\
+		--enable-libxml2		\
+		--enable-avifile		\
+		--enable-v4l			\
+		--enable-a52			\
+		--enable-sdl			\
+		--enable-gtk			\
+		--enable-imagemagick		\
+		--enable-libjpeg		\
+		--enable-mjpegtools		\
+		--enable-lzo
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		README*		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp $startdir/src/$pkgname-htdocs-$DOCS.tar.gz $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv	$startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r	$startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

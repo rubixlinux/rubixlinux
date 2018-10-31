@@ -1,0 +1,56 @@
+--- ./config.c.orig	2001-01-13 14:01:09.000000000 -0800
++++ ./config.c	2004-06-06 15:02:43.000000000 -0700
+@@ -224,7 +224,7 @@
+ 		exit(2);
+ 	}
+ 	fprintf(makefile, 
+-		"PTYOPTS = -DPTYCHAR=$(PTYCHAR) -DHEXDIGIT=$(HEXDIGIT)\n");
++		"PTYOPTS = -DPTYCHAR=$(PTYCHAR) -DHEXDIGIT=$(HEXDIGIT) -DUSE_DEV_PTS\n");
+ 	sprintf(line, "\nCFLAGS = %s $(PTYOPTS)\nLIBS = %s\n", cflags, ldflags);
+ 	fprintf(makefile, "%s", line);
+ 	fprintf(makefile, "OBJS = splitvt.o misc.o utmp.o vt100.o videomem.o terminal.o vttest.o vtmouse.o \\\n");
+--- ./misc.c.orig	2001-01-13 13:48:13.000000000 -0800
++++ ./misc.c	2004-06-06 15:02:43.000000000 -0700
+@@ -182,7 +182,7 @@
+ #else /* ! IRIX */
+ 
+ 
+-#ifdef SOLARIS		/* System V.4 pty routines from W. Richard Stevens */
++#if defined(SOLARIS) || defined(USE_DEV_PTS)		/* System V.4 pty routines from W. Richard Stevens */
+ 
+ #include <stropts.h>
+ 
+@@ -241,6 +241,7 @@
+ 		close(master_fd);
+ 		return(-1);
+ 	}
++#if !defined(linux) && !defined(__linux__)
+ 
+ 	if ( ioctl(slave_fd, I_PUSH, "ptem") < 0 )
+ 	{
+@@ -263,6 +264,7 @@
+ 		return(-1);
+ 	}
+ 
++#endif
+ 	return(slave_fd);
+ }
+ 
+--- ./vtmouse.c.orig	2000-06-03 14:05:57.000000000 -0700
++++ ./vtmouse.c	2004-06-06 15:02:43.000000000 -0700
+@@ -118,6 +118,7 @@
+ static void set_xtitle(titlebar)
+ char *titlebar;
+ {
++	if (!xt_output) xt_output = stdout;
+ 	fprintf(xt_output, "\033]0;%s\07", titlebar);
+ 	fflush(xt_output);
+ }
+@@ -277,6 +278,7 @@
+ 
+ void event_quit()
+ {
++	if (!xt_output) xt_output = stdout;
+ 	if ( have_xterm ) {
+ #ifdef REPORT_SELECTION
+ 		fprintf(xt_output, "\033[?1001l");

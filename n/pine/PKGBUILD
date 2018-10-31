@@ -1,0 +1,109 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PINEPGP=0.18.0
+
+pkgname=pine
+pkgver=4.64
+pkgrel=1
+pkgdesc="pine (a menu driven mail client) A menu driven user mail program. Originally based on Elm (Pine Is No-longer Elm), but with many additional features that make it easier to use.  Also contains pilot (a simple file manager) and pico (an easy to use text editor)."
+depends=('glibc' 'openssl' 'gpm' 'ncurses')
+url="http://www.washington.edu/pine"
+source=(ftp://ftp.cac.washington.edu/pine/$pkgname$pkgver.tar.bz2		\
+	http://www.megaloman.com/~hany/_data/pinepgp/pinepgp-$PINEPGP.tar.gz	\
+	$pkgname.debug.diff.gz							\
+	$pkgname-slackware.config.diff.gz					)
+md5sums=('39ca07b3d305b4cd0d6aaf4585123275' \
+	 'b87eaea3c74429e8e83f68b1ed337120' \
+	 '7c4466fd6347f41e5dbd39c997399790' \
+	 '070e78e6f8a287e8ca70c82179984517' )
+
+#Todo:
+#None
+
+#Notes:
+#The debug patch sets the default debug level to 0
+#pine and imapd are included in this now, this will probably
+#  change before 1.0
+
+#Changelog:
+#rel1: Upgraded to 4.64 2005.09.30
+#rel1: Upgraded to 4.62 2005.03.29
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname$pkgver
+
+	patch -p1 < $startdir/src/pine-slackware.config.diff	|| return 1
+	patch -p1 < $startdir/src/pine.debug.diff		|| return 1
+
+	echo "#define PASSFILE        \".pine.pwd\"" >> pine/osdep/os-lnx.h
+
+	find . -name "*~" | xargs rm --verbose
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname$pkgver
+	cp -a README CPYRIGHT $startdir/pkg/usr/doc/$pkgname$pkgver
+	cp -a doc/* $startdir/pkg/usr/doc/$pkgname$pkgver
+	rm $startdir/pkg/usr/doc/$pkgname$pkgver/*.1
+	rm $startdir/pkg/usr/doc/$pkgname$pkgver/tech-notes.txt
+
+	./build slx				\
+		SSLLIB=/usr/lib			\
+		SSLDIR=/etc/ssl			\
+		SSLCERTS=/etc/ssl/certs		\
+		SSLINCLUDE=/usr/include/openssl	\
+		SSLTYPE=unix			\
+		OPTIMIZE="$CFLAGS"		\
+		DEBUG="$CFLAGS" || return 1
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	for file in		\
+		doc/pico.1	\
+		doc/pilot.1	\
+		doc/pine.1
+	do
+		cp $file $startdir/pkg/usr/man/man1/`basename $file`
+	done
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	for file in			\
+		imap/src/imapd/imapd.8	\
+		imap/src/ipopd/ipopd.8
+	do
+		cp $file $startdir/pkg/usr/man/man8/`basename $file`
+	done
+
+	mkdir -p $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+	cp imap/imapd/imapd	$startdir/pkg/usr/sbin
+	cp imap/ipopd/ipop3d	$startdir/pkg/usr/sbin
+	cp bin/pico		$startdir/pkg/usr/bin
+	cp bin/pilot		$startdir/pkg/usr/bin
+	cp bin/pine		$startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/etc
+	$startdir/pkg/usr/bin/pine -conf > $startdir/pkg/etc/pine.conf
+
+	cd $startdir/src/pinepgp-$PINEPGP
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/pinepgp-$PINEPGP
+	cp	-a	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/pinepgp-$PINEPGP
+	chmod 644 $startdir/pkg/usr/doc/pinepgp-$PINEPGP/*
+
+	mkdir -p $startdir/pkg/usr/lib
+	cp $startdir/src/$pkgname$pkgver/imap/c-client/c-client.a $startdir/pkg/usr/lib
+
+	mkdir -p $startdir/pkg/usr/include
+	cp $startdir/src/$pkgname$pkgver/imap/c-client/*.h $startdir/pkg/usr/include
+
+	chmod 644 $startdir/pkg/usr/include/*
+
+}

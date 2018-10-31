@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-date-calc
+pkgver=5.4
+pkgrel=1
+pkgdesc="Date::Calc - Gregorian calendar date calculations"
+depends=('perl-bit-vector'  'perl-carp-clan')
+source=(http://search.cpan.org/CPAN/authors/id/S/ST/STBEY/Date-Calc-5.4.tar.gz)
+md5sums=('7ae34972694127e8f1c9a2af1c24585b')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Date-Calc-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Date-Calc-$pkgver
+	cp	-a		\
+		*.txt		\
+		MANIFEST	\
+	$startdir/pkg/usr/doc/perl-$PERL/Date-Calc-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/Date-Calc-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+}

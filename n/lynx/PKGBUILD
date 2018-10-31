@@ -1,0 +1,104 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+SHORTVER=2.8.5
+
+pkgname=lynx
+pkgver=${SHORTVER}rel.5
+pkgrel=1
+pkgdesc="Lynx (text mode browser) Lynx is a distributed hypertext browser with full World Wide Web capabilities.  Lynx can be used to access information on the World Wide Web, or to build information systems intended primarily for local access.  For example, Lynx has been used to build several Campus Wide Information Systems (CWIS). Lynx's authors include Lou Montulli, Garrett Blythe, Craig Lavender, Michael Grobe, and Charles Rezac."
+depends=('glibc' 'openssl' 'bzip2' 'gpm' 'zlib' 'ncurses')
+source=(http://lynx.isc.org/release/${pkgname}${SHORTVER}.tar.gz	\
+	http://lynx.isc.org/release/patches/${SHORTVER}rel.2.patch.gz	\
+	http://lynx.isc.org/release/patches/${SHORTVER}rel.3.patch.gz	\
+	http://lynx.isc.org/release/patches/${SHORTVER}rel.4.patch.gz	\
+	http://lynx.isc.org/release/patches/$pkgver.patch.gz		\
+	$pkgname.path.diff.gz						\
+	$pkgname.cfg.diff.gz						)
+url="http://lynx.isc.org"
+md5sums=('5f516a10596bd52c677f9bfd9579bc28' \
+	 '16840d095311814751684c99dc201740' \
+	 '23fb5d3b3e052fd380ae1a694afc06eb' \
+	 '8407996c12e28c43cfe39b5724436789' \
+	 '0115dfcfcf4dac8eb55cbc72e2f08ff3' \
+	 '4f1d71422bf09696d60523d9da52b8dd' \
+	 'd27578983084f1df0f35503da83aa8f6' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.8.5rel.5 2005.11.06 (*security*)
+##   rel2: aded bzip2 as a dependency 2005.04.15
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/${pkgname}2-8-5
+
+	patch -p1 < $startdir/src/${SHORTVER}rel.2.patch	|| return 1
+	patch -p1 < $startdir/src/${SHORTVER}rel.3.patch	|| return 1
+	patch -p1 < $startdir/src/${SHORTVER}rel.4.patch	|| return 1
+	patch -p1 < $startdir/src/$pkgver.patch			|| return 1
+	patch -p1 < $startdir/src/lynx.path.diff		|| return 1
+	patch -p1 < $startdir/src/lynx.cfg.diff			|| return 1
+
+	find . -name "*~" | xargs rm
+
+	./configure				\
+		--prefix=/usr			\
+		--libdir=/usr/lib/lynx		\
+		--enable-default-colors		\
+		--sysconfdir=/etc		\
+		--with-screen=ncurses		\
+		--enable-gzip-help		\
+		--with-zlib			\
+		--enable-read-eta		\
+		--enable-scrollbar		\
+		--with-ssl			\
+		--enable-color-style		\
+		--enable-prettysrc		\
+		--enable-source-cache		\
+		--enable-nsl-fork		\
+		--enable-nls			\
+		--enable-persistent-cookies	\
+		--enable-vertrace		\
+		--disable-full-paths		\
+		--enable-addrlist-page		\
+		--enable-charset-choice		\
+		--enable-cjk			\
+		--enable-htmlized-cfg		\
+		--enable-justify-elts		\
+		--enable-locale-charset		\
+		--enable-externs		\
+		--enable-cgi-links		\
+		--enable-change-exec		\
+		--enable-exec-links		\
+		--enable-exec-scripts		\
+		--enable-internal-links		\
+		--with-bzlib
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+	make install-help DESTDIR=$startdir/pkg
+	make install-doc DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	chmod 0755 $startdir/pkg/usr/lib/lynx/lynx_doc/docs
+	chmod 0755 $startdir/pkg/usr/lib/lynx/lynx_doc/samples
+	chmod 0755 $startdir/pkg/usr/lib/lynx/lynx_doc/test
+
+	rm $startdir/pkg/usr/lib/lynx/lynx_help/COPYHEADER
+	rm $startdir/pkg/usr/lib/lynx/lynx_help/COPYING
+
+	cd $startdir/pkg/usr/lib/lynx/lynx_help
+	ln -s ../lynx_doc/COPYHEADER .
+	ln -s ../lynx_doc/COPYING .
+
+	mkdir -p $startdir/pkg/usr/doc
+	cd $startdir/pkg/usr/doc
+	ln -s /usr/lib/$pkgname $pkgname-$pkgver
+
+}

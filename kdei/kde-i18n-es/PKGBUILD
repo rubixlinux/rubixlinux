@@ -1,0 +1,21 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kde-i18n-es
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kde-i18n-es Spanish language support for KDE."
+depends=('kdebase')
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
+md5sums=('ad5ced34f31804701a68d2d64bccefd5')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/opt/kde
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+}

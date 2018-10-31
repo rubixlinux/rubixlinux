@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libksba
+pkgver=0.9.13
+pkgrel=1
+pkgdesc="Libksba  is a CMS and X.509 access library."
+url="http://www.gnupg.org"
+depends=('glibc')
+source=(ftp://ftp.gnupg.org/gcrypt/alpha/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('102154db88898d71e9f51b4e149e811c')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.9.13 2005.12.05
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --enable-shared
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		THANKS		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm $startdir/pkg/usr/info/dir
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

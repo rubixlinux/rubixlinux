@@ -1,0 +1,53 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=bin86
+pkgver=0.16.16
+pkgrel=1
+pkgdesc="bin86 (8086 assembler/loader) This is a complete 8086 assembler and loader which can make 32-bit code for the 386+ processors.  In the past it was used to compile the 16-bit bootsector and setup binaries for the kernel, but modern (2.4.x or newer) kernels use GNU ld instead. The bin86 package is needed to compile 2.2.x or earlier kernels."
+url="http://www.cix.co.uk/~mayday"
+depends=('glibc')
+source=(http://www.cix.co.uk/~mayday/dev86/$pkgname-$pkgver.tar.gz	\
+	$pkgname.diff.gz						)
+md5sums=('48c56be9792b26702805cb59471c99e5' \
+	 '2f960e1578087116e96f43870faabf47' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.diff
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		README		\
+		README-0.4	\
+		as/COPYING	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/bin
+
+	cp as/as86		$startdir/pkg/usr/bin
+	cp as/as86_encap	$startdir/pkg/usr/bin
+	cp ld/ld86		$startdir/pkg/usr/bin
+	cp ld/objdump86		$startdir/pkg/usr/bin
+
+	chmod 755		$startdir/pkg/usr/bin/*
+
+	ln -s objdump86		$startdir/pkg/usr/bin/nm86
+	ln -s objdump86		$startdir/pkg/usr/bin/size86
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+
+	cp man/as86.1	$startdir/pkg/usr/man/man1
+	cp man/ld86.1	$startdir/pkg/usr/man/man1
+
+	ln -sf as86.1	$startdir/pkg/usr/man/man1/as86_encap.1
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

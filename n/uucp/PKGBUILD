@@ -1,0 +1,61 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=uucp
+pkgver=1.07
+pkgrel=1
+pkgdesc="uucp (Taylor UUCP) Ian Taylor's Unix to Unix copy: mail and news over modem lines.  This is the standard UUCP package of the Free Software Foundation. Configured to use HoneyDanBer and/or Taylor configuration files."
+url="http://www.airs.com/ian/uucp.html"
+depends=('glibc')
+backup=('var/log/uucp/DEBUG'	\
+	'var/log/uucp/Debug'	\
+	'var/log/uucp/LOGFILE'	\
+	'var/log/uucp/Log'	\
+	'var/log/uucp/SYSLOG'	\
+	'var/log/uucp/Stats'	)
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz	\
+	README-CONFIG.gz						\
+	policy.h.diff.gz						)
+md5sums=('64c54d43787339a7cced48390eb3e1d0' \
+	 'a6e99999ff7deb59d204546291603624' \
+	 '1d4c344de2fcaffbe7cb882d442a04dc' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/policy.h.diff || return 1
+
+	./configure					\
+		--prefix=/usr				\
+		--with-oldconfigdir=/etc/uucp/oldconfig	\
+		--with-newconfigdir=/etc/uucp
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	chown uucp.uucp $startdir/pkg/usr/bin/{cu,uucp,uuname,uustat,uux}
+	chmod 4750	$startdir/pkg/usr/bin/{cu,uucp,uuname,uustat,uux}
+
+	chown uucp.uucp $startdir/pkg/usr/sbin/{uucico,uuxqt}
+	chmod 4750      $startdir/pkg/usr/sbin/{uucico,uuxqt}
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/etc/uucp/oldconfig
+	cp $startdir/src/README-CONFIG $startdir/pkg/etc/uucp
+
+	mkdir -p		$startdir/pkg/var/log/uucp
+	touch			$startdir/pkg/var/log/uucp/{LOGFILE,SYSLOG,Stats,DEBUG,Log,Debug}
+	chown -R uucp.uucp	$startdir/pkg/var/log/uucp
+	chmod 640		$startdir/pkg/var/log/uucp/{LOGFILE,SYSLOG,Stats,DEBUG,Log,Debug}
+
+	mkdir -p		$startdir/pkg/var/spool/uucp/.Status
+	chown -R uucp.uucp	$startdir/pkg/var/spool/uucp
+	chmod 775		$startdir/pkg/var/spool/uucp
+
+	mkdir -p		$startdir/pkg/var/spool/uucppublic
+	chown -R uucp.uucp	$startdir/pkg/var/spool/uucppublic
+	chmod 775		$startdir/pkg/var/spool/uucppublic
+
+}

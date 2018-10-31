@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=diffutils
+pkgver=2.8.1
+pkgrel=1
+pkgdesc="diffutils (finds differences between files) The GNU diff utilities finds differences between files.  A major use for this package is to make source code patches."
+url="http://www.gnu.org/software/$pkgname"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('71f9c5ae19b60608f6c7f162da86a428')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+
+	make
+
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS 	\
+		AUTHORS		\
+		COPYING		\
+		INSTALLME	\
+		NEWS		\
+		README		\
+		THANKS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

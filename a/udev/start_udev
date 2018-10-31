@@ -1,0 +1,80 @@
+#! /bin/bash
+
+trigger_events() {
+	# For 2.6.15+ kernels, Rubix uses udev for coldplug and hotplug
+	list="$list $(echo /sys/bus/*/devices/*/uevent)"
+	list="$list $(echo /sys/class/*/*/uevent)"
+	list="$list $(echo /sys/block/*/uevent /sys/block/*/*/uevent)"
+	for i in $list; do
+		case "$i" in
+			*/device/uevent)
+				# skip followed device symlinks
+				continue
+				;;
+			*/class/mem/*|*/class/tty/*)
+				first="$first $i"
+				;;
+			*/block/md*)
+				last="$last $i"
+				;;
+			*/*)
+				default="$default $i"
+				;;
+		esac
+	done
+
+	# Trigger the sorted events
+	for i in $first $default $last; do
+		echo "add" > "$i"
+	done
+
+	# Loop until everything is finished
+	loop=0
+	while test -d /dev/.udev/queue; do
+		sleep 0.1;
+		test "$loop" -gt 300 && break
+		loop=$(($loop + 1))
+	done
+}
+
+seed_dev() {
+	# Copy over any persistant devices
+	cp --preserve=all --recursive --update /lib/udev/devices/* /dev
+
+	# Not provided by sysfs but needed
+	ln -snf /proc/self/fd /dev/fd
+	ln -snf fd/0 /dev/stdin
+	ln -snf fd/1 /dev/stdout
+	ln -snf fd/2 /dev/stderr
+	[[ -e /proc/kcore ]] && ln -snf /proc/kcore /dev/core
+
+	# Create problematic directories
+	mkdir -p /dev/{pts,shm}
+}
+
+main() {
+	# Setup temporary storage for /dev
+	mount -n -t tmpfs udev /dev -o exec,nosuid,mode=0755
+
+	seed_dev
+
+	# Use netlink for hotplug events
+	echo "" > /proc/sys/kernel/hotplug
+
+	# Start udevd
+	/sbin/udevd --daemon
+
+	trigger_events
+
+	# Create nodes that udev can't
+	[[ -x /sbin/dmsetup ]] && /sbin/dmsetup mknodes &>/dev/null
+	[[ -x /sbin/lvm ]] && /sbin/lvm vgscan -P --mknodes --ignorelockingfailure &>/dev/null
+
+	# Same thing as /dev/.devfsd
+	touch /dev/.udev
+}
+
+## Only start udev if the kernel is capable and has /proc and /sys mounted
+if [ -d /sys/block -a -r /proc/sys/kernel/hotplug ]; then
+	main
+fi

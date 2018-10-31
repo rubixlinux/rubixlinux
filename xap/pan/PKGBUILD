@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=pan
+pkgver=0.14.2.91
+pkgrel=1
+pkgdesc="pan This is PAN, a powerful and user-friendly USENET newsreader based on GTK+2.  Pan is the only Unix newsreader to score 100% on the Good Net-Keeping Seal of Approval newsreader evaluations."
+depends=('gnet' 'gtkspell' 'libxml2' 'pcre')
+source=(http://pan.rebelbase.com/download/releases/$pkgver/SOURCE/$pkgname-$pkgver.tar.gz)
+md5sums=('26bf7253a5e320793e5aba1c731448cd')
+url="http://pan.rebelbase.com"
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure				\
+		--prefix=/usr			\
+		--localstatedir=/var/lib	\
+		--enable-html			\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ANNOUNCE.html	\
+		AUTHORS		\
+		COPYING		\
+		CREDITS		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm -r $startdir/pkg/usr/share/gnome
+
+}

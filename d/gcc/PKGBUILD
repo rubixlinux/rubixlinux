@@ -1,0 +1,282 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+OLDGCC=3.3.6
+
+pkgname=gcc
+pkgver=3.4.4
+pkgrel=2
+pkgdesc="gcc (Base GCC package with C support) GCC is the GNU Compiler Collection. This package contains those parts of the compiler collection needed to compile C code.  Other packages add C++, Fortran, Objective-C, and Java support to the compiler core."
+url="http://gcc.gnu.org"
+depends=('glibc' 'binutils')
+source=(ftp://gcc.gnu.org/pub/gcc/releases/gcc-$pkgver/$pkgname-$pkgver.tar.bz2				\
+	ftp://gcc.gnu.org/pub/gcc/releases/gcc-$OLDGCC/gcc-$OLDGCC.tar.bz2				\
+	http://researchweb.watson.ibm.com/trl/projects/security/ssp/gcc3_4_4/protector-$pkgver-1.tar.gz	\
+	oldcxxlibs.tar.bz2										)
+md5sums=('b594ff4ea4fbef4ba9220887de713dfe' \
+	 '6936616a967da5a0b46f1e7424a06414' \
+	 '92424e84ed44c351699a95b6206fbf32' \
+	 '2cc8e19711d8eb8b3bb95ca10ad99a55' )
+
+
+## Todo:
+##   None
+
+## Notes:
+##  The only patch is the propolice patch which is disabled by default
+##    but enabled with flags in makepkg.conf
+##  Not split into gcc-g++ gcc-g77 gcc-gnat gcc-java gcc-objc
+##    all available languages are built
+##    I should probably change this but it is a PITA with pacman since it would
+##    require 5 builds... Anyone wanna donate a nice dual processor AMD64 box with
+##    16GB ram?  That might get me to make an AMD64 port too ;)
+##  Ada (gnat) is not built at present. This should be changed, feel free to remind me ;)
+##     usr/lib/libiberty.a is not included since it is part of binutils
+
+## Changelog:
+##   rel2: added oldcxxlibs from slackware 2005.09.23
+##   rel1: upgraded to 3.4.4 and added libstdc++.so.5 from gcc 3.3.6 for backward compatability 2005.08.30
+##   rel1: Initial rubix release
+
+build() {
+
+	## we need to disable SSP for the gcc 3.3 build (since it does not have the 
+	##   SSP patch, PIE or mtune options) and it rebuilds itself (with itself)
+	##   using the original CFLAGS
+
+	export CFLAGS="-march=i486 -mcpu=i686 -Os -pipe -fPIC -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mcpu=i686 -Os -pipe -fPIC -Wa,--noexecstack"
+
+	cd $startdir/src
+	mkdir old.gcc.build.lnx
+	cd old.gcc.build.lnx
+	../$pkgname-$OLDGCC/configure	\
+		--prefix=/usr		\
+		--enable-shared		\
+		--enable-languages=c++	\
+		--enable-threads=posix	\
+		--enable-__cxa_atexit	\
+		--disable-checking	\
+		--with-gnu-ld		\
+		--verbose		\
+		--target=$CHOST		\
+		--host=$CHOST
+	make all-target-libstdc++-v3 || return 1
+	make DESTDIR=$startdir/pkg install-target-libstdc++-v3
+
+	rm -r $startdir/pkg/usr/include
+	rm -r $startdir/pkg/usr/share
+	rm $startdir/pkg/usr/lib/libstdc++.a
+	rm $startdir/pkg/usr/lib/libstdc++.la
+	rm $startdir/pkg/usr/lib/libstdc++.so
+	rm $startdir/pkg/usr/lib/libsupc++.a
+	rm $startdir/pkg/usr/lib/libsupc++.la
+
+	## reset original cflags
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	## Apply propolice patch
+	patch -p0 < $startdir/src/gcc_3_4_4.dif || return 1
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 754 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/gcc/f
+	cp	-a		\
+		BUGS		\
+		COPYING		\
+		COPYING.LIB	\
+		ChangeLog	\
+		FAQ		\
+		INSTALL		\
+		MAINTAINERS	\
+		README*		\
+		*.html		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd gcc
+	cp	-a		\
+		ABOUT*		\
+		COPYING*	\
+		LANG*		\
+		README*		\
+		SERVICE		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/gcc
+
+	cd f
+	cp	-a		\
+		BUGS		\
+		NEWS		\
+		RELEASE-PREP	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/gcc/f
+
+	cd ../objc
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/gcc/objc
+	cp -a README $startdir/pkg/usr/doc/$pkgname-$pkgver/gcc/objc
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/fastjar
+	cd ../../fastjar
+
+	cp	-a		\
+		AUTHORS		\
+		CHANGES		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/fastjar
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/libf2c
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/libf2c/libF77
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/libf2c/libI77
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/libf2c/libU77
+
+	cd ../libf2c
+	cp	-a			\
+		README			\
+		TODO			\
+		disclaimer.netlib	\
+		permission.netlib	\
+		readme.netlib		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/libf2c
+
+	cd libF77
+	cp	-a		\
+		Notice		\
+		README.netlib	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/libf2c/libF77
+
+	cd ../libI77
+	cp	-a		\
+		Notice		\
+		README.netlib	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/libf2c/libI77
+
+	cd ../libU77
+	cp	-a		\
+		COPYING.LIB	\
+		PROJECTS	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/libf2c/libU77
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/libjava
+	cd ../../libjava
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		LIBGCJ_LICENSE	\
+		NEWS		\
+		README		\
+		THANKS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/libjava
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/libobjc
+	cd ../libobjc
+	cp	-a		\
+		README		\
+		README.threads	\
+		THREADS		\
+		THREADS.MACH	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/libobjc
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/libstdc++-v3
+	cd ../libstdc++-v3
+	cp	-a	\
+		README	\
+		$startdir/pkg/usr/doc/$pkgname-$pkgver/libstdc++-v3
+	cp	-a				\
+		docs/html/faq/index.html	\
+		$startdir/pkg/usr/doc/$pkgname-$pkgver/libstdc++-v3/faq.html
+
+	## Add the propolice includes
+	cd $startdir/src/$pkgname-$pkgver
+	tar zxf $startdir/src/protector-$pkgver-1.tar.gz
+
+	mkdir	$startdir/src/gcc.build.lnx
+	cd	$startdir/src/gcc.build.lnx
+
+	../$pkgname-$pkgver/configure	\
+		--prefix=/usr		\
+		--enable-shared		\
+		--enable-threads=posix	\
+		--enable-__cxa_atexit	\
+		--disable-checking	\
+		--with-gnu-ld		\
+		--verbose		\
+		--target=$CHOST		\
+		--host=$CHOST
+	make bootstrap	|| return 1
+	make info	|| return 1
+	make install DESTDIR=$startdir/pkg
+	make -i install-info DESTDIR=$startdir/pkg
+
+	chmod 755 $startdir/pkg/usr/lib/libgcc_s.so.1
+
+	rm $startdir/pkg/usr/info/dir
+
+	cd $startdir/pkg
+	mkdir -p lib
+	cd lib
+	ln -sf /usr/bin/cpp .
+
+	cd $startdir/pkg/usr/bin
+	mv g++ g++-$pkgname-$pkgver
+	mv $pkgname $pkgname-$pkgver
+	mv g77 g77-$pkgname-$pkgver
+	ln -sf g++-$pkgname-$pkgver g++
+	ln -sf $pkgname-$pkgver gcc
+	ln -sf g77-$pkgname-$pkgver g77
+	ln -sf g++ c++
+	ln -sf $pkgname cc
+	ln -sf $pkgname-$pkgver $CHOST-$pkgname
+	ln -sf $pkgname-$pkgver $CHOST-$pkgname-$pkgver
+	ln -sf gcj $CHOST-gcj
+	ln -sf gcjh $CHOST-gcjh
+	ln -sf g++-$pkgname-$pkgver $CHOST-c++
+	ln -sf g++-$pkgname-$pkgver $CHOST-g++
+	ln -sf g77 f77
+	chown root.bin * .
+
+	cd $startdir/pkg/usr/man/man1
+	ln -sf g++.1.gz c++.1.gz
+	ln -sf g77.1.gz f77.1.gz
+	ln -sf gcc.1.gz cc.1.gz
+
+	rm $startdir/pkg/usr/lib/libiberty.a
+
+	mkdir -p	$startdir/pkg/usr/$CHOST/lib
+	cd		$startdir/pkg/usr/$CHOST/lib
+	tar xjf $startdir/src/oldcxxlibs.tar.bz2
+
+}
+
+#
+# This build is derived from the slackware gcc 3.3.4 build 2 build script
+#
+# GCC package build script (written by volkerdi@slackware.com)
+#
+# Copyright 2003  Slackware Linux, Inc., Concord, California, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#

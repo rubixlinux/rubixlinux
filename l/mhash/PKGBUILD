@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mhash
+pkgver=0.9.2
+pkgrel=1
+depends=('glibc')
+pkgdesc="mhash (Thread-safe hash library) mhash is a thread-safe hash library, implemented in C, and provides a uniform interface to a large number of hash algorithms (MD5, SHA-1, HAVAL, RIPEMD128, RIPEMD160, TIGER, GOST). These algorithms can be used to compute checksums, message digests, and other signatures. The HMAC support implements the basics for message authentication, following RFC 2104"
+source=(http://dl.sourceforge.net/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://mhash.sourceforge.net"
+md5sums=('bf31627548376891e4f42ace54db4c2d')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--program-prefix=""	\
+		--program-suffix=""	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+		THANKS	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

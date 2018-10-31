@@ -1,0 +1,19 @@
+post_install() {
+	if ! grep '/bin/ash' etc/shells 1> /dev/null 2> /dev/null ; then
+		echo "/bin/ash" >> etc/shells
+	fi
+}
+
+post_upgrade() {
+	post_install
+}
+
+pre_remove() {
+	cat etc/shells | grep -v '/bin/ash' > tmp/pacash
+	cat tmp/pacash > etc/shells
+	sbin/ldconfig -r .
+}
+
+op=$1
+shift
+$op $*

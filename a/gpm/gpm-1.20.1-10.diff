@@ -1,0 +1,4638 @@
+--- gpm-1.19.6.orig/debian/patches/003_wheel_000
++++ gpm-1.19.6/debian/patches/003_wheel_000
+@@ -0,0 +1,144 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/gpm.c gpm-1.19.6/src/gpm.c
++--- gpm-1.19.6.orig/src/gpm.c	Thu Oct  4 23:33:48 2001
+++++ gpm-1.19.6/src/gpm.c	Thu Oct  4 23:33:37 2001
++@@ -442,6 +442,7 @@
++   else
++     {
++     event->dx=event->dy=0;
+++    event->wdx=event->wdy=0;
++ 
++     nEvent.modifiers = 0; /* some mice set them */
++     FD_ZERO(&fdSet); FD_SET(fd,&fdSet); i=0;
++@@ -484,6 +485,10 @@
++         event->dx = (nEvent.x) - (event->x);
++         event->dy = (nEvent.y) - (event->y);
++ 	}
+++
+++      /* propagate wheel */
+++      event->wdx += nEvent.wdx;
+++      event->wdy += nEvent.wdy;
++ 
++       select(fd+1,&fdSet,(fd_set *)NULL,(fd_set *)NULL,&timeout/* zero */);
++       }
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/headers/gpm.h gpm-1.19.6/src/headers/gpm.h
++--- gpm-1.19.6.orig/src/headers/gpm.h	Wed Sep 12 17:07:34 2001
+++++ gpm-1.19.6/src/headers/gpm.h	Thu Oct  4 23:33:37 2001
++@@ -115,6 +115,7 @@
++   unsigned char buttons, modifiers;  /* try to be a multiple of 4 */
++   unsigned short vc;
++   short dx, dy, x, y;
+++  short wdx, wdy;
++   enum Gpm_Etype type;
++   int clicks;
++   enum Gpm_Margin margin;
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/mice.c gpm-1.19.6/src/mice.c
++--- gpm-1.19.6.orig/src/mice.c	Thu Oct  4 23:33:48 2001
+++++ gpm-1.19.6/src/mice.c	Thu Oct  4 23:33:37 2001
++@@ -375,16 +375,49 @@
++ /* m$ 'Intellimouse' (steveb 20/7/97) */
++ static int M_ms3(Gpm_Event *state,  unsigned char *data)
++ {
+++  state->wdx = state->wdy = 0;
+++
++   state->buttons= ((data[0] & 0x20) >> 3)	/* left */
++ 		| ((data[3] & 0x10) >> 3)	/* middle */
++ 		| ((data[0] & 0x10) >> 4);	/* right */
++   state->dx=      (signed char)(((data[0] & 0x03) << 6) | (data[1] & 0x3F));
++   state->dy=      (signed char)(((data[0] & 0x0C) << 4) | (data[2] & 0x3F));
++-  /* wheel (dz??) is (data[3] & 0x0f) */
+++
+++  switch (data[3] & 0x0f) {
+++    case 0x0e: state->wdx = +1; break;
+++    case 0x02: state->wdx = -1; break;
+++    case 0x0f: state->wdy = +1; break;
+++    case 0x01: state->wdy = -1; break;
+++  }
++ 
++   return 0;
++ }
++ 
+++static int R_ms3(Gpm_Event *state, int fd)
+++{
+++  char buf[4] = {0, 0, 0, 0};
+++
+++  buf[0] |= 0x40;
+++
+++  buf[0] |= ((state->buttons & GPM_B_LEFT) ? 0x20 : 0);
+++  buf[3] |= ((state->buttons & GPM_B_MIDDLE) ? 0x10 : 0);
+++  buf[0] |= ((state->buttons & GPM_B_RIGHT) ? 0x10 : 0);
+++
+++  buf[1] = state->dx & ~0xC0;
+++  buf[0] |= (state->dx & 0xC0) >> 6;
+++
+++  buf[2] = state->dy & ~0xC0;
+++  buf[0] |= (state->dy & 0xC0) >> 4;
+++
+++  if (state->wdy > 0)
+++    buf[3] |= 0x0f;
+++  else if (state->wdy < 0)
+++    buf[3] |= 0x01;
+++
+++  return write(fd,buf,4);
+++}
+++
+++
++ /* M_brw is a variant of m$ 'Intellimouse' the middle button is different */
++ static int M_brw(Gpm_Event *state,  unsigned char *data)
++ {
++@@ -518,6 +551,39 @@
++   return 0;
++ }
++ 
+++static int M_imps2(Gpm_Event *state,  unsigned char *data)
+++{
+++  static int tap_active=0;     // there exist glidepoint ps2 mice
+++  state->wdx = state->wdy = 0; // Clear them..
+++
+++  state->dx = state->dy = state->wdx = state->wdy = 0;
+++
+++  state->buttons= ((data[0] & 1) << 2) // left
+++    | ((data[0] & 6) >> 1); // middle and right
+++
+++  if (data[0]==0 && opt_glidepoint_tap) // by default this is false
+++    state->buttons = tap_active = opt_glidepoint_tap;
+++  else if (tap_active) {
+++    if (data[0]==8)
+++      state->buttons = tap_active = 0;
+++    else state->buttons = tap_active;
+++  }
+++
+++  // Standard movement..
+++  state->dx = (data[0] & 0x10) ? data[1] - 256 : data[1];
+++  state->dy = (data[0] & 0x20) ? -(data[2] - 256) : -data[2];
+++
+++  // The wheels..
+++  switch (data[3] & 0x0f) {
+++    case 0x0e: state->wdx = +1; break;
+++    case 0x02: state->wdx = -1; break;
+++    case 0x0f: state->wdy = +1; break;
+++    case 0x01: state->wdy = -1; break;
+++  }
+++
+++  return 0;
+++}
+++
++ static int M_netmouse(Gpm_Event *state,  unsigned char *data)
++ {
++   /* Avoid this beasts if you can.  They connect to normal PS/2 port,
++@@ -2114,14 +2180,14 @@
++            "", M_bare, I_pnp, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 0, 0, 0},
++   {"imps2","Microsoft Intellimouse (ps2) - autodetect 2/3 buttons,wheel unused",
++-           "", M_ps2, I_imps2, STD_FLG,
+++           "", M_imps2, I_imps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++   {"exps2",   "IntelliMouse Explorer (ps2) - 3 buttons, wheel unused",
++            "ExplorerPS/2", M_ps2, I_exps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++   {"ms3", "Microsoft Intellimouse (serial) - 3 buttons, wheel unused",
++            "", M_ms3, I_pnp, CS7 | STD_FLG,
++-                                {0xc0, 0x40, 0xc0, 0x00}, 4, 1, 0, 0, 0},
+++                                {0xc0, 0x40, 0xc0, 0x00}, 4, 1, 0, 0, R_ms3},
++   {"netmouse",  "Genius NetMouse (ps2) - 2 buttons and 2 buttons 'up'/'down'.", 
++            "", M_netmouse, I_netmouse, CS7 | STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
+--- gpm-1.19.6.orig/debian/patches/001_logging_000
++++ gpm-1.19.6/debian/patches/001_logging_000
+@@ -0,0 +1,162 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/debuglog.c gpm-1.19.6/src/debuglog.c
++--- gpm-1.19.6.orig/src/debuglog.c	Sat Sep 15 16:55:06 2001
+++++ gpm-1.19.6/src/debuglog.c	Thu Oct  4 23:31:24 2001
++@@ -43,6 +43,8 @@
++ #include <errno.h>
++ #include "headers/wd.h"
++ 
+++extern int errno;
+++
++ #ifndef DEBUG
++ int 
++ gpm_debug_level = LOG_NOTICE;
++@@ -54,6 +56,9 @@
++ int
++ gpm_log_daemon = 0;
++ 
+++int
+++gpm_log = 1;
+++
++ void
++ gpm_debug_log(int level, char* fmt, ...)
++ {
++@@ -62,10 +67,14 @@
++     va_start(ap, fmt);
++ #ifdef HAVE_VSYSLOG
++     vsyslog(level | (gpm_log_daemon ? LOG_DAEMON : LOG_USER), fmt, ap);
++-#else
++-    vfprintf(stderr, fmt, ap);
++-    fputs("\n", stderr);
+++    if (gpm_log) {
+++      vsyslog(level | (gpm_log_daemon ? LOG_DAEMON : LOG_USER), fmt, ap);
+++    } else
++ #endif  
+++    {
+++      vfprintf(stderr, fmt, ap);
+++      fputs("\n", stderr);
+++    }
++     va_end(ap);
++   } /*if*/
++ }
++@@ -85,13 +94,17 @@
++ 
++     va_start(ap, s);
++ #if(defined(HAVE_VSYSLOG) && defined(HAVE_SYSLOG))
++-    pri = LOG_ERR | (gpm_log_daemon ? LOG_DAEMON : LOG_USER);
++-    syslog(pri, "oops() invoked from %s(%i)",f, n);
++-    vsyslog(pri, buf, ap);
+++    if (gpm_log) {
+++      pri = LOG_ERR | (gpm_log_daemon ? LOG_DAEMON : LOG_USER);
+++      syslog(pri, "oops() invoked from %s(%i)",f, n);
+++      vsyslog(pri, buf, ap);
+++    } else
++ #endif /* always print to stderr as well */
++-    fprintf(stderr,"gpm: oops() invoked from %s(%i)\n",f, n);
++-    vfprintf(stderr, s, ap);
++-    fprintf(stderr,": %s\n", strerror(errno));
+++    {
+++      fprintf(stderr,"gpm: oops() invoked from %s(%i)\n",f, n);
+++      vfprintf(stderr, s, ap);
+++      fprintf(stderr,": %s\n", strerror(errno));
+++    }
++ 
++     va_end(ap);
++   } /*if*/
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/gpm.c gpm-1.19.6/src/gpm.c
++--- gpm-1.19.6.orig/src/gpm.c	Thu Oct  4 23:31:29 2001
+++++ gpm-1.19.6/src/gpm.c	Thu Oct  4 23:31:24 2001
++@@ -360,6 +360,7 @@
++ 	return data;
++ 	}
++       gpm_debug_log(LOG_DEBUG,"Error in protocol");
+++      gpm_debug_log(LOG_DEBUG,"Data %02x",data[0]);
++       return NULL;
++       }
++ 
++@@ -389,6 +390,7 @@
++     if ((data[1]&(m_type->proto)[2]) != (m_type->proto)[3])
++       {
++       gpm_debug_log(LOG_NOTICE,"Skipping a data packet (?)");
+++      gpm_debug_log(LOG_DEBUG,"Bad %02x %02x %02x (%02x)",data[0],data[1],data[2],data[3]);
++       return NULL;
++       }
++   gpm_debug_log(LOG_DEBUG,"Data %02x %02x %02x (%02x)",data[0],data[1],data[2],data[3]);
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/gpn.c gpm-1.19.6/src/gpn.c
++--- gpm-1.19.6.orig/src/gpn.c	Sat Sep 15 16:52:24 2001
+++++ gpm-1.19.6/src/gpn.c	Thu Oct  4 23:31:24 2001
++@@ -178,6 +178,7 @@
++          "                     Use a non-existent type (e.g. \"help\") to get a list\n"
++          "    -T               test: read mouse, no clients\n"
++          "    -v               print version and exit\n"
+++	 "    -e               output messages to stderr instead of syslog\n"
++          "    -V verbosity     increase number of logged messages\n", 
++          DEF_ACCEL, DEF_BAUD, DEF_SEQUENCE, DEF_DELTA, DEF_TIME, DEF_LUT,
++          DEF_SCALE, DEF_SAMPLE, DEF_TYPE);
++@@ -290,7 +291,7 @@
++ int 
++ cmdline(int argc, char **argv)
++ {
++-  char options[]="a:A::b:B:d:Dg:hi:kl:m:Mo:pr:R::s:S:t:TvV::23";
+++  char options[]="a:A::b:B:d:Dg:hi:kl:m:Mo:pr:R::s:S:t:TveV::23";
++   int i, opt;
++   static struct {char *in; char *out;} seq[] = {
++     {"123","01234567"},
++@@ -309,6 +310,8 @@
++   /* itz Wed Jul 1 18:37:59 PDT 1998 */
++   /* run as a daemon unless told otherwise */
++   gpm_log_daemon = 1;
+++  /* Run with logging to syslog unless told otherwise */
+++  gpm_log = 1;
++ 
++   while ((opt = getopt(argc, argv, options)) != -1)
++     {
++@@ -366,12 +369,14 @@
++           break;
++         case '2': opt_three=-1; break;
++         case '3': opt_three=1; break;
+++	case 'e': gpm_log=0; break;
++         default:
++           exit(usage("commandline"));
++         }
++     }
++ 
++-  openlog(prgname, LOG_PID, gpm_log_daemon ? LOG_DAEMON : LOG_USER);
+++  if (gpm_log)
+++    openlog(prgname, LOG_PID, gpm_log_daemon ? LOG_DAEMON : LOG_USER);
++   check_kill();
++ 
++   loadlut(opt_lut);
++@@ -444,14 +449,12 @@
++ 
++ /* report should be here and nothing else! */
++ 
++-#if 1 /* was: "if (!defined(HAVE_SYSLOG) || !defined(HAVE_VSYSLOG))" */
++-    if (!freopen("/dev/console","w",stderr)) /* the currently current console */
++-      {
++-        oops("freopen(stderr) failed");
++-      }
++-#else
++-    fclose(stderr);
++-#endif
+++    if (gpm_log) {
+++      fclose(stderr);
+++    } else if (!freopen("/dev/console", "w", stderr)) { 
+++      // currently current console
+++      oops("freopen(stderr) failed");
+++    }
++ 
++     if (setsid()<0) oops("setsid()");
++     if (chdir("/")<0) oops("/");
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/headers/wd.h gpm-1.19.6/src/headers/wd.h
++--- gpm-1.19.6.orig/src/headers/wd.h	Wed Sep 12 17:07:34 2001
+++++ gpm-1.19.6/src/headers/wd.h	Thu Oct  4 23:31:24 2001
++@@ -41,6 +41,9 @@
++ extern int 
++ gpm_log_daemon;
++ 
+++extern int
+++gpm_log;
+++
++ extern void
++ gpm_debug_log(int level, char* fmt, ...);
++ 
+--- gpm-1.19.6.orig/debian/patches/002_force_repeat_000
++++ gpm-1.19.6/debian/patches/002_force_repeat_000
+@@ -0,0 +1,102 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/gpm.c gpm-1.19.6/src/gpm.c
++--- gpm-1.19.6.orig/src/gpm.c	Thu Oct  4 23:32:33 2001
+++++ gpm-1.19.6/src/gpm.c	Thu Oct  4 23:32:26 2001
++@@ -78,6 +78,7 @@
++ int opt_ptrdrag=DEF_PTRDRAG;
++ int opt_kill=0;
++ int opt_repeater=0, opt_double=0;
+++int opt_force_repeat = 0;
++ char* opt_repeater_type = 0;
++ int opt_aged = 0;
++ char *opt_special=NULL; /* special commands, like reboot or such */
++@@ -375,7 +376,8 @@
++       do
++ 	{
++ 	j=read(fd,edata-i,i); /* edata is pointer just after data */
++-	if (kd_mode!=KD_TEXT && fifofd != -1 && opt_rawrep && j > 0)
+++	if ((kd_mode!=KD_TEXT || opt_force_repeat)
+++	    && fifofd != -1 && opt_rawrep && j > 0)
++ 	  write(fifofd, edata-i, j);
++ 	i-=j;
++ 	}
++@@ -495,7 +497,7 @@
++ 
++ /*....................................... we're a repeater, aren't we? */
++ 
++-  if (kd_mode!=KD_TEXT)
+++  if ((kd_mode!=KD_TEXT) || opt_force_repeat)
++     {
++     if (fifofd != -1 && ! opt_rawrep)
++       {
++@@ -1115,17 +1117,16 @@
++      * but actually it only matters if you have events.
++      */
++     {
++-    int fd = open_console(O_RDONLY);
++-    if (ioctl(fd, KDGETMODE, &kd_mode)<0)
++-      oops("ioctl(KDGETMODE)");
++-    close(fd);
++-    if (kd_mode != KD_TEXT && !opt_repeater)
++-      {
++-      wait_text(&mouse_table[1].fd);
++-      maxfd=max(maxfd,mouse_table[1].fd);
++-      readySet=connSet;
++-      FD_SET(mouse_table[1].fd,&readySet);
++-      continue; /* reselect */
+++      int fd = open_console(O_RDONLY);
+++      if (ioctl(fd, KDGETMODE, &kd_mode)<0)
+++	oops("ioctl(KDGETMODE)");
+++      close(fd);
+++      if (kd_mode != KD_TEXT && !opt_repeater && !opt_force_repeat) {
+++	wait_text(&mouse_table[1].fd);
+++	maxfd=max(maxfd,mouse_table[1].fd);
+++	readySet=connSet;
+++	FD_SET(mouse_table[1].fd,&readySet);
+++	continue; /* reselect */
++       }
++     }
++ /*....................................... got mouse, process event */
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/gpn.c gpm-1.19.6/src/gpn.c
++--- gpm-1.19.6.orig/src/gpn.c	Thu Oct  4 23:32:33 2001
+++++ gpm-1.19.6/src/gpn.c	Thu Oct  4 23:32:26 2001
++@@ -172,6 +172,7 @@
++          "    -R mouse-type    enter repeater mode. X should read /dev/gpmdata\n"
++          "                     like it was a mouse-type device.  Default is MouseSystems.\n"
++          "                     You can also specify \"raw\" to relay the raw device data.\n"
+++	 "    -F               Force always in repeat mode..\n"
++          "    -s sample-rate   sets the sample rate (default %d)\n"
++          "    -S [commands]    enable special commands (see man page)\n"
++          "    -t mouse-type    sets mouse type (default '%s')\n"
++@@ -291,7 +292,7 @@
++ int 
++ cmdline(int argc, char **argv)
++ {
++-  char options[]="a:A::b:B:d:Dg:hi:kl:m:Mo:pr:R::s:S:t:TveV::23";
+++  char options[]="a:A::b:B:d:Dg:hi:kl:m:Mo:pr:FR::s:S:t:TveV::23";
++   int i, opt;
++   static struct {char *in; char *out;} seq[] = {
++     {"123","01234567"},
++@@ -356,6 +357,12 @@
++             opt_repeater_type = "msc";
++           } /*if*/
++           break;
+++	case 'F':
+++	  opt_force_repeat = 1;
+++	  opt_repeater++;
+++	  if (0 == opt_repeater_type)
+++	    opt_repeater_type = "msc";
+++	  break;
++         case 's': opt_sample = atoi(optarg); break;
++         case 'S':
++           if (optarg) opt_special=optarg;
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/headers/gpmInt.h gpm-1.19.6/src/headers/gpmInt.h
++--- gpm-1.19.6.orig/src/headers/gpmInt.h	Thu Sep 20 16:56:25 2001
+++++ gpm-1.19.6/src/headers/gpmInt.h	Thu Oct  4 23:32:26 2001
++@@ -122,6 +122,7 @@
++ extern int opt_test, opt_ptrdrag;
++ extern int opt_kill;
++ extern int opt_repeater, opt_double;
+++extern int opt_force_repeat;
++ extern char* opt_repeater_type;
++ extern int opt_kernel, opt_explicittype;
++ extern int opt_aged;
+--- gpm-1.19.6.orig/debian/patches/005_types_000
++++ gpm-1.19.6/debian/patches/005_types_000
+@@ -0,0 +1,255 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/gpn.c gpm-1.19.6/src/gpn.c
++--- gpm-1.19.6.orig/src/gpn.c	Thu Oct  4 23:35:50 2001
+++++ gpm-1.19.6/src/gpn.c	Thu Oct  4 23:35:38 2001
++@@ -8,6 +8,10 @@
++  *
++  * Tue,  5 Jan 1999 23:26:10 +0000, modified by James Troup <james@nocrew.org>
++  * (usage): typo (s/an unexistent/a non-existent/)
+++ * (cmdline): modified handling of -t command line argument, so it
+++ *            can be used by anyone regardless of whether or not a
+++ *            copy of gpm is already running.
+++ * (usage): update for new -t option "types".
++  *
++  *   This program is free software; you can redistribute it and/or modify
++  *   it under the terms of the GNU General Public License as published by
++@@ -177,6 +181,7 @@
++          "    -S [commands]    enable special commands (see man page)\n"
++          "    -t mouse-type    sets mouse type (default '%s')\n"
++          "                     Use a non-existent type (e.g. \"help\") to get a list\n"
+++	 "                     or \"types\" to get a list of just the mnemonics.\n"
++          "    -T               test: read mouse, no clients\n"
++          "    -v               print version and exit\n"
++ 	 "    -e               output messages to stderr instead of syslog\n"
++@@ -368,7 +373,21 @@
++           if (optarg) opt_special=optarg;
++           else opt_special="";
++           break;
++-        case 't': opt_type=optarg; break;
+++	case 't':
+++	  opt_type=optarg;
+++	  for (m_type=mice; m_type->fun; m_type++)
+++	    if (!strcmp(opt_type,m_type->name)
+++		|| !strcasecmp(opt_type,m_type->synonyms))
+++	      break;
+++
+++	  if (!(m_type->fun)) {
+++	    /* not found */
+++	    if (strcmp(opt_type,"types")==0)
+++	      exit(M_listTypes());
+++	    else
+++	      exit(M_listMice());
+++	  }
+++	  break;
++         case 'T': opt_test++; break;
++         case 'v': printf(GPM_NAME " " GPM_RELEASE ", " GPM_DATE "\n"); exit(0);
++         case 'V': 
++@@ -421,7 +440,7 @@
++       /* look for the mouse type */
++       m_type = find_mouse_by_name(opt_type);
++       if (!m_type) /* not found */
++-        exit(M_listTypes());
+++	exit(M_listMice());
++     } /*for*/
++ 
++   if (opt_repeater) {
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/mice.c gpm-1.19.6/src/mice.c
++--- gpm-1.19.6.orig/src/mice.c	Thu Oct  4 23:35:50 2001
+++++ gpm-1.19.6/src/mice.c	Thu Oct  4 23:35:45 2001
++@@ -6,6 +6,12 @@
++  * Copyright (C) 1998,1999   Ian Zimmerman <itz@rahul.net>
++  * Copyright (C) 2001        Nico Schottelius <nicos@pcsystems.de>
++  *
+++ * Tue,  5 Jan 1999 23:44:58 +0000, modified by James Troup <james@nocrew.org>:
+++ *  Improved (?) descriptions of mouse types.
+++ *  (M_listMice): function used by -t help, reworked version of old
+++ *                M_listTypes.
+++ *  (M_listTypes): function used by -t types; lists only mnemonics.
+++ *
++  *   This program is free software; you can redistribute it and/or modify
++  *   it under the terms of the GNU General Public License as published by
++  *   the Free Software Foundation; either version 2 of the License, or
++@@ -51,6 +57,7 @@
++ #include <errno.h>
++ #include <unistd.h>
++ #include <strings.h>
+++#include <string.h>
++ #include <ctype.h>
++ 
++ #include <sys/types.h>
++@@ -2131,10 +2138,14 @@
++   */
++ 
++ Gpm_Type mice[]={
++-  {"mman", "The \"MouseMan\" and similar devices (3/4 bytes per packet).",
+++  {"mman", "The MouseMan protocol used by new Logitech mice.",
+++           /* The \"MouseMan\" and similar devices (3/4 bytes per packet). */
++            "Mouseman", M_mman, I_serial, CS7 | STD_FLG, /* first */
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 1, 0, 0},
++-  {"ms",   "The original ms protocol, with a middle-button extension.",
+++  {"ms",   "For Microsoft mice (2 or 3 buttons). Some old 2 button mice\n"
+++           "                     send some spurious packets, which can be misunderstood as\n"
+++           "                     middle-button events. If this is happens to you, use the\n"
+++           "                     'bare' mouse type.",
++            "", M_ms, I_serial, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 0, 0, 0},
++   {"ms+", "Like 'ms', but allows dragging with the middle button.",
++@@ -2143,25 +2154,29 @@
++   {"ms+lr", "'ms+', but you can reset m by pressing lr (see man page).",
++            "", M_ms_plus_lr, I_serial, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 0, 0, 0},
++-  {"bare", "Unadorned ms protocol. Needed with some 2-buttons mice.",
+++  {"bare", "For some 2 button Microsoft mice. Same as 'ms' except that\n"
+++           "                     gpm will not attempt to simulate a third button.",
++            "Microsoft", M_bare, I_serial, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 0, 0, 0},
++-  {"msc",  "Mouse-Systems-Compatible (5bytes). Most 3-button mice.",
+++  {"msc",  "For most 3 button serial mice.",
+++           /* Mouse-Systems-Compatible (5bytes). Most 3-button mice. */
++            "MouseSystems", M_msc, I_serial, CS8 | CSTOPB | STD_FLG,
++                                 {0xf8, 0x80, 0x00, 0x00}, 5, 1, 0, 0, R_msc},
++-  {"sun",  "'msc' protocol, but only 3 bytes per packet.",
+++  {"sun",  "For Sparc mice.",
+++           /* 'msc' protocol, but only 3 bytes per packet. */
++            "", M_sun, I_serial, CS8 | CSTOPB | STD_FLG,
++                                 {0xf8, 0x80, 0x00, 0x00}, 3, 1, 0, 0, 0},
++   {"mm",   "MM series. Probably an old protocol...",
++            "MMSeries", M_mm, I_serial, CS8 | PARENB|PARODD | STD_FLG,
++                                 {0xe0, 0x80, 0x80, 0x00}, 3, 1, 0, 0, 0},
++-  {"logi", "Used in some Logitech devices (only serial).",
+++  {"logi", "For old serial Logitech mice.",
++            "Logitech", M_logi, I_logi, CS8 | CSTOPB | STD_FLG,
++                                 {0xe0, 0x80, 0x80, 0x00}, 3, 3, 0, 0, 0},
++-  {"bm",   "Micro$oft busmice and compatible devices.",
+++  {"bm",   "For some busmice, including Microsoft and Logitech busmice.",
++            "BusMouse", M_bm, I_empty, STD_FLG, /* bm is sun */
++                                 {0xf8, 0x80, 0x00, 0x00}, 3, 3, 0, 0, 0},
++-  {"ps2",  "Busmice of the ps/2 series. Most busmice, actually.",
+++  {"ps2",  "For most busmice connected to a PS/2 port (round with 6 metal\n"
+++           "                     pins).",
++            "PS/2", M_ps2, I_empty, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
++   {"ncr",  "Ncr3125pen, found on some laptops",
++@@ -2173,60 +2188,65 @@
++   {"genitizer", "\"Genitizer\" tablet, in relative mode.",
++            "", M_geni, I_serial, CS8|PARENB|PARODD,
++                                 {0x80, 0x80, 0x00, 0x00}, 3, 1, 0, 0, 0},
++-  {"logim",  "Turn logitech into Mouse-Systems-Compatible.",
+++  {"logim","For turning on the MouseSystems compatible mode (3 buttons)\n"
+++           "                     of some Logitech mice.",
++            "", M_logimsc, I_serial, CS8 | CSTOPB | STD_FLG,
++                                 {0xf8, 0x80, 0x00, 0x00}, 5, 1, 0, 0, 0},
++-  {"pnp",  "Plug and pray. New mice may not run with '-t ms'.",
+++  {"pnp",  "For the new 'plug and play' mice produced by Microsoft.\n"
+++           "                     Try it if '-t ms' does not work.",
++            "", M_bare, I_pnp, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 0, 0, 0},
++-  {"imps2","Microsoft Intellimouse (ps2) - autodetect 2/3 buttons,wheel unused",
+++  {"imps2","For the Microsoft IntelliMouse on a PS/2 port (round\n"
+++           "                     connector with 6 pins), 3 buttons (wheel is repeated).",
+++
++            "", M_imps2, I_imps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++   {"exps2",   "IntelliMouse Explorer (ps2) - 3 buttons, wheel unused",
++            "ExplorerPS/2", M_ps2, I_exps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++-  {"ms3", "Microsoft Intellimouse (serial) - 3 buttons, wheel unused",
+++  {"ms3",  "For the Microsoft IntelliMouse (serial), 3 buttons (wheel is repeated).",
++            "", M_ms3, I_pnp, CS7 | STD_FLG,
++                                 {0xc0, 0x40, 0xc0, 0x00}, 4, 1, 0, 0, R_ms3},
++-  {"netmouse",  "Genius NetMouse (ps2) - 2 buttons and 2 buttons 'up'/'down'.", 
+++  {"netmouse","For the \"Genius NetMouse\". This one has two normal buttons plus\n"
+++              "                     'up'/'down' buttons.",
++            "", M_netmouse, I_netmouse, CS7 | STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++-  {"cal", "Calcomp UltraSlate",
+++  {"cal", "For a Calcomp UltraSlate",
++            "", M_calus, I_calus, CS8 | CSTOPB | STD_FLG,
++                                 {0x80, 0x80, 0x80, 0x00}, 6, 6, 0, 1, 0},
++-  {"calr", "Calcomp UltraSlate - relative mode",
+++  {"calr", "For a Calcomp UltraSlate in relative mode.",
++            "", M_calus_rel, I_calus, CS8 | CSTOPB | STD_FLG,
++                                 {0x80, 0x80, 0x80, 0x00}, 6, 6, 0, 0, 0},
++-  {"twid", "Twidddler keyboard",
+++  {"twid", "For the \"Twidddler\" keyboard.",
++            "", M_twid, I_twid, CS8 | STD_FLG,
++                                 {0x80, 0x00, 0x80, 0x80}, 5, 1, 0, 0, 0},
++-  {"syn", "The \"Synaptics\" serial TouchPad.",
+++  {"syn", "For the \"Synaptics\" serial TouchPad.",
++            "synaptics", M_synaptics_serial, I_serial, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 6, 6, 1, 0, 0},
++-  {"synps2", "The \"Synaptics\" PS/2 TouchPad",
+++  {"synps2", "For the \"Synaptics\" PS/2 TouchPad",
++            "synaptics_ps2", M_synaptics_ps2, I_synps2, STD_FLG,
++                                 {0x80, 0x80, 0x00, 0x00}, 6, 1, 1, 0, 0},
++-  {"brw",  "Fellowes Browser - 4 buttons (and a wheel) (dual protocol?)",
+++  {"brw",  "For the Fellowes Browser - 4 buttons (and a wheel) (dual protocol?).",
++            "", M_brw, I_pnp, CS7 | STD_FLG,
++                                 {0xc0, 0x40, 0xc0, 0x00}, 4, 1, 0, 0, 0},
++ 
++ #ifdef HAVE_LINUX_JOYSTICK_H
++-  {"js",   "Joystick mouse emulation",
+++  {"js",   "For \"Joystick\" mouse emulation.",
++            "Joystick", M_js, NULL, 0,
++                               {0xFC, 0x00, 0x00, 0x00}, 12, 12, 0, 0, 0},
++ #endif
++ 
++-  {"summa",  "Summagraphics or Genius tablet absolute mode(MM-Series)",
+++  {"summa",  "For a Summa/Genius tablet in absolute mode (906,1212B,EasyPainter...).",
++            "", M_summa, I_summa, STD_FLG,
++                                 {0x80, 0x80, 0x00, 0x00}, 5, 1, 0, 1, R_summa},
++-  {"mtouch",  "MicroTouch touch-screens (only button-1 events, by now)",
+++  {"mtouch",  "For MicroTouch touch-screens (only button-1 events right now).",
++            "", M_mtouch, I_mtouch, STD_FLG,
++                                 {0x80, 0x80, 0x80, 0x00}, 5, 1, 0, 1, NULL}, 
++   {"gunze",  "Gunze touch-screens (only button-1 events, by now)",
++            "", M_gunze, I_gunze, STD_FLG,
++                                 {0xF9, 0x50, 0xF0, 0x30}, 11, 1, 0, 1, NULL}, 
++ 
++-  {"acecad",  "Acecad tablet absolute mode(Sumagrapics MM-Series mode)",
+++  {"acecad", "For Acecad tablet in absolute mode (Sumagrapics MM-Series mode).",
++            "", M_summa, I_summa, STD_FLG,
++                                 {0x80, 0x80, 0x00, 0x00}, 7, 1, 0, 1, 0}, 
++ 
++@@ -2242,18 +2262,37 @@
++ /*------------------------------------------------------------------------*/
++ /* and the help */
++ 
++-int M_listTypes(void)
+++int M_listMice(void)
++ {
++   Gpm_Type *type;
++ 
++   printf("\n" GPM_NAME " " GPM_RELEASE ", " GPM_DATE "\n");
++   printf("Available mouse types are:\n\n");
++-  printf("r name   synonym         description\n\n");
++-  for (type=mice; type->fun; type++)
++-    printf("%c %-8s %s\n            Synonyms: %s\n", type->repeat_fun ?'*':' ',
++-	   type->name, type->desc, type->synonyms);
+++  printf("name (synonym)       description\n\n");
+++  for (type=mice; type->fun; type++) {
+++    char buffer[30];
+++    if (type->synonyms[0]=='\0')
+++      sprintf(buffer,"%s",type->name);
+++    else
+++      sprintf(buffer,"%s (%s)",type->name,type->synonyms);
+++    printf("%-18s - %s\n",buffer, type->desc);
+++  }
++ 
++   putchar('\n');
+++
+++  return 1; /* to exit() */
+++}
+++
+++int M_listTypes(void)
+++{
+++  Gpm_Type *type;
+++
+++  /* Only print the mouse mnemonics so that it is easy to parse */
+++  for (type=mice; type->fun; type++) {
+++    printf("%s\n",type->name);
+++    if (type->synonyms[0]!='\0')
+++      printf("%s\n", type->synonyms);
+++  }
++ 
++   return 1; /* to exit() */
++ }
+--- gpm-1.19.6.orig/debian/patches/006_version_000
++++ gpm-1.19.6/debian/patches/006_version_000
+@@ -0,0 +1,16 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/configure.in gpm-1.19.6/configure.in
++--- gpm-1.19.6.orig/configure.in	Thu Sep 20 17:27:21 2001
+++++ gpm-1.19.6/configure.in	Thu Oct  4 23:36:45 2001
++@@ -13,9 +13,9 @@
++ 
++ dnl These are chosen so that we can switch to the libtool scheme
++ dnl transparently.
++-abi=19
++-abi_age=18
++-abi_rev=0
+++abi=20
+++abi_age=19
+++abi_rev=6
++ 
++ abi_lev=`expr $abi - $abi_age`
++ abi_full=$abi_lev.$abi_age.$abi_rev
+--- gpm-1.19.6.orig/debian/patches/007_doc_fix_000
++++ gpm-1.19.6/debian/patches/007_doc_fix_000
+@@ -0,0 +1,21 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/doc/doc.gpm gpm-1.19.6/doc/doc.gpm
++--- gpm-1.19.6.orig/doc/doc.gpm.in Wed Sep 19 16:22:22 2001
+++++ gpm-1.19.6/doc/doc.gpm.in      Thu Oct  4 23:37:34 2001
++@@ -86,7 +86,7 @@
++ @subtitle A general purpose mouse server for the Linux console
++ @subtitle @value{update-month}
++
++-@author by Nico Schottelius <nico@schottelius.org>
+++@author by Nico Schottelius <nico@@schottelius.org>
++
++ @end titlepage
++ @setchapternewpage off
++@@ -404,7 +404,7 @@
++         Set the responsiveness. A higher
++ 	responsiveness is used for a faster cursor motion.
++ 
++-@item -R @var{name}
+++@item -R@var{name}
++         Causes @code{gpm} to act as a repeater: any mouse data received while
++         in graphic mode will be produced on the fifo @file{/dev/gpmdata}
++         in protocol @var{name}.  In principle, you can use the same
+--- gpm-1.19.6.orig/debian/patches/010_ps2_rework_mice_c_001
++++ gpm-1.19.6/debian/patches/010_ps2_rework_mice_c_001
+@@ -0,0 +1,404 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h* -x *.elc -x *.d gpm-1.19.6.orig/src/mice.c gpm-1.19.6/src/mice.c
++--- gpm-1.19.6.orig/src/mice.c	Thu Feb 21 20:39:35 2002
+++++ gpm-1.19.6/src/mice.c	Thu Feb 21 20:24:05 2002
++@@ -5,6 +5,7 @@
++  * Copyright (C) 1994-2000   Alessandro Rubini <rubini@linux.it>
++  * Copyright (C) 1998,1999   Ian Zimmerman <itz@rahul.net>
++  * Copyright (C) 2001        Nico Schottelius <nicos@pcsystems.de>
+++ * Copyright (C) 2002        Zephaniah E. Hull <warp@debian.org
++  *
++  * Tue,  5 Jan 1999 23:44:58 +0000, modified by James Troup <james@nocrew.org>:
++  *  Improved (?) descriptions of mouse types.
++@@ -63,6 +64,7 @@
++ #include <sys/types.h>
++ #include <sys/stat.h> /* stat() */
++ #include <sys/time.h> /* select() */
+++#include <sys/poll.h> /* poll() */
++ 
++ #include <linux/kdev_t.h> /* MAJOR */
++ #include <linux/keyboard.h>
++@@ -533,62 +535,64 @@
++   return 0;
++ }
++ 
+++/*
+++ * PS/2 mouse parser.
+++ * Also called by the 'children' of the PS/2 mouse, for insanity sake.
+++ *  -- Zephaniah E. Hull.
+++ */
+++/* Some PS/2 mice send reports with negative bit set in data[0]
+++ * and zero for movement.  I think this is a bug in the mouse, but
+++ * working around it only causes artifacts when the actual report is -256;
+++ * they'll be treated as zero. This should be rare if the mouse sampling
+++ * rate is set to a reasonable value; the default of 100 Hz is plenty.
+++ * (Stephen Tell)
+++ */
+++
++ static int M_ps2(Gpm_Event *state,  unsigned char *data)
++ {
++   static int tap_active=0; /* there exist glidepoint ps2 mice */
++ 
++-  state->buttons=
++-    !!(data[0]&1) * GPM_B_LEFT +
++-    !!(data[0]&2) * GPM_B_RIGHT +
++-    !!(data[0]&4) * GPM_B_MIDDLE;
+++  state->dx = state->dy = state->wdx = state->wdy = 0;
++ 
++-  if (data[0]==0 && opt_glidepoint_tap) /* by default this is false */
+++  state->buttons =
+++    ((data[0] & 0x02) ? (1 << 0) : 0) |		// Right.
+++    ((data[0] & 0x04) ? (1 << 1) : 0) |		// Middle.
+++    ((data[0] & 0x01) ? (1 << 2) : 0);		// Left.
+++
+++  if (!data[0] && opt_glidepoint_tap) /* by default this is false */
++     state->buttons = tap_active = opt_glidepoint_tap;
++   else if (tap_active) {
++     if (data[0]==8)
++       state->buttons = tap_active = 0;
++     else state->buttons = tap_active;
++-  }  
+++  }
+++
+++  if (data[1])
+++    state->dx =   (data[0] & 0x10) ? data[1]-256 : data[1];
+++  if (data[2])
+++    state->dy = -((data[0] & 0x20) ? data[2]-256 : data[2]);
++ 
++- /* Some PS/2 mice send reports with negative bit set in data[0]
++-  * and zero for movement.  I think this is a bug in the mouse, but
++-  * working around it only causes artifacts when the actual report is -256;
++-  * they'll be treated as zero. This should be rare if the mouse sampling
++-  * rate is set to a reasonable value; the default of 100 Hz is plenty.
++-  * (Stephen Tell)
++-  */
++-  if(data[1] != 0)
++-    state->dx=   (data[0] & 0x10) ? data[1]-256 : data[1];
++-  else
++-    state->dx = 0;
++-  if(data[2] != 0)
++-    state->dy= -((data[0] & 0x20) ? data[2]-256 : data[2]);
++-  else
++-    state->dy = 0;
++   return 0;
++ }
++ 
+++/*
+++ * I cheat, because the two protocols are almost identical except for
+++ * the 4th and 5th buttons, I just handle both.
+++ *
+++ * Note, the only thing that I've seen describe the 4th and 5th buttons
+++ * for the IMPS/2 protocol is the X4 source, someone let me know if they
+++ * actually see this used?
+++ *  -- Zephaniah E. Hull.
+++ */
++ static int M_imps2(Gpm_Event *state,  unsigned char *data)
++ {
++-  static int tap_active=0;     // there exist glidepoint ps2 mice
++-  state->wdx = state->wdy = 0; // Clear them..
+++  M_ps2(state, data);
++ 
++-  state->dx = state->dy = state->wdx = state->wdy = 0;
++-
++-  state->buttons= ((data[0] & 1) << 2) // left
++-    | ((data[0] & 6) >> 1); // middle and right
++-
++-  if (data[0]==0 && opt_glidepoint_tap) // by default this is false
++-    state->buttons = tap_active = opt_glidepoint_tap;
++-  else if (tap_active) {
++-    if (data[0]==8)
++-      state->buttons = tap_active = 0;
++-    else state->buttons = tap_active;
++-  }
++-
++-  // Standard movement..
++-  state->dx = (data[0] & 0x10) ? data[1] - 256 : data[1];
++-  state->dy = (data[0] & 0x20) ? -(data[2] - 256) : -data[2];
+++  state->buttons +=
+++    ((data[0] & 0x40) ? (1 << 3) : 0) | // IMPS/2 Button 4
+++    ((data[0] & 0x80) ? (1 << 4) : 0) | // IMPS/2 Button 5
+++    ((data[3] & 0x10) ? (1 << 3) : 0) | // EXPS/2 Button 4
+++    ((data[3] & 0x20) ? (1 << 4) : 0);  // EXPS/2 Button 5
++ 
++   // The wheels..
++   switch (data[3] & 0x0f) {
++@@ -1814,97 +1818,168 @@
++  * 
++  * Returns 0 if OK, or >0 if 1 or more errors occurred.
++  */
++-static int write_to_mouse(int fd, unsigned char *data, size_t len)
+++static int write_ps2(int fd, unsigned char cmd0, unsigned char cmd1,
+++    	size_t num, size_t rnum, unsigned long int sleep)
++ {
++-  int i;
++-  int error = 0;
++-  for (i = 0; i < len; i++) {
++-    unsigned char c;
++-    write(fd, &data[i], 1);
++-    read(fd, &c, 1);
++-    if (c != GPM_AUX_ACK) {
+++  int i, error = 0, rcnt;
+++  unsigned char cmd[2], ret[512];
+++//  struct pollfd ufds;
+++
+++  cmd[0] = cmd0; cmd[1] = cmd1;
+++
+++  if (sleep == -1)
+++      sleep = 50000;
+++
+++  alarm(1);
+++  rcnt = write(fd, cmd, num);
+++  alarm(0);
+++  if (rcnt != num)
+++    return 1;
+++
+++  usleep(sleep);
+++
+++  alarm(1);
+++  rcnt = read(fd, ret, sizeof(ret));
+++  alarm(0);
+++
+++  usleep(sleep);
+++
+++  if (rcnt <= 0)
+++	error++;
+++
+++  for (i = 0; i < rcnt; i++) {
+++    if (ret[i] != GPM_AUX_ACK)
++       error++;
++-    }
++   }
++ 
++-  /* flush any left-over input */
++-  usleep (30000);
++-  tcflush (fd, TCIFLUSH);
++   return(error);
++ }
++ 
+++static Gpm_Type *get_mouse_type (char *name)
+++{
+++  Gpm_Type *type;
+++
+++  for (type=mice; type->fun; type++) {
+++    if (strcmp(type->name, name) == 0) {
+++      return(type);
+++    }
+++  }
+++  return NULL;
+++}
++ 
++ /* intellimouse, ps2 version: Ben Pfaff and Colin Plumb */
++ /* Autodetect: Steve Bennett */
++-static Gpm_Type *I_imps2(int fd, unsigned short flags, struct Gpm_Type *type)
+++static Gpm_Type *I_ps2(int fd, unsigned short flags_unused,
+++	struct Gpm_Type *type, int argc, char **argv)
++ {
++-  int id;
++-  static unsigned char basic_init[] = { GPM_AUX_ENABLE_DEV, GPM_AUX_SET_SAMPLE, 100 };
++-  static unsigned char imps2_init[] = { GPM_AUX_SET_SAMPLE, 200, GPM_AUX_SET_SAMPLE, 100, GPM_AUX_SET_SAMPLE, 80, };
++-  static unsigned char ps2_init[] = { GPM_AUX_SET_SCALE11, GPM_AUX_ENABLE_DEV, GPM_AUX_SET_SAMPLE, 100, GPM_AUX_SET_RES, 3, };
++-
++-  /* Do a basic init in case the mouse is confused */
++-  write_to_mouse(fd, basic_init, sizeof (basic_init));
++-
++-  /* Now try again and make sure we have a PS/2 mouse */
++-  if (write_to_mouse(fd, basic_init, sizeof (basic_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed init");
++-    return(NULL);
++-  }
+++  int id, error = 0, rate;
++ 
++-  /* Try to switch to 3 button mode */
++-  if (write_to_mouse(fd, imps2_init, sizeof (imps2_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed (3 button) init");
++-    return(NULL);
++-  }
++-
++-  /* Read the mouse id */
++-  id = read_mouse_id(fd);
++-  if (id == GPM_AUX_ID_ERROR) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed to read id, assuming standard PS/2");
++-    id = GPM_AUX_ID_PS2;
++-  }
+++  /* Flush any existing input. */
+++  tcflush (fd, TCIOFLUSH);
++ 
++-  /* And do the real initialisation */
++-  if (write_to_mouse(fd, ps2_init, sizeof (ps2_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed setup, continuing...");
+++  if (write_ps2 (fd, GPM_AUX_DEFAULTS, '\0', 1, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init");
+++    return(NULL);
++   }
++ 
++-  if (id == GPM_AUX_ID_IMPS2) {
++-    /* Really an intellipoint, so initialise 3 button mode (4 byte packets) */
++-    gpm_debug_log(LOG_NOTICE, "imps2: Auto-detected intellimouse PS/2");
++-
++-    return type;
++-  }
++-  if (id != GPM_AUX_ID_PS2) {
++-    gpm_debug_log(LOG_ERR, "imps2: Auto-detected unknown mouse type %d, assuming standard PS/2", id);
++-  }
++-  else {
++-    gpm_debug_log(LOG_NOTICE, "imps2: Auto-detected standard PS/2");
++-  }
++-  for (type=mice; type->fun; type++) {
++-    if (strcmp(type->name, "ps2") == 0) {
++-      return(type);
+++  // Magic to enable the IMPS/2 protocol.
+++  if ((!strcmp(type->name, "imps2")) || (!strcmp(type->name, "autops2"))) {
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
+++    if (error) {
+++      gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed (3 button) init");
+++      return(NULL);
+++    }
+++  }
+++  if ((!strcmp(type->name, "exps2")) || (!strcmp(type->name, "autops2"))) {
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
+++    if (error) {
+++      gpm_debug_log (LOG_ERR, "exps2: PS/2 mouse failed (3 button) init");
+++      return (NULL);
+++    }
+++  }
+++
+++  if (write_ps2 (fd, GPM_AUX_SET_SCALE11, '\0', 1, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init: Unable to set 1:1 scale.");
+++    return (NULL);
+++  }
+++
+++  if (opt_sample > 0) {
+++    if (opt_sample >= 200) rate = 200;
+++    else if (opt_sample >= 100) rate = 100;
+++    else if (opt_sample >= 80) rate = 80;
+++    else if (opt_sample >= 60) rate = 60;
+++    else if (opt_sample >= 40) rate = 40;
+++    else if (opt_sample >= 20) rate = 20;
+++    else if (opt_sample >= 10) rate = 10;
+++    else rate = 100;
+++  } else {
+++    rate = 100;
+++  }
+++
+++  if (write_ps2 (fd, GPM_AUX_SET_SAMPLE, rate, 2, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init: Unable to set rate.");
+++    return (NULL);
+++  }
+++
+++  if (!strcmp(type->name, "autops2")) {
+++    /* Read the mouse id */
+++    id = read_mouse_id(fd);
+++
+++    switch (id) {
+++      case GPM_AUX_ID_ERROR:
+++	gpm_debug_log (LOG_ERR, "Unable to read PS/2 mouse ID: Using base PS/2 protocol.\n");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	return get_mouse_type("ps2");
+++      case GPM_AUX_ID_PS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected base PS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	return get_mouse_type("ps2");
+++      case GPM_AUX_ID_IMPS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected IMPS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	return get_mouse_type("imps2");
+++      case GPM_AUX_ID_EXPS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected EXPS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	return get_mouse_type("exps2");
+++      default:
+++	gpm_debug_log (LOG_ERR, "Unknown mouse ID, using base PS/2 protocol.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	return get_mouse_type("ps2");
++     }
++   }
++-  /* ps2 was not found!!! */
++-  return(NULL);
+++
+++  write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++  write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++  return type;
++ }
++ 
++-/*
++- * This works with Dexxa Optical Mouse, but because in X same initstring
++- * is named ExplorerPS/2 so I named it in the same way.
++- */
++-static Gpm_Type *I_exps2(int fd, unsigned short flags,
++-			 struct Gpm_Type *type, int argc, char **argv)
+++/* PS/2 Init */
+++static Gpm_Type *I_fuimps2(int fd, unsigned short flags,
+++                               struct Gpm_Type *type, int argc, char **argv)
++ {
++-  static unsigned char s1[] = { 243, 200, 243, 200, 243, 80, };
+++  int error = 0;
++ 
++   if (check_no_argv(argc, argv)) return NULL;
++ 
++-  write (fd, s1, sizeof (s1));
++-  usleep (30000);
++-  tcflush (fd, TCIFLUSH);
+++  // Magic to enable the IMPS/2 protocol.
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 2, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
+++  if (error) {
+++    gpm_debug_log(LOG_ERR, "fuimps2: PS/2 mouse failed (3 button) init");
+++    return(NULL);
+++  }
+++
++   return type;
++ }
++ 
++@@ -2251,10 +2326,6 @@
++   {"bm",   "For some busmice, including Microsoft and Logitech busmice.",
++            "BusMouse", M_bm, I_empty, STD_FLG, /* bm is sun */
++                                 {0xf8, 0x80, 0x00, 0x00}, 3, 3, 0, 0, 0},
++-  {"ps2",  "For most busmice connected to a PS/2 port (round with 6 metal\n"
++-           "                     pins).",
++-           "PS/2", M_ps2, I_empty, STD_FLG,
++-                                {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
++   {"ncr",  "Ncr3125pen, found on some laptops",
++            "", M_ncr, NULL, STD_FLG,
++                                 {0x08, 0x08, 0x00, 0x00}, 7, 7, 0, 1, 0},
++@@ -2272,14 +2343,26 @@
++            "                     Try it if '-t ms' does not work.",
++            "", M_bare, I_pnp, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 0, 0, 0},
++-  {"imps2","For the Microsoft IntelliMouse on a PS/2 port (round\n"
++-           "                     connector with 6 pins), 3 buttons (wheel is repeated).",
++-
++-           "", M_imps2, I_imps2, STD_FLG,
+++  {"ps2",  "For PS/2 mice (round with 6 metal pins).\n",
+++           "PS/2", M_ps2, I_ps2, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
+++  {"fups2",  "For /BROKEN/ PS/2 mice (round with 6 metal pins).\n",
+++           "PS/2", M_ps2, I_empty, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
+++  {"imps2","For the Microsoft IntelliMouse on a PS/2 port\n"
+++           "(round connector with 6 pins), 3 buttons (wheel is repeated).",
+++           "", M_imps2, I_ps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++-  {"exps2",   "IntelliMouse Explorer (ps2) - 3 buttons, wheel unused",
++-           "ExplorerPS/2", M_ps2, I_exps2, STD_FLG,
+++  {"fuimps2","For BROKEN wheel mice on a PS/2 port\n"
+++           "(round connector with 6 pins), 3 buttons (wheel is repeated).",
+++           "", M_imps2, I_fuimps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
+++  {"exps2",  "IntelliMouse Explorer (ps2) - 3 buttons (wheel is repeated).",
+++           "ExplorerPS/2", M_imps2, I_ps2, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
+++  {"autops2","For PS/2 type mouse, specific protocol will be auto detected",
+++           "", M_ps2, I_ps2, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
++   {"ms3",  "For the Microsoft IntelliMouse (serial), 3 buttons (wheel is repeated).",
++            "", M_ms3, I_pnp, CS7 | STD_FLG,
++                                 {0xc0, 0x40, 0xc0, 0x00}, 4, 1, 0, 0, R_ms3},
+--- gpm-1.19.6.orig/debian/patches/010_ps2_rework_defines_h_000
++++ gpm-1.19.6/debian/patches/010_ps2_rework_defines_h_000
+@@ -0,0 +1,19 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc -x *.d gpm-1.19.6.orig/src/headers/defines.h gpm-1.19.6/src/headers/defines.h
++--- gpm-1.19.6.orig/src/headers/defines.h	Mon Oct 22 05:57:05 2001
+++++ gpm-1.19.6/src/headers/defines.h	Mon Oct 22 04:57:23 2001
++@@ -48,6 +48,7 @@
++ #define GPM_AUX_ID_ERROR   -1
++ #define GPM_AUX_ID_PS2     0
++ #define GPM_AUX_ID_IMPS2   3
+++#define GPM_AUX_ID_EXPS2   4
++ 
++ /* these are shameless stolen from /usr/src/linux/include/linux/pc_keyb.h    */
++ 
++@@ -59,6 +60,7 @@
++ #define GPM_AUX_SET_SAMPLE     0xF3  /* Set sample rate */ 
++ #define GPM_AUX_ENABLE_DEV     0xF4  /* Enable aux device */
++ #define GPM_AUX_DISABLE_DEV    0xF5  /* Disable aux device */
+++#define GPM_AUX_DEFAULTS       0xF6  /* Reset to defaults */
++ #define GPM_AUX_RESET          0xFF  /* Reset aux device */
++ #define GPM_AUX_ACK            0xFA  /* Command byte ACK. */ 
++ 
+--- gpm-1.19.6.orig/debian/patches/004_priv_elevation_000
++++ gpm-1.19.6/debian/patches/004_priv_elevation_000
+@@ -0,0 +1,47 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/gpm-root.y gpm-1.19.6/src/gpm-root.y
++--- gpm-1.19.6.orig/src/gpm-root.y	Sat Sep 15 17:17:19 2001
+++++ gpm-1.19.6/src/gpm-root.y	Thu Oct  4 23:34:39 2001
++@@ -445,14 +445,19 @@
++ }
++ 
++ /*====================================================================*/
++-void f__fix(struct passwd *pass)
+++static int f__fix(struct passwd *pass)
++ {
++-  setgid(pass->pw_gid);
++-  initgroups(pass->pw_name, pass->pw_gid);
++-  setuid(pass->pw_uid);
+++  /* CPhipps 2000/02/14 -
+++   * Flag failure to drop priviledges */
+++  if (setgid(pass->pw_gid) || initgroups(pass->pw_name, pass->pw_gid)
+++      || setuid(pass->pw_uid))
+++    return -1;
+++  /* We don't mind if these fail */
++   setenv("HOME",    pass->pw_dir, 1);
++   setenv("LOGNAME", pass->pw_name,1);
++   setenv("USER",    pass->pw_name,1);
+++  /* Paranoia */
+++  return (chdir(pass->pw_dir) && chdir("/"));
++ }
++ 
++ /*---------------------------------------------------------------------*/
++@@ -541,14 +546,16 @@
++           return 1;
++ 
++ 	case 0:
+++	  /* CPhipps 2000/02/14 - we _must_ keep root priviledges as
+++	   * far as the f__fix call, otherwise that won't be able to
+++	   * drop groups. */
++ 	  pass=getpwuid(uid);
++ 	  if (!pass) exit(1);
++-	  f__fix(pass); /* setgid(), setuid(), setenv(), ... */
++-	  close(0); close(1); close(2);
+++	  if (f__fix(pass)) exit(1); /* Abort if not dropped completely */
+++	  for (i=0;i<OPEN_MAX; i++) close(i);
++ 	  open("/dev/null",O_RDONLY); /* stdin  */
++ 	  open("/dev/tty0",O_WRONLY); /* stdout */
++ 	  dup(1);                     /* stderr */  
++-	  for (i=3;i<OPEN_MAX; i++) close(i);
++ 	  execl("/bin/sh","sh","-c",self->arg,(char *)NULL);
++ 	  exit(1); /* shouldn't happen */
++ 
+--- gpm-1.19.6.orig/debian/patches/007_doc_fix_001
++++ gpm-1.19.6/debian/patches/007_doc_fix_001
+@@ -0,0 +1,11 @@
++--- gpm-1.19.6/doc/mktxt~	Wed Nov 21 07:32:08 2001
+++++ gpm-1.19.6/doc/mktxt	Wed Nov 21 07:32:24 2001
++@@ -29,7 +29,7 @@
++ NODELINE==5  { printf "\t\t\t\t"; NODELINE=0}
++ 
++ 
++-/^* Menu:$/  { KEEP=0 }
+++/^.* Menu:$/  { KEEP=0 }
++ 
++ 
++ 
+--- gpm-1.19.6.orig/debian/patches/008_sun_repeat_000
++++ gpm-1.19.6/debian/patches/008_sun_repeat_000
+@@ -0,0 +1,29 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/mice.c gpm-1.19.6/src/mice.c
++--- gpm-1.19.6.orig/src/mice.c	Thu Oct  4 23:38:59 2001
+++++ gpm-1.19.6/src/mice.c	Thu Oct  4 23:38:53 2001
++@@ -465,6 +465,16 @@
++   return 0;
++ }
++ 
+++static int R_sun(Gpm_Event *state, int fd)
+++{
+++  signed char buffer[3];
+++
+++  buffer[0]= (state->buttons ^ 0x07) | 0x80;
+++  buffer[1]= state->dx;
+++  buffer[2]= -(state->dy);
+++  return write(fd,buffer,3);
+++}
+++
++ static int M_msc(Gpm_Event *state,  unsigned char *data)
++ {
++   state->buttons= (~data[0]) & 0x07;
++@@ -2165,7 +2175,7 @@
++   {"sun",  "For Sparc mice.",
++            /* 'msc' protocol, but only 3 bytes per packet. */
++            "", M_sun, I_serial, CS8 | CSTOPB | STD_FLG,
++-                                {0xf8, 0x80, 0x00, 0x00}, 3, 1, 0, 0, 0},
+++                                {0xf8, 0x80, 0x00, 0x00}, 3, 1, 0, 0, R_sun},
++   {"mm",   "MM series. Probably an old protocol...",
++            "MMSeries", M_mm, I_serial, CS8 | PARENB|PARODD | STD_FLG,
++                                 {0xe0, 0x80, 0x80, 0x00}, 3, 1, 0, 0, 0},
+--- gpm-1.19.6.orig/debian/patches/010_ps2_rework_gpm_c_000
++++ gpm-1.19.6/debian/patches/010_ps2_rework_gpm_c_000
+@@ -0,0 +1,29 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc -x *.d gpm-1.19.6.orig/src/gpm.c gpm-1.19.6/src/gpm.c
++--- gpm-1.19.6.orig/src/gpm.c	Mon Oct 22 05:57:05 2001
+++++ gpm-1.19.6/src/gpm.c	Mon Oct 22 05:51:57 2001
++@@ -410,7 +410,7 @@
++ {
++   char *data;
++   static int fine_dx, fine_dy;
++-  static int i, j, m;
+++  static int i, j, m, obuttons;
++   static Gpm_Event nEvent;
++   static struct vt_stat stat;
++   static struct timeval tv1={0,0}, tv2; /* tv1==0: first click is single */
++@@ -459,7 +459,15 @@
++       event->modifiers = nEvent.modifiers; /* propagate modifiers */
++ 
++       /* propagate buttons */
++-      nEvent.buttons = opt_sequence[nEvent.buttons]&7; /* change the order */
+++      /* Change the button order */
+++      obuttons = nEvent.buttons;
+++      nEvent.buttons = 0;
+++      for (j = 0; j < 8; j++) {
+++	if (obuttons & (1 << j)) {
+++	  nEvent.buttons |= opt_buts[j];
+++	}
+++      }
+++//    nEvent.buttons = opt_sequence[nEvent.buttons]&7; /* change the order */
++       oldB=newB; newB=nEvent.buttons;
++       if (!i) event->buttons=nEvent.buttons;
++ 
+--- gpm-1.19.6.orig/debian/patches/010_ps2_rework_gpn_c_000
++++ gpm-1.19.6/debian/patches/010_ps2_rework_gpn_c_000
+@@ -0,0 +1,55 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h* -x *.elc -x *.d gpm-1.19.6.orig/src/gpn.c gpm-1.19.6/src/gpn.c
++--- gpm-1.19.6.orig/src/gpn.c	Wed Jan  9 16:54:18 2002
+++++ gpm-1.19.6/src/gpn.c	Wed Jan  9 16:53:57 2002
++@@ -298,16 +298,8 @@
++ cmdline(int argc, char **argv)
++ {
++   char options[]="a:A::b:B:d:Dg:hi:kl:m:Mo:pr:FR::s:S:t:TveV::23";
++-  int i, opt;
++-  static struct {char *in; char *out;} seq[] = {
++-    {"123","01234567"},
++-    {"132","02134657"},
++-    {"213","01452367"}, /* warning: these must be readable as integers... */
++-    {"231","02461357"},
++-    {"312","04152637"},
++-    {"321","04261537"},
++-    {NULL,NULL}
++-  };
+++  int i, j, opt;
+++  char *p;
++ 
++   /* initialize for the dual mouse */
++   mouse_table[2]=mouse_table[1]=mouse_table[0]; /* copy defaults */
++@@ -424,18 +416,23 @@
++ 
++       if (opt_accel<1) exit(usage("acceleration"));
++       if (opt_delta<2) exit(usage("delta"));
++-      if (strlen(opt_sequence)!=3 || atoi(opt_sequence)<100)
+++      if (strlen(opt_sequence) <= 0)
++         exit(usage("sequence"));
++-      if (opt_glidepoint_tap>3)
+++      /* choose the sequence */
+++      for (j = 0; j < 9; j++)
+++	opt_buts[j] = 1 << j;
+++
+++      for (p = opt_sequence, j = 0; *p != '\0'; p++, j++) {
+++	if ((*p < '0') || (*p > '9')) {
+++	  exit(usage("button sequence"));
+++	}
+++	opt_buts[j] = (1 << (*p - '1'));
+++      }
+++
+++      if (opt_glidepoint_tap>9)
++         exit(usage("glidepoint tap button"));
++       if (opt_glidepoint_tap)
++-        opt_glidepoint_tap=GPM_B_LEFT >> (opt_glidepoint_tap-1);
++-
++-      /* choose the sequence */
++-      for (opt=0; seq[opt].in && strcmp(seq[opt].in,opt_sequence); opt++)
++-        ;
++-      if (!seq[opt].in) exit(usage("button sequence"));
++-      opt_sequence=strdup(seq[opt].out); /* I can rewrite on it */
+++	opt_glidepoint_tap = opt_buts[opt_glidepoint_tap - 1];
++ 
++       /* look for the mouse type */
++       m_type = find_mouse_by_name(opt_type);
+--- gpm-1.19.6.orig/debian/patches/011_debuglog_fix_000
++++ gpm-1.19.6/debian/patches/011_debuglog_fix_000
+@@ -0,0 +1,10 @@
++--- gpm-1.19.6/src/debuglog.c~	Wed Nov 21 08:22:44 2001
+++++ gpm-1.19.6/src/debuglog.c	Wed Nov 21 08:23:10 2001
++@@ -66,7 +66,6 @@
++     va_list ap;
++     va_start(ap, fmt);
++ #ifdef HAVE_VSYSLOG
++-    vsyslog(level | (gpm_log_daemon ? LOG_DAEMON : LOG_USER), fmt, ap);
++     if (gpm_log) {
++       vsyslog(level | (gpm_log_daemon ? LOG_DAEMON : LOG_USER), fmt, ap);
++     } else
+--- gpm-1.19.6.orig/debian/patches/010_ps2_rework_gpmInt_h_000
++++ gpm-1.19.6/debian/patches/010_ps2_rework_gpmInt_h_000
+@@ -0,0 +1,19 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc -x *.d gpm-1.19.6.orig/src/headers/gpmInt.h gpm-1.19.6/src/headers/gpmInt.h
++--- gpm-1.19.6.orig/src/headers/gpmInt.h	Mon Oct 22 05:57:05 2001
+++++ gpm-1.19.6/src/headers/gpmInt.h	Mon Oct 22 04:57:23 2001
++@@ -91,6 +91,7 @@
++   char *opt_options; /* extra textual configuration */
++   Gpm_Type *m_type;
++   int fd;
+++  int opt_buts[9];
++ };
++ 
++ extern struct mouse_features mouse_table[3], *which_mouse; /*the current one*/
++@@ -112,6 +113,7 @@
++ #define opt_three    (which_mouse->opt_three)
++ #define opt_glidepoint_tap (which_mouse->opt_glidepoint_tap)
++ #define opt_options  (which_mouse->opt_options)
+++#define opt_buts     (which_mouse->opt_buts)
++ 
++ #define m_type       (which_mouse->m_type)
++ 
+--- gpm-1.19.6.orig/debian/patches/012_dec_vs_xxx_aa_000
++++ gpm-1.19.6/debian/patches/012_dec_vs_xxx_aa_000
+@@ -0,0 +1,93 @@
++diff -Nur gpm-1.19.6/src/mice.c gpm-1.19.6-patched/src/mice.c
++--- gpm-1.19.6/src/mice.c	Thu Nov 22 17:53:26 2001
+++++ gpm-1.19.6-patched/src/mice.c	Thu Nov 22 18:01:27 2001
++@@ -1386,6 +1386,65 @@
++ 	return 0;
++ }
++ 
+++
+++/* Support for DEC VSXXX-AA and VSXXX-GA serial mice used on   */
+++/* DECstation 5000/xxx, DEC 3000 AXP and VAXstation 4000       */
+++/* workstations                                                */
+++/* written 2001/07/11 by Karsten Merker (merker@linuxtag.org)  */
+++/* modified (completion of the protocol specification and      */
+++/* corresponding correction of the protocol identification     */
+++/* mask) 2001/07/12 by Maciej W. Rozycki (macro@ds2.pg.gda.pl) */
+++
+++static int M_vsxxx_aa(Gpm_Event *state, unsigned char *data)
+++{
+++  state->buttons = data[0]&0x07;
+++  state->dx = (data[0]&0x10) ? data[1] : -data[1];
+++  state->dy = (data[0]&0x08) ? -data[2] : data[2];
+++  return 0;
+++
+++
+++/* Mouse protocol is as follows:
+++ * 4800 bits per second, 8 data bits, 1 stop bit, odd parity
+++ * 3 data bytes per data packet:
+++ *              7     6     5     4     3     2     1     0
+++ * First Byte:  1     0     0   SignX SignY  LMB   MMB   RMB
+++ * Second Byte  0     DX    DX    DX    DX    DX    DX    DX
+++ * Third Byte   0     DY    DY    DY    DY    DY    DY    DY
+++ *
+++ * SignX:     sign bit for X-movement
+++ * SignY:     sign bit for Y-movement
+++ * DX and DY: 7-bit-absolute values for delta-X and delta-Y, sign extensions
+++ *            are in SignX resp. SignY.
+++ *
+++ * There are a few commands the mouse accepts:
+++ * "D" selects the prompt mode,
+++ * "P" requests the mouse's position (also selects the prompt mode),
+++ * "R" selects the incremental stream mode,
+++ * "T" performs a self test and identification (power-up-like),
+++ * "Z" performs undocumented test functions (a byte follows).
+++ * Parity as well as bit #7 of commands are ignored by the mouse.
+++ *
+++ * 4 data bytes per self test packet (useful for hot-plug):
+++ *              7     6     5     4     3     2     1     0
+++ * First Byte:  1     0     1     0     R3    R2    R1    R0
+++ * Second Byte  0     M2    M1    M0    0     0     1     0
+++ * Third Byte   0     E6    E5    E4    E3    E2    E1    E0
+++ * Fourth Byte  0     0     0     0     0    LMB   MMB   RMB
+++ *
+++ * R3-R0:     revision,
+++ * M2-M0:     manufacturer location code,
+++ * E6-E0:     error code:
+++ *            0x00-0x1f: no error (fourth byte is button state),
+++ *            0x3d:      button error (fourth byte specifies which),
+++ *            else:      other error.
+++ * 
+++ * The mouse powers up in the prompt mode but we use the stream mode.
+++ */
+++
+++}
+++
+++
+++
++ /*========================================================================*/
++ /* Then, mice should be initialized */
++ 
++@@ -1527,6 +1586,13 @@
++       setspeed (fd, 1200, 9600, 1, flags);
++     }
++ 
+++  if (type->fun==M_vsxxx_aa) 
+++    {
+++      setspeed (fd, 4800, 4800, 0, flags); /* no write */
+++      write(fd, "R", 1);     /* initialize mouse, without getting an "R" the */
+++                             /* mouse does not send a bytestream             */
+++    }
+++
++   return type;
++ }
++ 
++@@ -2343,6 +2409,9 @@
++   {"brw",  "For the Fellowes Browser - 4 buttons (and a wheel) (dual protocol?).",
++            "", M_brw, I_pnp, CS7 | STD_FLG,
++                                 {0xc0, 0x40, 0xc0, 0x00}, 4, 1, 0, 0, 0},
+++  {"vsxxxaa", "The DEC VSXXX-AA/GA serial mouse on DEC workstations.",
+++           "", M_vsxxx_aa, I_serial, CS8 | PARENB | PARODD | STD_FLG,
+++                                {0xe0, 0x80, 0x80, 0x00}, 3, 1, 0, 0, 0},
++ 
++ #ifdef HAVE_LINUX_JOYSTICK_H
++   {"js",   "For \"Joystick\" mouse emulation.",
+--- gpm-1.19.6.orig/debian/patches/013_xterm_mouse_support_000
++++ gpm-1.19.6/debian/patches/013_xterm_mouse_support_000
+@@ -0,0 +1,85 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h* -x *.elc -x *.d gpm-1.19.6.orig/configure.in gpm-1.19.6/configure.in
++--- gpm-1.19.6.orig/configure.in	Thu Nov 22 20:06:37 2001
+++++ gpm-1.19.6/configure.in	Thu Nov 22 19:53:17 2001
++@@ -59,7 +59,7 @@
++         lispdir='${datadir}/emacs/site-lisp'
++ fi
++ 
++-AC_CHECK_HEADERS(syslog.h linux/joystick.h ncurses.h ncurses/curses.h curses.h)
+++AC_CHECK_HEADERS(syslog.h linux/joystick.h ncurses.h ncurses/curses.h curses.h term.h)
++ 
++ AC_ARG_WITH(curses,
++ [  --without-curses        disable curses support even if curses found])
++@@ -109,7 +109,7 @@
++         else :; fi
++     done
++     SHARED_LIBS="$LIBS $TERMLIBS -lc"
++-    LIBS=$SAVELIBS ;;
+++    LIBS="$LIBS $SAVELIBS" ;;
++ esac    
++ 
++ GPMXTERM=
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h* -x *.elc -x *.d gpm-1.19.6.orig/src/liblow.c gpm-1.19.6/src/liblow.c
++--- gpm-1.19.6.orig/src/liblow.c	Mon Oct  1 16:08:47 2001
+++++ gpm-1.19.6/src/liblow.c	Thu Nov 22 20:06:17 2001
++@@ -46,6 +46,12 @@
++ #include <sys/kd.h>        /* KDGETMODE */
++ #include <termios.h>       /* winsize */
++ 
+++#ifdef HAVE_TERM_H
+++#include <curses.h>
+++#include <term.h>
+++#undef buttons
+++#endif /* HAVE_TERM_H */
+++
++ 
++ #include "headers/gpmInt.h"
++ #include "headers/general.h"
++@@ -178,7 +184,6 @@
++ int Gpm_Open(Gpm_Connect *conn, int flag)
++ {
++    char tty[32];
++-   char *term;
++    int i;
++    static char *vcname = NULL; /* is tty / vc base */
++    static char *consolename = NULL; /* is the console */
++@@ -186,6 +191,12 @@
++    struct winsize win;
++    Gpm_Stst *new;
++    char* sock_name = 0;
+++#ifdef HAVE_TERM_H
+++   char *mousecap;
+++   int terror;
+++#else /* ! HAVE_TERM_H */
+++   char *term;
+++#endif /* ! HAVE_TERM_H */
++ 
++ 
++    if(!set_devfs_onet(&consolename,&vcname)) goto err;
++@@ -194,14 +205,24 @@
++   
++   /*....................................... First of all, check xterm */
++ 
++-  if ((term=(char *)getenv("TERM")) && !strncmp(term,"xterm",5))
++-    {
+++#ifdef HAVE_TERM_H
+++  if (setupterm((char *) 0, 1, &terror) == 0 && terror == 1
+++      && (mousecap=tigetstr("kmous")) && mousecap != (char *)-1
+++      && mousecap[0]) {
+++    del_curterm(cur_term);
+++#else /* ! HAVE_TERM_H */
+++  if ((term=(char *)getenv("TERM")) && !strncmp(term,"xterm",5)) {
+++#endif
++       if (gpm_tried) return gpm_fd; /* no stack */
++       gpm_fd=-2;
++       GPM_XTERM_ON;
++       gpm_flag=1;
++       return gpm_fd;
++     }
+++#ifdef HAVE_TERM_H
+++  if (cur_term)
+++    del_curterm(cur_term);
+++#endif /* HAVE_TERM_H */
++   /*....................................... No xterm, go on */
++ 
++ 
+--- gpm-1.19.6.orig/debian/scripts/getglibcversion
++++ gpm-1.19.6/debian/scripts/getglibcversion
+@@ -0,0 +1,56 @@
++#!/bin/sh
++# GNU C library version detection shell script.
++# Copyright 1999 Branden Robinson.
++# Licensed under the GNU General Public License, version 2.  See the file
++# /usr/share/common-licenses/GPL or <http://www.gnu.org/copyleft/gpl.txt>.
++
++# This script probably makes about a billion too many assumptions, but it's
++# better than hardcoding the glibc version on a per-architecture basis.
++
++set -e
++
++usage () {
++  echo "Usage: getglibcversion [option]"
++  echo "  Where [option] may be one of:"
++  echo "  --major      return major version only"
++  echo "  --minor      return minor version only"
++  echo "  --point  return ittybitty version only"
++  echo "With no option, returns major.minor.ittybitty .";
++}
++
++case $# in
++  0) ;;
++  1) case $1 in
++       --help) usage
++               exit 0 ;;
++       --major) RETURN=1 ;;
++       --minor) RETURN=2 ;;
++       --point) RETURN=3 ;;
++       *) exec 1>&2
++          usage
++          exit 1 ;;
++     esac ;;
++  *) exec 1>&2
++     usage
++     exit 1 ;;
++esac
++
++LIBCLIST=$(cd /lib && ls libc-*.so)
++
++case $(echo $LIBCLIST | wc -l | awk '{print $1}') in
++  0) echo "No GNU C library found!  Aborting." >&2
++     exit 1 ;;
++  1) ;;
++  *) echo "Multiple versions of GNU C library found!  Aborting." >&2
++     exit 1 ;;
++esac
++
++LIBCVERSION=$(echo $LIBCLIST | sed 's/libc-//;s/\.so//')
++
++if [ -z $RETURN ]; then
++  echo $LIBCVERSION
++else
++  echo $LIBCVERSION | cut -d. -f$RETURN
++fi
++
++exit 0
+--- gpm-1.19.6.orig/debian/scripts/Makefile
++++ gpm-1.19.6/debian/scripts/Makefile
+@@ -0,0 +1,11 @@
++#!/usr/bin/make -f
++all: sh.vars mk.vars
++
++clean:
++	rm -f sh.vars mk.vars
++
++mk.vars: vars.build vars
++	$(SHELL) vars.build vars make > $@
++sh.vars: vars.build vars
++	$(SHELL) vars.build vars shell > $@
++
+--- gpm-1.19.6.orig/debian/scripts/archmap
++++ gpm-1.19.6/debian/scripts/archmap
+@@ -0,0 +1,22 @@
++#!/bin/sh
++# i486 i386 i486 i586 pentium pentiumpro
++if [ $(basename $0) = archmap ];then
++	if [ -z $1 ];then
++        	arch=$(dpkg --print-gnu-build-architecture)
++	else
++		arch=$1
++	fi
++else
++	if [ -z $arch ];then
++        	arch=$(dpkg --print-gnu-build-architecture)
++	fi
++fi
++set -- $(egrep ".* $arch( .*|$)" debian/scripts/archmap)
++if [ -z $2 ];then
++       	arch=$arch
++else
++       	arch=$2
++fi
++if [ $(basename $0) = archmap ];then
++	echo $arch
++fi
+--- gpm-1.19.6.orig/debian/scripts/messages
++++ gpm-1.19.6/debian/scripts/messages
+@@ -0,0 +1,29 @@
++fix.source.patch:START:"Fixing upstream patch $1"
++fix.source.patch:OK:"successful."
++fix.source.patch:FAILED:"failed!"
++fix.source.patch:ALREADY_DONE:"upstream patch fixup $1 already applied!"
++
++unfix.source.patch:START:"Unfixing upstream patch $1
++unfix.source.patch:OK:"successful."
++unfix.source.patch:FAILED:"failed!
++unfix.source.patch:ALREADY_DONE:"upstream patch fixup $1 already reversed!"
++
++patch.unapply:START:"Reversing patch $1"
++patch.unapply:OK:"successful."
++patch.unapply:FAILED:"failed!"
++patch.unapply:ALREADY_DONE:"Patch $1 not applied!"
++
++patch.apply:START:"Applying patch $1"
++patch.apply:OK:"successful."
++patch.apply:FAILED:"failed!"
++patch.apply:ALREADY_DONE:"Patch $1 already applied!"
++
++source.patch:START:"Applying upstream patch $1"
++source.patch:OK:"successful."
++source.patch:FAILED:"failed!"
++source.patch:ALREADY_DONE:"upstream patch $1 already applied!"
++
++source.unpack:START:"Extracting upstream tarball $1"
++source.unpack:OK:"successful."
++source.unpack:FAILED:"failed!"
++source.unpack:ALREADY_DONE:"upstream tarball $1 already extracted!"
+--- gpm-1.19.6.orig/debian/scripts/lib
++++ gpm-1.19.6/debian/scripts/lib
+@@ -0,0 +1,198 @@
++#!/bin/sh
++if [ $(basename $0) = lib ];then
++	make -C debian/scripts sh.vars
++	. debian/scripts/sh.vars
++fi
++fetchmsg() {
++	local msg
++	msg=$1;shift
++	eval echo $(sed -ne "s/^$(BASENAME):$msg://p" debian/scripts/messages)
++}
++START() {
++	echo -n "$(fetchmsg START "$@") "
++}
++OK() {
++	fetchmsg OK "$@"
++}
++FAILED() {
++	fetchmsg FAILED "$@"
++}
++ALREADY_DONE() {
++	fetchmsg ALREADY_DONE "$@"
++}
++
++BASENAME() {
++	local base
++	if [ "$cmd" ];then
++		base=$cmd
++	else
++		base=${0##*/}
++	fi
++	if [ x$base = x ];then
++		echo "Danger, Will Robinson, Danger!" 1>&2
++		echo "Bash is very confused." 1>&2
++		exit 1
++	fi
++	if [ x$base = xlib ];then
++		echo "You can't call this directly." 1>&2
++		echo "This is a library that should be sourced." 1>&2
++		exit 1
++	fi
++	echo $base
++}
++file2cat() {
++	$(decompress_prog $1) $1
++}
++debug() {
++	echo "$@"
++	eval "$@"
++}
++decompress_prog() {
++	local which
++	which="cat"
++	[ $1 != ${1%.tgz} -o $1 != ${1%.gz} -o $1 != ${1%.Z} ] && which="gunzip -c"
++	[ $1 != ${1%.bz2} ] && which="bunzip2 -c"
++	[ $1 != ${1%.bz} ] && which="bunzip -c"
++	echo $which
++}
++compress_ext() {
++	local which
++	which=""
++	[ $1 != ${1%.gz} ] && which=gz
++	[ $1 != ${1%.Z} ] && which=Z
++	[ $1 != ${1%.bz2} ] && which=bz2
++	[ $1 != ${1%.bz} ] && which=bz
++	echo $which
++}
++filetype_detect() {
++	local which f
++	which=""
++	f=$(echo "$1" | sed 's|:::.*||')
++	[ $f != ${f%.jar} ] && which=jarfile
++	[ $f != ${f%.zip} ] && which=zipfile
++	[ $f != ${f%.tgz} ] && which=tarball
++	[ $f != ${f%.tar.$(compress_ext $f)} ] && which=tarball
++	[ $f != ${f%.tar} ] && which=tarball
++	[ $f != ${f%.diff.$(compress_ext $f)} -o $1 != ${1%.patch.$(compress_ext $1)} ] && which=patch
++	[ $f != ${f%.diff} -o $1 != ${1%.patch} ] && which=patch
++	[ $f != ${f%.dsc} ] && which=dsc
++	echo $which
++}
++extract_tar() {
++	local which file dir curd
++	dir="$1"
++	shift
++	curd=$(pwd)
++	while [ $# -gt 0 ];do
++		file="$1"
++		[ "$file" = "${1#/}" ] && file="$curd/$file"
++		case "$(filetype_detect $file)" in
++			"jarfile")	(cd $dir;fastjar -xf $file);;
++			"zipfile")	(cd $dir;miniunzip -x $file);;
++			"tarball")	$(decompress_prog $file) $file | (cd $dir;tar xv);;
++			*)		echo "unsupported tarball";;
++		esac
++		shift
++	done
++}
++
++do.patching() {
++	filetmpl=\$d/\$f
++	reversesort=""
++	reversepatch=""
++
++	case "$cmd" in
++		source.patch)
++			mkdir -p $SOURCE_DIR/$TAR_DIR
++			patch_dirs="$SRC_PATCH_DIR $SRC_ADD_PATCH_DIR"
++			stampfiletmpl=\$STAMP_DIR/\$d/\$f
++			logtmpl=\$STAMP_DIR/log/\$d/\$f
++			dirprep="\$STAMP_DIR/log/\$d \$STAMP_DIR/\$d"
++			patchapplydirtmpl=\$SOURCE_DIR/\$TAR_DIR
++			;;
++		patch.apply)
++			mkdir -p $SOURCE_DIR/$TAR_DIR $STAMP_DIR/patches
++			patch_dirs="$PATCH_DIR $ADD_PATCH_DIR"
++			stampfiletmpl=\$STAMP_DIR/patches/\$f
++			logtmpl=\$STAMP_DIR/log/\$d/\$f
++			dirprep=\$STAMP_DIR/log/\$d
++			patchapplydirtmpl=\$SOURCE_DIR/\$TAR_DIR
++			;;
++		fix.source.patch)
++			if [ "$DBS_UNIFIED" -o ! -e debian/fixpatch ];then
++				exit
++			fi
++			mkdir -p $STAMP_DIR/fixpatch
++			patch_dirs=debian/fixpatch
++			stampfiletmpl="$STAMP_DIR/fixpatch/\$(basename \$f)"
++			logtmpl=\$STAMP_DIR/log/fixpatch/\$f
++			dirprep=\$STAMP_DIR/log/fixpatch
++			patchapplydirtmpl=upstream
++			;;
++		unfix.source.patch)
++			if [ "$DBS_UNIFIED" -o ! -e debian/fixpatch ];then
++				exit
++			fi
++			mkdir -p $STAMP_DIR/fixpatch
++			patch_dirs=debian/fixpatch
++			stampfiletmpl="$STAMP_DIR/fixpatch/\$(basename \$f)"
++			logtmpl=\$STAMP_DIR/log/fixpatch/\$f
++			dirprep=\$STAMP_DIR/log/fixpatch
++			patchapplydirtmpl=upstream
++			reversesort=-r
++			reversepatch=-R
++			;;
++	esac
++	for d in $patch_dirs;do
++		if [ ! -d $d ];then
++			continue
++		fi
++		eval mkdir -p $dirprep
++		for f in `(cd $d;find -type f ! -name 'chk-*' 2>/dev/null )|sort $reversesort`;do
++			eval stampfile=$stampfiletmpl
++			eval log=$logtmpl
++			eval file=$filetmpl
++			eval patchapplydir=$patchapplydirtmpl
++			if [ ! -e $stampfile ];then
++				START $file
++				if file2cat $file | (cd $patchapplydir;patch -p1 $reversepatch) > $log;then
++					OK $file
++					touch $stampfile
++				else
++					FAILED $file
++					exit 1
++				fi
++			else
++				ALREADY_DONE $file
++			fi
++		done
++	done
++
++}
++#
++# External api functions.
++#
++
++source.clean() {
++	if [ "$DBS_UNIFIED" ];then
++		exit
++	fi
++	rm -rf $SOURCE_DIR $STAMP_DIR/upstream $STAMP_DIR/patches
++	rm -f $STAMP_DIR/{source.{clean,build,make}}
++	return
++if [ x$SOURCE_DIR = x ];then
++	files=`find -type f -maxdepth 1 -mindepth 1`
++	dirs=`find -type d -maxdepth 1 -mindepth 1 ! -name 'debian' ! -name 'upstream'`
++        echo files=\"$files\"
++        echo dirs=\"$dirs\"
++fi
++
++}
++source.patch()		{ cmd=source.patch; do.patching; }
++fix.source.patch()	{ cmd=fix.source.patch; do.patching; }
++unfix.source.patch()	{ cmd=unfix.source.patch; do.patching; }
++patch.apply()		{ cmd=patch.apply; do.patching; }
++
++if [ $(basename $0) = lib ];then
++	$1
++fi
+--- gpm-1.19.6.orig/debian/scripts/vars.build
++++ gpm-1.19.6/debian/scripts/vars.build
+@@ -0,0 +1,17 @@
++#!/usr/bin/make -f
++
++sed_cmd=''
++cat $1 | while read; do
++	case "$REPLY" in
++		\#*|"")	continue;;
++		*)
++			var=$(echo $REPLY|sed 's/\([^=]*\)=.*/\1/')
++			eval $REPLY
++			if [ $2 = "make" ]; then
++				eval echo "$var=\$$var"
++			else
++				eval echo "$var=\\\"\$$var\\\""
++			fi
++			;;
++	esac
++done
+--- gpm-1.19.6.orig/debian/scripts/vars
++++ gpm-1.19.6/debian/scripts/vars
+@@ -0,0 +1,31 @@
++# This file is NOT a shell script.
++#
++# This file gets included by both debian/rules (make) AND the scripts in
++# debian/scripts (bash)
++#
++
++# Where to cd to to unpack all the tarballs.
++SOURCE_DIR=build-tree
++# For a single pkg, this is the directory that is embedded in the tarball.
++# For multiple pkgs, this is null.
++TAR_DIR=gpm-1.19.6
++# Where to place all the stamp files.  This directory can be removed, and
++# all the targets will then be rerun.
++STAMP_DIR=debian/stampdir
++# When sys-build.mk is used to build the source, this is the target(s) to
++# run.
++BUILD_TARGET=
++# When cleaning the source, during diff generation, if this is set, this
++# target will be called in debian/rules.  This allows for pkgs that have
++# complicated cleaning rules.
++CLEAN_TARGET_EXTERNAL=diff_clean
++# Whether to die if the source cleaning fails.
++CLEAN_IGNORE=yes
++# The clean target to run.  Defaults to clean.
++CLEAN_TARGET=
++# Files to exclude from the diff.
++DIFF_EXCLUDE="Makefile configure config.cache config.h *.[178] gpm.info gpmdoc.ps gpmdoc.txt gpm-root.c stamp-h* *.elc *.d"
++# Where the patches are located(duh!).
++PATCH_DIR=debian/patches
++SRC_PATCH_DIR=upstream/patches
++SRC_TAR_DIR=upstream/tarballs
+--- gpm-1.19.6.orig/debian/scripts/source.unpack
++++ gpm-1.19.6/debian/scripts/source.unpack
+@@ -0,0 +1,32 @@
++#!/bin/sh
++make -C debian/scripts sh.vars
++. debian/scripts/sh.vars
++. debian/scripts/lib
++
++mkdir -p $STAMP_DIR/upstream/tarballs/ $SOURCE_DIR
++if [ ! -z "$SRC_TAR_DIR" -a -d "$SRC_TAR_DIR" ];then
++	files=$(find $SRC_TAR_DIR -type f|sort)
++else
++	VER=$(dpkg-parsechangelog 2>&1|egrep ^Version|cut -d " " -f 2|cut -d "-" -f 1)
++	SRC=$(dpkg-parsechangelog 2>&1|egrep ^Source|cut -d " " -f 2-)
++	files=../${SRC}_${VER}.orig.tar.gz
++fi
++for f in $files;do
++	stampfile=$STAMP_DIR/upstream/tarballs/`basename $f`
++	if [ ! -e $stampfile ];then
++		START $f
++		if extract_tar ${SOURCE_DIR:-.} $f > $stampfile.log;then
++			if [ x$SOURCE_DIR = x ];then
++				mkdir -p $STAMP_DIR/upstream/files/tarballs
++				cp $stampfile.log $STAMP_DIR/upstream/files/tarballs/`basename $f`.list
++			fi
++			OK $f
++			touch $stampfile
++		else
++			FAILED $f
++			exit 1
++		fi
++	else
++		ALREADY_DONE $f
++	fi
++done
+--- gpm-1.19.6.orig/debian/sys-build.mk
++++ gpm-1.19.6/debian/sys-build.mk
+@@ -0,0 +1,167 @@
++#!/usr/bin/make -f
++# Separate tarball/patch build system by Adam Heath <doogie@debian.org>
++
++# The magic targets that you need to concern yourself with are:
++#
++# source.build:		Unpacks upstream tarballs, optionally applies patches
++#			to fix the upstream patches, then applies upstream
++#			patches.
++# source.make:		Applies debian patches.
++# source.clean:		Cleans the build directory, then unfixes the upstream
++#			patches.
++# source.compile:	Will compile the source for you.  Please check
++#			debian/scripts/vars.
++# source.cmd:		When calling this target, if you define a variable
++#			SOURCE_CMD, it will run that command in the build
++#			tree.
++# make-diff:		Generates debian.diff in the current directory which
++#			contains all edits that are currently in the build
++#			tree.
++#
++# Nothing in this file should require any editting.  Please look at
++# debian/scripts/vars for things to change for the local environment.
++#
++# debian/rules target		command
++# ----------------------------------------------------------------
++# clean:			$(MAKE) -f debian/sys-build.mk source.clean
++# build:			$(MAKE) -f debian/sys-build.mk source.compile
++#					for simple systems.
++# build:			$(MAKE) -f debian/sys-build.mk source.make
++#					and, in the rules file, you can
++#					build the targets you want.
++SHELL=/bin/bash
++ifndef NOISY
++.SILENT:
++endif
++
++include debian/scripts/vars
++# remove quotes
++DIFF_EXCLUDE:=$(patsubst %,-x %,$(shell echo $(DIFF_EXCLUDE)))
++
++ifdef TAR_DIR
++BUILD_TREE=$(SOURCE_DIR)/$(TAR_DIR)
++else
++BUILD_TREE=$(SOURCE_DIR)
++endif
++
++SOURCE_CMD=:
++
++ifdef CLEAN_IGNORE
++	CLEAN_CMD=-
++	CLEAN_SH=
++else
++	CLEAN_CMD=
++	CLEAN_SH=
++endif
++ifndef CLEAN_TARGET
++	CLEAN_TARGET=clean
++endif
++
++foo:
++	echo $(DIFF_EXCLUDE)
++
++make-diff:
++	mv $(BUILD_TREE) bak
++	$(MAKE) -f debian/sys-build.mk source.clean
++	$(MAKE) -f debian/sys-build.mk source.make
++	mv $(BUILD_TREE) $(BUILD_TREE).orig
++	mv bak $(BUILD_TREE)
++
++ifdef TAR_DIR
++ifdef CLEAN_TARGET_EXTERNAL
++	$(CLEAN_CMD)$(MAKE) -f debian/rules $(CLEAN_TARGET_EXTERNAL)
++else
++	$(CLEAN_CMD)$(MAKE) -C $(BUILD_TREE) $(CLEAN_TARGET)
++endif
++	-(cd $(SOURCE_DIR);diff -ruN $(TAR_DIR).orig $(TAR_DIR) $(DIFF_EXCLUDE)) > debian.diff
++else
++ifdef CLEAN_TARGET_EXTERNAL
++	$(CLEAN_CMD)$(MAKE) -f debian/rules $(CLEAN_TARGET_EXTERNAL)
++else
++	$(CLEAN_CMD)for a in $(BUILD_TREE)/*;do $(MAKE) -C $$a $(CLEAN_TARGET);done
++endif
++	-(diff -ruN $(BUILD_TREE).orig $(BUILD_TREE) $(DIFF_EXCLUDE)) > debian.diff
++	if [ ! -s debian.diff ];then\
++		rm debian.diff;\
++	fi
++endif
++	rm -rf $(BUILD_TREE).orig
++
++patchapply: $(STAMP_DIR)/patchapply
++$(STAMP_DIR)/patchapply: $(STAMP_DIR)/source.build $(STAMP_DIR)
++	$(SHELL) debian/scripts/lib patch.apply
++	touch $@
++	rm -f $(STAMP_DIR)/patchunapply
++
++patchunapply: $(STAMP_DIR)/patchunapply
++$(STAMP_DIR)/patchunapply: $(STAMP_DIR)/source.build $(STAMP_DIR)
++	$(SHELL) debian/scripts/lib patch.unapply
++	touch $@
++	rm -f $(STAMP_DIR)/patchapply
++
++.export: SOURCE_TREE
++
++#
++# The rules that really do the work all start with $(STAMPDIR)
++# This little trick allows us to use stamp files to keep us from
++# having to rerun long targets over and over.  It also puts
++# all stamp files in one place, for easy cleaning.
++#
++# If a stampdir rule depends on something else, be sure it is
++# another stampdir rule.  Depending on base rule won't work.
++#
++
++source.build: $(STAMP_DIR)/source.build
++STAMP_DIR_TARGETS+= $(STAMP_DIR)/source.build
++$(STAMP_DIR)/source.build: $(STAMP_DIR)/source.unpack $(STAMP_DIR)/source.patch $(STAMP_DIR)
++	touch $@
++
++source.make: $(STAMP_DIR)/source.make
++STAMP_DIR_TARGETS+= $(STAMP_DIR)/source.make
++$(STAMP_DIR)/source.make: $(STAMP_DIR)/source.build $(STAMP_DIR)/patchapply $(STAMP_DIR)
++	touch $@
++
++source.unpack: $(STAMP_DIR)/source.unpack
++STAMP_DIR_TARGETS+= $(STAMP_DIR)/source.unpack
++$(STAMP_DIR)/source.unpack: $(STAMP_DIR)
++	$(SHELL) debian/scripts/source.unpack
++	touch $@
++
++source.patch: $(STAMP_DIR)/source.patch
++STAMP_DIR_TARGETS+= $(STAMP_DIR)/source.patch
++$(STAMP_DIR)/source.patch: $(STAMP_DIR)/source.unpack $(STAMP_DIR)/fix.source.patch $(STAMP_DIR)
++	$(SHELL) debian/scripts/lib source.patch
++	touch $@
++
++fix.source.patch: $(STAMP_DIR)/fix.source.patch
++STAMP_DIR_TARGETS+= $(STAMP_DIR)/fix.source.patch
++$(STAMP_DIR)/fix.source.patch: $(STAMP_DIR)
++	$(SHELL) debian/scripts/lib fix.source.patch
++	touch $@
++
++unfix.source.patch: $(STAMP_DIR)/unfix.source.patch
++STAMP_DIR_TARGETS+= $(STAMP_DIR)/unfix.source.patch
++$(STAMP_DIR)/unfix.source.patch: $(STAMP_DIR)
++	$(SHELL) debian/scripts/lib unfix.source.patch
++	touch $@
++
++source.compile: $(STAMP_DIR)/source.compile
++STAMP_DIR_TARGETS+= $(STAMP_DIR)/source.compile
++$(STAMP_DIR)/source.compile: $(STAMP_DIR)/source.make $(STAMP_DIR)
++	$(MAKE) -C $(BUILD_TREE) $(BUILD_TARGET)
++	touch $@
++
++source.command:
++	(cd $(BUILD_TREE); $(SOURCE_CMD))
++
++DIR_TARGETS+=$(STAMP_DIR)
++$(STAMP_DIR_TARGETS): $(STAMP_DIR)
++
++$(DIR_TARGETS)/:
++	mkdir -p $@
++
++source.clean: unfix.source.patch
++	$(SHELL) debian/scripts/lib source.clean
++	rm -f $(STAMP_DIR_TARGETS)
++	rm -rf $(STAMP_DIR)
++	$(MAKE) -C debian/scripts clean
+--- gpm-1.19.6.orig/debian/rules
++++ gpm-1.19.6/debian/rules
+@@ -0,0 +1,170 @@
++#!/usr/bin/make -f
++
++# debian/rules file - for GPM (1.17.6).
++# Based on sample debian.rules file - for GNU Hello (1.3).
++# Copyright 1994,1995 by Ian Jackson.
++# Copyright 1997,1998,1999 James Troup.
++# I hereby give you perpetual unlimited permission to copy,
++# modify and relicense this file, provided that you do not remove
++# my name from the file itself.  (I assert my moral right of
++# paternity under the Copyright, Designs and Patents Act 1988.)
++# This file may have to be extensively modified
++
++export DH_COMPAT = 3
++export DH_VERBOSE = 1
++include debian/scripts/vars
++
++this = make -f debian/rules
++
++ARCH = $(shell dpkg --print-gnu-build-architecture)
++BUILD_DIR=$(SOURCE_DIR)/$(TAR_DIR)
++export BD=$(BUILD_DIR)
++
++# Minor number of the soname
++
++SOMINOR=19.6
++
++unpack:
++	$(MAKE) -f debian/sys-build.mk source.make
++
++build: unpack build-stamp
++build-stamp:
++	dh_testdir
++	$(MAKE) all
++	cd $(BD); autoconf
++	cd $(BD); CFLAGS="-g -O2 -Wall -D_REENTRANT" ./configure --prefix=/usr --sysconfdir=/etc
++	cd $(BD); $(MAKE)
++	# Remove compilation question from FAQ
++	cd $(BD)/doc/; sed '15,40d' < FAQ > faq
++	touch $@
++
++clean:
++	dh_testdir
++
++	-$(MAKE) -f debian/sys-build.mk source.clean
++	-$(MAKE) clean
++	-rm -f *stamp*
++	-rm -rf debian/stampdir
++	-dh_clean
++
++# Clean for diff with dbs..
++diff_clean:
++	dh_testdir
++
++	-cd $(BD); (find -type f -name "*.d" | xargs rm)
++	-cd $(BD)/doc; $(MAKE) distclean
++	-cd $(BD)/contrib; $(MAKE) maintainer-clean
++	#-cd $(BD); $(MAKE) -i distclean
++	-cd $(BD); $(MAKE) -i clean
++	-rm -rf $(BD)/config.log $(BD)/config.status $(BD)/doc/faq $(BD)/*~ 
++	-rm -rf $(BD)/libc5
++	-rm -f *stamp*
++
++# No binary indep packages...
++binary-indep:
++
++binary-arch: binary-gpm binary-libgpmg1 binary-libgpmg1-dev
++
++binary-gpm: 
++	DH_OPTIONS="-pgpm" $(this) binary-gpm-real
++binary-gpm-real: build
++	dh_testdir
++	dh_testroot
++	dh_clean -k
++
++	dh_installdirs 
++
++	# First lets install some debian native stuff..
++	#install -m 755 gpm_readlink debian/gpm/usr/bin/gpm_readlink
++	install -m 755 gpm_has_mouse_control debian/gpm/usr/lib/gpm/gpm_has_mouse_control
++	install -m 755 debian/gpmconfig debian/gpm/usr/sbin/gpmconfig
++	#install -m 755 check_gpm_repeat check_gpm_x_interact debian/gpm/usr/bin
++	#install -m 755 get_x_mouse_dev get_x_mouse_protocol debian/gpm/usr/bin
++	#install -m 755 mouse_dev_type debian/gpm/usr/bin
++
++	# Now the GPM stuff..
++	install -m 755 $(BD)/src/gpm debian/gpm/usr/sbin/
++	install -m 755 $(BD)/src/mouse-test debian/gpm/usr/sbin/gpm-mouse-test
++	install -m 755 $(BD)/contrib/scripts/microtouch-setup debian/gpm/usr/sbin/gpm-microtouch-setup
++	#install -m 755 $(BD)/src/mev $(BD)/src/gpm-root debian/gpm/usr/bin/
++	#install -m 755 $(BD)/sample/rmev debian/gpm/usr/bin/
++	#install -m 644 $(BD)/conf/gpm-root.conf debian/gpm/etc/
++
++
++	#dh_undocumented gpm-microtouch-setup.8 rmev.1
++	dh_undocumented gpm-microtouch-setup.8
++	dh_installinfo $(BD)/doc/gpm.info
++
++	#install $(BD)/doc/gpm-root.1 $(BD)/doc/mev.1 \
++			debian/gpm/usr/share/man/man1/
++	install $(BD)/doc/gpm.8 debian/gpmconfig.8 \
++			debian/gpm/usr/share/man/man8/
++	sed -e "s/mouse-test/gpm-mouse-test/g" < $(BD)/doc/mouse-test.1 \
++		> debian/gpm/usr/share/man/man8/gpm-mouse-test.8
++
++	dh_installdocs $(BD)/doc/faq $(BD)/README*
++	dh_installchangelogs $(BD)/ChangeLog
++	dh_installinit
++	dh_installdeb
++	dh_strip
++	dh_compress
++	dh_fixperms
++	dh_shlibdeps
++	dh_gencontrol
++	dh_builddeb
++
++binary-libgpmg1: 
++	DH_OPTIONS="-plibgpmg1" $(this) binary-libgpmg1-real
++binary-libgpmg1-real: build
++	dh_testdir
++	dh_testroot
++	dh_clean -k
++
++	dh_installdirs
++
++	install -m 644 $(BD)/src/libgpm.so.1.$(SOMINOR) debian/libgpmg1/usr/lib
++	ln -s libgpm.so.1.$(SOMINOR) debian/libgpmg1/usr/lib/libgpm.so.1
++	dh_strip
++	dh_makeshlibs
++
++	dh_installdocs
++	dh_installchangelogs $(BD)/ChangeLog
++	dh_installdeb
++
++	dh_compress
++	dh_fixperms
++	dh_shlibdeps
++	dh_gencontrol
++	dh_builddeb
++
++binary-libgpmg1-dev: 
++	DH_OPTIONS="-plibgpmg1-dev" $(this) binary-libgpmg1-dev-real
++binary-libgpmg1-dev-real: build
++	dh_testdir
++	dh_testroot
++	dh_clean -k
++
++	dh_installdirs
++
++	install -m 644 $(BD)/src/headers/gpm.h debian/libgpmg1-dev/usr/include/
++	install -m 644 $(BD)/src/libgpm.a debian/libgpmg1-dev/usr/lib/
++	ln -sf libgpm.so.1 debian/libgpmg1-dev/usr/lib/libgpm.so
++
++	dh_strip
++	dh_installdocs
++	dh_installchangelogs $(BD)/ChangeLog
++	dh_installdeb
++
++	#cp $(BD)/sample/* debian/libgpmg1-dev/usr/share/doc/libgpmg1-dev/sample/
++	#-(cd debian/libgpmg1-dev/usr/share/doc/libgpmg1-dev/sample; make distclean)
++	dh_compress
++	dh_fixperms
++	dh_shlibdeps
++	dh_gencontrol
++	dh_builddeb
++
++# Below here is fairly generic really
++
++binary:		binary-indep binary-arch
++
++.PHONY: build binary binary-arch binary-indep clean
+--- gpm-1.19.6.orig/debian/sources
++++ gpm-1.19.6/debian/sources
+@@ -0,0 +1 @@
++upstream tar gpm-1.19.3.tar.gz
+--- gpm-1.19.6.orig/debian/gpm.dirs
++++ gpm-1.19.6/debian/gpm.dirs
+@@ -0,0 +1,7 @@
++usr/bin
++usr/sbin
++usr/lib/gpm
++usr/share/info
++usr/share/man/man1
++usr/share/man/man8
++etc/init.d
+--- gpm-1.19.6.orig/debian/gpm.init
++++ gpm-1.19.6/debian/gpm.init
+@@ -0,0 +1,62 @@
++#!/bin/sh
++#
++# Start Mouse event server
++
++PIDFILE=/var/run/gpm.pid
++GPM=/usr/sbin/gpm
++CFG=/etc/gpm.conf
++
++test -x $GPM || exit 0
++
++if [ "$(id -u)" != "0" ]
++then
++  echo "You must be root to start, stop or restart gpm."
++  exit 1
++fi
++ 
++
++cmdln=
++if [ -f $CFG ]; then
++  . $CFG
++  if [ -n "$device" ]; then cmdln="$cmdln -m $device"; fi
++  if [ -n "$type" ]; then cmdln="$cmdln -t $type"; fi
++  if [ -n "$responsiveness" ]; then cmdln="$cmdln -r $responsiveness"; fi
++  if [ -n "$sample_rate" ]; then cmdln="$cmdln -s $sample_rate"; fi
++  if [ -n "$repeat_type" ]; then cmdln="$cmdln -R$repeat_type"; fi
++  # Yes, this /IS/ correct! There is no space after -R!!!!!!
++  # I reserve the right to throw manpages at anyone who disagrees.
++  if [ -n "$append" ]; then cmdln="$cmdln $append"; fi
++fi
++
++gpm_start () {
++  echo -n "Starting mouse interface server: gpm"
++  start-stop-daemon --start --quiet --exec $GPM -- $cmdln
++  echo "."
++  return 0
++}
++
++gpm_stop () {
++  echo -n "Stopping mouse interface server: gpm"
++  /usr/sbin/gpm -k
++  echo "."
++}
++
++
++case "$1" in
++  start)
++     gpm_start
++     ;;
++  stop)
++     gpm_stop
++     ;;
++  force-reload|restart)
++     gpm_stop
++     sleep 3
++     gpm_start
++     ;;
++  *)
++     echo "Usage: /etc/init.d/gpm {start|stop|restart|force-reload}"
++     exit 1
++esac
++
++exit 0
+--- gpm-1.19.6.orig/debian/gpm.postinst
++++ gpm-1.19.6/debian/gpm.postinst
+@@ -0,0 +1,113 @@
++#! /bin/sh
++
++set -e
++
++create_gpm_conf ()
++{
++ ARCH=$(dpkg --print-installation-architecture)
++ case $ARCH in 
++    m68k)
++	device=/dev/mouse;
++	type=bm;;
++    sparc)
++	device=/dev/sunmouse;
++	type=sun;;
++    i386|*)
++	device=/dev/psaux;
++	type=autops2;;
++ esac;
++ cat > /etc/gpm.conf <<EOF
++#  /etc/gpm.conf - configuration file for gpm(1)
++#
++#  If mouse response seems to be to slow, try using
++#  responsiveness=15. append can contain any random arguments to be
++#  appended to the commandline.  
++#
++#  If you edit this file by hand, please be aware it is sourced by
++#  /etc/init.d/gpm and thus all shell meta characters must be
++#  protected from evaluation (i.e. by quoting them).
++#
++#  This file is used by /etc/init.d/gpm and can be modified by
++#  /usr/sbin/gpmconfig.
++#
++device=$device
++responsiveness=
++repeat_type=ms3
++type=$type
++append=""
++sample_rate=
++
++EOF
++
++}
++ 
++check_gpm_conf ()
++{
++
++ if grep -q "^append.*~/00-2630-6670-77" /etc/gpm.conf; then
++   echo "Your gpm.conf has a bad append line because of a bug"
++   echo -n "in earlier versions of gpmconfig.  May I fix it? (Y/n) "
++   read answer
++   if [ ! "$answer" = "n" -a ! "$answer" = "N" ]; then
++     sed -e "s/^append=.*/append=\"-l \\\\\"a-zA-Z0-9_.:~\/\\\\300-\\\\326\\\\330-\\\\366\\\\370-\\\\377\\\\\"\"/" < /etc/gpm.conf > /etc/gpm.conf.new
++     mv -f /etc/gpm.conf.new /etc/gpm.conf
++     echo "Okay, fixed."
++   else
++     echo "Okay, I've not done it."
++   fi
++ fi
++
++}
++
++case "$1" in
++  configure)
++    #
++    # If there is no /etc/gpm.conf then create a default
++    # and run gpmconfig
++    #
++    if [ ! -f /etc/gpm.conf ]; then
++      create_gpm_conf
++      /usr/sbin/gpmconfig --norestart
++      echo
++      echo "If you want to change the configuration you can call \`gpmconfig'"
++      echo "or edit /etc/gpm.conf manually."
++      echo
++    else
++      check_gpm_conf
++    fi
++    ;;
++esac
++
++install-info --quiet --section ".*Console*" "Console utilities" /usr/share/info/gpm.info
++if [ "$1" = "configure" ]; then
++	if [ -d /usr/doc -a ! -e /usr/doc/gpm -a -d /usr/share/doc/gpm ]; then
++		ln -sf ../share/doc/gpm /usr/doc/gpm
++	fi
++fi
++update-rc.d gpm defaults >/dev/null
++
++if /usr/lib/gpm/gpm_has_mouse_control; then
++  restart="yes";
++else
++  cat <<EOF
++
++You seem to be installing or upgrading GPM under X.
++
++Normally we want to start/restart GPM when installing/upgrading, however
++doing such under X may cause problems.
++
++(Note, switching to the console and then back to X generally fixes the
++problem)
++EOF
++  echo -n "Do you wish to start/restart gpm at this time? (N/y)"; read answer
++  if [ "$answer" = "Y" -o "$answer" = "y" ]; then
++    restart="yes";
++  else
++    restart="no";
++  fi
++fi
++
++if [ "$restart" = "yes" ]; then
++  # Note, yes, this is restart, its ment to be..
++  /etc/init.d/gpm restart
++fi
+--- gpm-1.19.6.orig/debian/gpm.prerm
++++ gpm-1.19.6/debian/gpm.prerm
+@@ -0,0 +1,43 @@
++#! /bin/sh
++
++set -e
++
++stop_gpm ()
++{
++  #
++  #       Stop the daemon
++  # We don't call /etc/init.d/gpm stop because of problem
++  # with the init.d script in earlier revisions
++  #
++
++  if /etc/init.d/gpm stop; then return 0; fi
++  if /usr/sbin/gpm -x; then return 0; fi
++
++  if \ 
++    start-stop-daemon --stop --quiet \
++		      --pidfile /var/run/gpmpid --exec /usr/sbin/gpm; then
++    return 0;
++  fi
++
++  # For added fun the name of the PID file changed in
++  # between 1.14 and 1.16.0; so we try the new one too.
++
++  if \
++    start-stop-daemon --stop --quiet \
++		      --pidfile /var/run/gpm.pid --exec /usr/sbin/gpm; then
++    return 0;
++  fi
++  return 1;
++}
++
++if [ "$1" != "upgrade" ]; then
++  # Note, we do /NOT/ stop gpm on upgrade, as it may be repeating to X..
++  # However we do want to stop it if the upgrade fails.
++  stop_gpm
++fi
++
++install-info --quiet --remove /usr/share/info/gpm.info
++
++if [ \( "$1" = "upgrade" -o "$1" = "remove" \) -a -L /usr/doc/gpm ]; then
++	rm -f /usr/doc/gpm
++fi
+--- gpm-1.19.6.orig/debian/gpmconfig
++++ gpm-1.19.6/debian/gpmconfig
+@@ -0,0 +1,206 @@
++#!/bin/sh
++#
++# gpmconfig, configure gpm (the mouse event server)
++# Copyright (C) 1996, 1997 Martin Schulze <joey@debian.org>
++# Copyright (C) 1997, 1998 James Troup <james@nocrew.org>
++#
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of the GNU General Public License as
++# published by the Free Software Foundation; either version 2 of the
++# License, or (at your option) any later version.
++#
++# This program is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++# General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++
++cfg=/etc/gpm.conf
++TMPFILE=$(mktemp /tmp/$(basename $0).XXXXXX) || exit 1
++ARCH=$(dpkg --print-installation-architecture)
++PIDFILE=/var/run/gpm.pid
++gpm -t types > $TMPFILE
++
++trap 'rm -rf $TMPFILE ; exit 1' 1 2 3 13 15
++
++get_cmdln()
++{
++  cmdln=
++  if [ -n "$device" ]; then cmdln="$cmdln -m $device"; fi
++  if [ -n "$type" ]; then cmdln="$cmdln -t $type"; fi
++  if [ -n "$responsiveness" ]; then cmdln="$cmdln -r $responsiveness"; fi
++  if [ -n "$sample_rate" ]; then cmdln="$cmdln -s $sample_rate"; fi
++  if [ -n "$repeat_type" ]; then cmdln="$cmdln -R$repeat_type"; fi
++  # Yes, this /IS/ correct! There is no space after -R!!!!!!
++  # I reserve the right to throw manpages at anyone who disagrees.
++  if [ -n "$append" ]; then cmdln="$cmdln $append"; fi
++  echo $cmdln
++}
++
++type_help()
++{
++    gpm -t help
++    case "$ARCH" in
++	m68k)
++	    echo "Default for "$ARCH" is bm";;
++	alpha)
++	    echo "Default for "$ARCH" is autops2";;
++	sparc)
++	    echo "Default for "$ARCH" is sun";;
++	i386|*)
++	    echo "Default for "$ARCH" is autops2";;
++    esac
++}
++
++gpm_test()
++{
++  gpmpid=$(cat $PIDFILE)
++  gpmcmdln=$(cat /proc/$gpmpid/cmdline 2>&- | tr '\0' ' ')
++  # ensure that PIDFILE wasn't empty or stale
++  case "$gpmcmdln" in
++    gpm*|/usr/sbin/gpm*) gpmcmdln=${gpmcmdln#*gpm} ;;
++    *) gpmcmdln=NONE ;;
++  esac
++  start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE --exec /usr/sbin/gpm
++  gpm $(get_cmdln)
++
++  echo "gpm $(get_cmdln)"
++  echo "Finish testing by typing Ctrl-D"
++  cat > /dev/null
++  start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE --exec /usr/sbin/gpm
++  if [ "$restart" = "yes" -a "$gpmcmdln" != "NONE" ]; then
++    gpm $gpmcmdln
++  fi
++}
++
++if [ -f $cfg ]; then
++  . $cfg
++fi
++
++if [ $# -gt 0 -a "$1" = "--norestart" ]; then
++  restart=no
++else
++  restart=yes
++fi
++
++echo "Configuring gpm (mouse event server):"
++
++ok=no
++while [ ! "$ok" = "yes" ]; do
++  echo; echo "Current configuration: $(get_cmdln)"
++  if [ -n "$device" ];		then echo "Device: $device"; fi
++  if [ -n "$type" ];		then echo "Type: $type"; fi
++  if [ -n "$responsiveness" ];	then echo "Responsiveness: $responsiveness"; fi
++  if [ -n "$repeat_type" ];	then echo "Repeat_Type: $repeat_type"; fi
++  if [ -n "$append" ];		then echo "Append: $append"; fi
++
++  echo -n "Do you want to change anything (Y/n)? "; read answer
++  if [ "$answer" = "N" -o "$answer" = "n" ]; then
++    ok=yes
++  else
++    echo "Where is your mouse [$device]? "; echo -n "> "; read answer
++    if [ -n "$answer" ]; then device="$answer"; fi
++    answer=
++    while [ -z "$answer" ]; do
++      echo "What type is your mouse (or help) [$type]? "; echo -n "> "; read answer
++      if [ -n "$answer" ]; then
++
++	# BAH.  I hate sh.  WTF can't you have $foo where $foo
++	# contains a "|" and have case treat it like a seperator?
++
++        case $answer in
++         h|help)
++	   type_help | more -d
++	   answer=
++  	   ;;
++         *)
++           if grep -qw $answer $TMPFILE; then
++	     type=$answer
++  	   else
++	     echo "Sorry, "$answer" is not a recognised mouse type."
++  	     echo "Try help"
++  	     answer=
++	   fi
++	   ;;
++        esac
++      else
++	if [ -n "$type" ]; then
++	  answer=$type
++	fi
++      fi
++    done
++
++    echo "Set the responsiveness (normally not needed) [$responsiveness]? ";
++    echo -n "> "; read answer
++    if [ -n "$answer" ]; then responsiveness="$answer"; fi
++
++    echo "Repeat protocol (enter 'none' to turn repeating off) [$repeat_type]? ";
++    echo -n "> "; read answer
++    if [ -n "$answer" ]; then repeat_type="$answer"; fi
++    if [ "$answer" = "none" ]; then repeat_type=""; fi
++
++# FIXME, -l configuration
++
++    echo "Do you want to add any additional arguments [$append]? "
++    echo -n "> "; read answer
++    if [ -n "$answer" ]; then 
++      case $answer in
++	n|N|no|No|NO) append="";;
++	default) append="$answer";;
++      esac
++    fi
++
++    if [ "$restart" = "yes" ]; then
++      echo -n "Do you want to test this configuration (y/N)? "; read answer
++      if [ "$answer" = "Y" -o "$answer" = "y" ]; then gpm_test; fi
++    fi
++  fi
++  
++done
++
++if [ -n "$device" -a "$device" != "/dev/mouse" ]; then
++  rm -f /dev/mouse
++  if [ -n "$repeat_type" ]; then 
++    (cd /dev; ln -sf gpmdata mouse);
++  else
++    (cd /dev; ln -sf $(echo $device|cut -d/ -f3) mouse)
++  fi
++fi
++
++# Any backslashes in the append string must be protected from sed.
++
++append=$(echo $append | sed -e "s/\\\/\\\\\\\/g")
++
++# The append string is enclosed in quotes to preserve spaces and other
++# shell meta-characters; as a result we _must_ escape any quote marks
++# in the append string.  Failure to do so will lead to shell meta
++# characters being evaluated with undesirable consequences ('foo
++# "blah" ack' -> '"foo "blah" ack"'; blah is not protected by quotes.
++# However 'foo "blah" ack' -> '"foo \"blah\" ack"' is safe).  
++#
++# (Again, as protection against sed, the backslashes are doubled up.)
++
++append=$(echo $append | sed -e "s/\"/\\\\\\\\\"/g")
++
++if [ "$(grep -c ^repeat_type= $cfg)" = "0" ]; then
++       echo repeat_type= >> $cfg
++fi
++
++cat $cfg \
++  | sed \
++    -e "s,^[ ]*repeat_type=.*,repeat_type=$repeat_type,g" \
++    -e "s,^[ ]*device=.*,device=$device,g" \
++    -e "s,^[ ]*type=.*,type=$type,g" \
++    -e "s,^[ ]*responsiveness=.*,responsiveness=$responsiveness,g" \
++    -e "s,^[ ]*append=.*,append=\"$append\",g" \
++  > $cfg.new
++mv -f $cfg.new $cfg
++
++if [ "$restart" = "yes" ]; then
++  /etc/init.d/gpm restart
++fi
++
++rm -f $TMPFILE
+--- gpm-1.19.6.orig/debian/gpmconfig.8
++++ gpm-1.19.6/debian/gpmconfig.8
+@@ -0,0 +1,48 @@
++.\"
++.\" gpmconfig.8 - the *roff document processor source for the gpmconfig manual
++.\"
++.\" This file is part of Debian GNU/Linux's prepackaged version of gpm.
++.\" Copyright (C) 1998 James Troup <jjtroup@comp.brad.ac.uk>.
++.\"
++.\" This program is free software; you can redistribute it and/or modify
++.\" it under the terms of the GNU General Public License as published by
++.\" the Free Software Foundation; either version 2 of the License , or
++.\" (at your option) any later version.
++.\"
++.\" This program is distributed in the hope that it will be useful,
++.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
++.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++.\" GNU General Public License for more details.
++.\"
++.\" You should have received a copy of the GNU General Public License
++.\" along with this program; see the file COPYING.  If not, write to
++.\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++.\"
++.TH gpmconfig 8 .\" "Command Manual" v1.00 "Febuary 16, 1998"
++.SH NAME
++gpmconfig - a tool for configuring gpm.
++.SH SYNTAX
++\fBgpmconfig\fR [ \fB--norestart\fR ]
++.SH VERSION
++This man page documents gpmconfig version 1.00.
++.SH DESCRIPTION
++\fBgpmconfig\fR is a tool to configure
++.BR gpm (1).
++It allows configuration of four things: mouse type, the device to use, responsiveness and any additional arguments to be passed to gpm.  You will be offered the chance to test the configuration.
++.PP
++gpmconfig offers you the chance to run the gpm-mouse-test program which is designed to help you determine the type of your mouse and which device it attaches to.
++.SS OPTIONS
++.IP --norestart
++Don't restart gpm when configuration has finished.
++.SH FILES
++\fBgpmconfig\fR reads and writes the configuration from /etc/gpm.conf.  This file is usually created when the gpm package is installed for the first time.  /etc/init.d/gpm reads the configuration from /etc/gpm.conf.
++.SH DIAGNOSTICS
++None.
++.SH BUGS
++There is no option to configure gpm's -l option, other than by using the append string.  
++.SH AUTHOR
++.nf
++Martin Schlulze <joey@debian.org> and James Troup <troup@debian.org>.
++.fi
++.SH ACKNOWLEDGEMENTS
++The authors would like to thank Alessandro Rubini <rubini@pop.systemy.it> for gpm.
+--- gpm-1.19.6.orig/debian/changelog
++++ gpm-1.19.6/debian/changelog
+@@ -0,0 +1,801 @@
++gpm (1.19.6-10) unstable; urgency=critical
++
++  * The fuck it all to hell release.
++  * Change the priority from standard to optional.
++  * Drop the non-blocking IO, just kill ourselves if in the init sequence a
++    read or write takes more then 1 second.
++    (closes: #129063, #129471, #130133, #130275, #131648, #128780, #121206)
++  * Move gpm_has_mouse_control to /usr/lib/gpm. (closes: #87096)
++  * Default to not restarting gpm when X has control during upgrade.
++    (closes: #129757)
++  * Change the init sequence more. Kernels are BROKEN.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Thu, 21 Feb 2002 20:40:49 -0500
++
++gpm (1.19.6-9) unstable; urgency=critical
++
++  * Retry writes and reads in the PS/2 init if the first time fails.
++    (closes: #128715)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Sun, 13 Jan 2002 08:57:07 -0500
++
++gpm (1.19.6-8) unstable; urgency=critical
++
++  * Add another sleep to the PS/2 init write sequence.
++    (closes: #128715)
++  * Redo all of the diffs to apply cleanly without any fuzz.
++    (closes: #128811)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Fri, 11 Jan 2002 17:20:57 -0500
++
++gpm (1.19.6-7) unstable; urgency=critical
++
++  * Hopefully work around the problem with non-existant ps/2 mice making
++    the keyboard go away. (closes: #113454, #114407)
++  * fups2 protocol added, does no init, for the really broken mice.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Thu, 10 Jan 2002 04:18:35 -0500
++
++gpm (1.19.6-6) unstable; urgency=high
++
++  * Fix buttons with multiple mice.
++    Thanks to Federico Heinz for spotting my error.
++    (closes: #120780, #122245, #122157)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Wed,  9 Jan 2002 16:57:54 -0500
++
++gpm (1.19.6-5) unstable; urgency=low
++
++  * Changed the PS/2 init function a bit.
++    Some thanks to James Vandenberg. (closes: #120740, #120742)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Sat, 24 Nov 2001 14:26:52 -0500
++
++gpm (1.19.6-4) unstable; urgency=low
++
++  * Grr, changed the write_ps2 function to be more, tolorant, of
++    really really broken mice which reply with 2 ACKs instead of 1 for
++    setting sample rate. (closes: #120581, #120701)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Fri, 23 Nov 2001 05:33:22 -0500
++
++gpm (1.19.6-3) unstable; urgency=low
++
++  * Added bison, libncurses5-dev, tetex-bin, and texinfo to the
++    build-depends. (closes: #120687)
++  * On alpha use /dev/psaux instead of /dev/psmouse by default.
++    (closes: #63181)
++  * Better detection of if this is an xterm with mouse support or the
++    like. (Specificly for things like rxvt and other non-xterms with
++    the same support.) (Patch by Oskar Liljeblad) (closes: #56514)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Thu, 22 Nov 2001 19:47:23 -0500
++
++gpm (1.19.6-2) unstable; urgency=low
++
++  * Oops, broke imps2, fixed. (closes: #120581, #120584, #120635)
++  * Include support for autops2 protocol, which autodetects which ps/2
++    protocol your mouse speaks, this is now the new default.
++  * Added bzip2 and gawk to the build-depends. (closes: #120582, #120594)
++  * Added support for the vsxxxaa serial mouse used on the DEC.
++    (Thanks to Karsten Merker.)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Thu, 22 Nov 2001 14:26:35 -0500
++
++gpm (1.19.6-1) unstable; urgency=low
++
++  * New upstream version. (closes: #113967, #67372)
++  * This adds a few new protocls and changes some existing ones.
++  * Removed gpm-root entirely. (closes: #102031, #51671)
++  * Only call vsyslog once from gpm_debug_log.
++    (closes: #85551, #110112, #112235)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Wed, 21 Nov 2001 07:44:28 -0500
++
++gpm (1.19.3-7) unstable; urgency=low
++
++  * Fixed the build depends. (closes: #88373)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Fri, 23 Mar 2001 08:35:16 -0500
++
++gpm (1.19.3-6) unstable; urgency=high
++
++  * Oops, gpmconfig is fixed now. (closes: #87718, #88442)
++  * Delayed slightly due to a broken bison package.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Sun,  4 Mar 2001 05:32:12 -0500
++
++gpm (1.19.3-5) unstable; urgency=high
++
++  * The libc5 packages are /GONE/!
++  * 010_compile_000: s/OPEN_MAX/FOPEN_MAX/. (closes: #85422, #79217, #80180)
++  * 011_sun_repeat_000: Added sun repeat support from BenC. (closes: #70699)
++  * 012_fups2_fuimps2_000: Support for BROKEN ps2 and ps2 wheel mice.
++    (closes: #78862, #80181, #56364, #70653, #72484)
++  * 013_tmpfile_000: Fixed a (not very important) race with tmpfile
++    creation. (closes: #82774)
++  * Changed the wording of the warning about -R in gpmconfig and the
++    init script. (closes: #72338)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Thu, 22 Feb 2001 18:21:24 -0500
++
++gpm (1.19.3-4) unstable; urgency=medium
++
++  * The broken ps2 machine release.
++  * Documentation fix, usage message was incorrect for -R.
++  * Because of many broken systems which can't handle the PS/2 reset
++    code we no longer attempt to fully reset PS/2 mice. (closes: #70732,
++    #70807, #70625, #70874, #71752)
++  * Synced with the NMU stuff a while back. (closes: #63649)
++  * Updated email address in control file.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Sat, 16 Sep 2000 08:34:29 -0400
++
++gpm (1.19.3-3) unstable; urgency=medium
++
++  * The ps2 protocol release.
++  * We now init the mouse in the ps2 protocol, managing to even reset 
++    it from the IntelliMouse protocol back to the standard ps2 
++    protocol. (closes: #70004)
++  * Note that this means that we can finally use -s to set the sample
++    rate.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Tue, 29 Aug 2000 22:27:18 -0400
++
++gpm (1.19.3-2) unstable; urgency=low
++
++  * The brown paper bag release.
++  * Oops, I based the 1.19.3-1 release off of a older gpm package 
++    instead of current, a few things wrong, oops.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Wed, 23 Aug 2000 17:14:33 -0400
++
++gpm (1.19.3-1) unstable; urgency=low
++
++  * New upstream version.
++  * Readded comment to the init script.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Wed, 23 Aug 2000 17:14:33 -0400
++
++gpm (1.17.8-18) unstable frozen; urgency=high
++  * Note to release manager, the RC bug for the below X fix has not been
++    filed, however it does fix what is in my view a RC bug..
++  * Check to see if we are running under X in a different way.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Fri, 30 Jun 2000 18:42:54 -0400
++
++gpm (1.17.8-17) unstable frozen; urgency=high
++
++  * Note to release manager, this fixes a RC bug, and /many/ non RC
++    bugs, so should probably go into potato for the next test cycle..
++  * Removed the call to gpm-mouse-test in gpmconfig.
++    (closes: #65962, #36491, #23660, #25856, #36490)
++  * For testing cmdline there is no space after -R, just like the init
++    script..
++  * Corrected start/stop/restart calls in gpmconfig. (closes: #50770)
++  * Changed the default append line..
++  * Fixed the section for the gpm info file.. (closes: #57680)
++  * If installing or upgrading under X ask before restarting.
++    (closes: #59793, #46307, #49624, #54771, #61143, #64932)
++  * Remove check for display in the init script, as that case is
++    covered by the above change.
++
++ -- Zephaniah E. Hull <warp@debian.org>  Tue, 27 Jun 2000 17:04:08 -0400
++
++gpm (1.17.8-16.1) unstable frozen; urgency=high
++
++  * Non Maintainer Upload
++
++  * Add patch from BTS to fix getting kernel commandline on clean install
++    (closes: #63649)
++
++ -- Stephen R. Gore <sgore@debian.org>  Sat, 27 May 2000 14:52:00 -0500
++
++gpm (1.17.8-16) unstable frozen; urgency=high
++
++  * Fix the shlibs to be current version as I don't know what the first
++    glibc2.1 version was, this is not perfect, but it should work.
++    (RC bug not yet filed)
++  * Add patch Colin Phipps to fix privlage elevation (closes: #58081)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Mon, 20 Mar 2000 07:07:25 -0500
++
++gpm (1.17.8-15) unstable frozen; urgency=high
++
++  * Whoops, upload to frozen as well as unstable..
++
++ -- Zephaniah E. Hull <warp@debian.org>  Sat,  4 Mar 2000 16:36:55 -0500
++
++gpm (1.17.8-14) unstable; urgency=high
++
++  * Changed 'Recommends: gpm | xserver' to 'Suggests: gpm' for ruud.
++    (closes: #59453)
++  * Patch from rcw to allow gpmconfig to enable the repeater if the 
++    repeat line does not exist (closes: #57850)
++  * NOTE: This leaves a problem which I considder RC sitting here,
++    I'll get that stuff done ASAP..
++
++ -- Zephaniah E. Hull <warp@debian.org>  Wed,  1 Mar 2000 02:26:51 -0500
++
++gpm (1.17.8-13) unstable; urgency=medium
++
++  * Fixed the init script dealing with repeating..
++  * Peered at the priority a bit..
++
++ -- Zephaniah E. Hull <warp@debian.org>  Fri, 14 Jan 2000 07:59:47 -0500
++
++gpm (1.17.8-12) unstable; urgency=medium
++
++  * Default mouse type for i386 is now ps2, and the device /dev/psaux
++    (Closes: #51129)
++  * Moved the gpm-mouse-test manpage to section 8. (Closes: #51241)
++  * Default mouse dev for sparc is now /dev/sunmouse.
++  * Fix missing space in init script for repeating. (Closes: #54159)
++  * Updated policy version to 3.1.1.1.
++  * Removed several unused scripts..
++
++ -- Zephaniah E. Hull <warp@debian.org>  Mon, 10 Jan 2000 01:27:02 -0500
++
++gpm (1.17.8-11) unstable; urgency=medium
++
++  * Removed sparc from arches to build for the libc5 compat libs, for
++    real this time... (closes: #50554)
++
++ -- Zephaniah E. Hull <warp@debian.org>  Thu, 18 Nov 1999 19:22:42 -0500
++
++gpm (1.17.8-10) unstable; urgency=medium
++
++  * Changed the message in the init script for when $DISPLAY is set..
++    (Thanks to overfiend)
++  * Included the readlink from netscape-base-4 as gpm_readlink..
++  * Errrk, fixed the init script dealing with repeating..
++  * Removed sparc from arches to build for the libc5 compat libs.. 
++    (closes: #50127)
++  * Erm, don't transpose the wheel movements for repeating.. *blush*
++  * Uploading with a lot of unused stuff, will be using them next
++    version, but this has a few big bugs squashed...
++
++ -- Zephaniah E. Hull <warp@whitestar.soark.net>  Mon, 15 Nov 1999 06:06:05 -0500
++
++gpm (1.17.8-9) unstable; urgency=low
++
++  * Split up the patches even more, will hopefully submit things upstream RSN.
++  * Tweaked the build scripts a little bit..
++  * Turned off verbose mode for debhelper..
++
++ -- Zephaniah E. Hull <warp@whitestar.soark.net>  Sat,  6 Nov 1999 06:28:00 -0500
++
++gpm (1.17.8-8) unstable; urgency=low
++
++  * Reworked the packaging a bit more, to use doogie's dbs system..
++  * Slightly tweaked the maintainer field..
++  * Fixed gpmconfig so you can turn repeating off.. (closes: #48879)
++
++ -- Zephaniah E. Hull <warp@whitestar.soark.net>  Fri,  5 Nov 1999 01:24:31 -0500
++
++gpm (1.17.8-7) unstable; urgency=low
++
++  * Reworked the packaging, now uses debhelper and is FHS complient.
++    (closes: #42552)
++  * Changed how we kill gpm in the init.d script.
++  * Don't start gpm under X unless we are repeating to X.
++  * Don't kill gpm in prerm if we are upgrading, but do if the upgrade fails
++    (closes: #36117)
++  * Applied patch from Alexander Viro.. (closes: #46061)
++  * Changed type of summaid in mice.c to signed short from char.
++    (closes: #39455)
++  * Corrected typo in documentation.. (closes: #41637)
++  * Included rmev.. (closes: #42168, #34559)
++
++ -- "Zephaniah E. Hull" <warp@whitestar.soark.net>  Tue, 28 Sep 1999 18:44:41 -0400
++
++gpm (1.17.8-6) unstable; urgency=low
++
++  * Whoops, messed up on the wheel detection for the imps2 and ms3 
++    protocols..
++
++ -- "Zephaniah E. Hull" <warp@whitestar.soark.net>  Mon, 26 Jul 1999 03:17:11 -0400
++
++gpm (1.17.8-5) unstable; urgency=low
++
++  * Added a 5 second delay between stopping and starting gpm in the
++    restart case..
++
++ -- "Zephaniah E. Hull" <warp@whitestar.soark.net>  Tue, 29 Jun 1999 15:22:04 -0400
++
++gpm (1.17.8-4) unstable; urgency=low
++
++  * Changed the 'Error in protocol' from ERR to DEBUG..
++
++ -- "Zephaniah E. Hull" <warp@whitestar.soark.net>  Fri, 25 Jun 1999 13:47:23 -0400
++
++gpm (1.17.8-3) unstable; urgency=medium
++
++  * Changed the Architecture: field in the control files from 'any' to
++    'i386 m68k sparc' (closes: 39292)
++
++ -- "Zephaniah E. Hull" <warp@whitestar.soark.net>  Thu, 10 Jun 1999 15:02:42 -0400
++
++gpm (1.17.8-2) unstable; urgency=medium
++
++  * Doh! Actually changed the maintainer entry in the control file..
++
++ -- "Zephaniah E. Hull" <warp@whitestar.soark.net>  Fri,  4 Jun 1999 18:21:23 -0400
++
++gpm (1.17.8-1) unstable; urgency=low
++
++  * New upstream version.
++  * New maintainer.
++  * Fixed a few compiler warnings, will fix more later..
++  * Turned off mouse movement clustering, helps for me...
++  * Added -e option, directs logging to stderr instead of syslog...
++  * Added -f option, forces repeat mode to always be on..
++  * Added wheel support, note that the wheel is only repeated currently:
++    o Added new repeater type, ms3, includes wheel data!!
++    o Added wheel parsing stuff to ms3 type. (IntelliMouse SERIAL)
++    o Added new type, xmiabps2, for the Kensington Mouse-in-a-box in ps2
++      mode, note that this mouse acts like a IntelliMouse in serial mode
++      (the ms3 type)
++    o Separated the imps2 parser from the ps2 parser, and added wheel
++      parsing to it..
++
++ -- "Zephaniah E. Hull" <warp@whitestar.soark.net>  Wed,  3 Jen 1999 09:07:00 -0400
++
++gpm (1.17.6-1) unstable; urgency=low
++
++  * New upstream version.
++  * debian/rules (binary-gpm): install microtouch-setup.
++  * debian/gpmconfig: fix usage of more so that the list of mouse types is
++    actually piped through more.
++
++ -- James Troup <james@nocrew.org>  Wed,  7 Apr 1999 20:37:18 +0100
++
++gpm (1.17.5-1) unstable; urgency=low
++
++  * New upstream version.
++  * debian/control (gpm): recommend xserver not xbase. [#32855]
++
++ -- James Troup <james@nocrew.org>  Sun, 21 Feb 1999 02:36:42 +0000
++
++gpm (1.17.4-1) unstable; urgency=low
++
++  * New upstream version.
++
++ -- James Troup <james@nocrew.org>  Sun, 14 Feb 1999 16:01:01 +0000
++
++gpm (1.17.3-1) unstable; urgency=low
++
++  * New upstream version.
++  * debian/rules (build): seperate build into two parts of library and
++    program, so I can pass -DREENTRANT to both the shared and static
++    library and not compile the programs with it.  Thanks to Ian T
++    Zimmerman (itz@rahul.net) who noticed that the static library wasn't
++    being compiled with -DREENTRANT.
++  * debian/rules (build-libc5): use CFLAGS to pass -DREENTRANT as per
++    previous change.
++  * debuglog.c: #include <string.h> to quiet -Wall.
++
++ -- James Troup <james@nocrew.org>  Thu, 11 Feb 1999 20:52:41 +0000
++
++gpm (1.16.0-3) unstable; urgency=medium
++
++  * debian/rules (binary-gpm): install all the info files.  Thanks to
++    Kalle Olavi Niemitalo <tosi@ees2.oulu.fi> for noticing the missing
++    files.  [#32268]
++  * debian/rc (PIDFILE): change the name of the pidfile.  Noticed by
++    Neophyte <neo@sitek.windoms.net>. [#32317]
++  * debian/gpmconfig (PIDFILE): new variable, correct name of pidfile.
++  * debian/gpmconfig: use it.
++  * debian/prerm: run start-stop-daemon with both the new and the old
++    pidfile name.
++
++ -- James Troup <james@nocrew.org>  Sun, 24 Jan 1999 00:50:58 +0000
++
++gpm (1.16.0-2) unstable; urgency=high
++
++  * Link libgpm with ncurses as it uses stdscr() and not linking it
++    requires the program using libgpm to do so, which none of them do.
++    Reported by Lazarus Long <lazarus@overdue.ddns.org> and
++    ron@microtronics.com.au. [#31608,#31633]
++
++ -- James Troup <james@nocrew.org>  Sat,  9 Jan 1999 19:42:20 +0000
++
++gpm (1.16.0-1) unstable; urgency=low
++
++  * New upstream version, thanks to Davide Barbieri <paci@prosa.it> for
++    telling me about it.
++  * debian/control (Standards-Version): updated to 2.5.0.0.
++  * debian/copyright: updated canonical FTP site and other information.
++  * debian/rules (COMPAT_ARCHS): added sparc, requested by Christian Meder
++    <meder@isr.uni-stuttgart.de>. [#29582 (1/2)]
++  * debian/rules (build-libc5): don't hardcode $CPP to something
++    inapproriate, reported by Chrisitan Meder
++    <meder@isr.uni-stuttgart.de>. [#29582 (2/2)]
++  * gpn.c (usage): typo (s/an unexistent/a non-existent/)
++  * aclocal.m4 (ITZ_SYS_ELF): remove broken test which assumed that $CC is
++    always exactly `gcc' on ELF systems.
++  * debian/rules (build): build with -O2 not -O3 in line with upstream
++    change and sanity.
++  * debian/rules (build-libc5): ditto and redone as this upstream version
++    has proper support for building in directories other than the root
++    source directory.
++  * debian/rules (SOMINOR): update.
++  * debian/rules (binary-*): rewritten to cope with changes since 1.14, to
++    not use {,} and generally be nicer.
++  * debian/gpmconfig: fix logic bug (s/-a/-o/) to allow a `y' to do the
++    right thing for the `run mouse-test' question.
++  * debian/rules (build): force gpm-root (via configure) to use /etc not
++    /usr/etc (eh?).
++  * doc/Makefile.in (maintainer-clean): unconditionally (and
++    non-interactively) remove files.  Also remove `mouse-test.1',
++    `gpm.info-1' and `gpm.info-2'.
++  * debian/rules (clean): force a `maintainer-clean' in doc/ to get rid of
++    cruft in diff.
++
++ -- James Troup <james@nocrew.org>  Wed,  6 Jan 1999 22:36:37 +0000
++
++gpm (1.14-3) unstable; urgency=medium
++
++  * Recompile with ncurses4.
++  * debian/lib.shlibs: update.
++  * debian/libg.shlibs: ditto.
++
++ -- James Troup <james@nocrew.org>  Sat, 31 Oct 1998 00:23:24 +0000
++
++gpm (1.14-2) unstable; urgency=low
++
++  * debian/gpmconfig: Fix invocation of mktemp, thanks to Greg Schafer
++    <gschafer@zip.com.au> for pointing out my carelessness. [#27426]
++
++ -- James Troup <james@nocrew.org>  Sun,  4 Oct 1998 12:02:06 +0100
++
++gpm (1.14-1) unstable; urgency=low
++
++  * New upstream version [#25685].
++  * debian/control (Maintainer): new address.
++  * debian/gpmconfig: correct logic error in parsing answer to whether or
++    not the user wants to run gpm-mouse-test, reported by Joel Rosdahl
++    <joel@debian.org>. [#26725]
++  * debian/gpmconfig: add ms3 to the accepted mouse types, reported by
++    Armando Cerna <bubby@nettaxi.com>. [#25953]
++  * debian/rc: test for root by checking the numeric id rather than the
++    user name, reported by Yuri Niyazov <yuricake@geocities.com>. [#26174]
++  * gpm-root.y (main): s/vcs0/vcs/g, reported by Patrik Rak
++    <patrik@pandora.ms.mff.cuni.cz>. [#25839]
++
++  * The following changes were thought of by François Gouget
++    <fgouget@mygale.org> and he even provided a patch for them, which, uh,
++    didn't work.  But even so, many thanks to him for the great
++    idea. [#24345]
++  * gpn.c (cmdline): modified handling of -t command line argument, so it
++    can be used by anyone regardless of whether or not a copy of gpm is
++    already running.
++  * gpn.c (usage): update for new -t option "types".
++  * mice.c: improved descriptions of mouse types.
++  * mice.c (M_listMice): function used by -t help, reworked version of old
++    M_listTypes.
++  * mice.c (M_listTypes): function used by -t types; lists only mnemonics.
++  * debian/gpmconfig: use the new -t types and -t option to automate both
++    the help output and the detection of valid mouse types.
++
++  * debian/gpmconfig: globally replace `echo foo` with $(echo foo).
++  * debian/control (Standards-Version): Updated to 2.4.1.0.
++  * debian/control (gpm): depend on debianutils (>= 1.7) to ensure mktemp
++    is available for gpmconfig.
++  * debian/rules (binary-gpm): install README and README.twiddler into
++    /usr/doc/gpm/.
++  * debian/rules: don't hard code the minor of the soname, but use a
++    variable instead, to ease upgrades to new upstream versions.
++  * aclocal.m4: force configure to leave CFLAGS alone so debian/rules
++    can compile debuggable but optimized binaries.
++  * debian/rules (build): pass our CFLAGS to configure rather than make so
++    as not to lose ancillary information the Makefile passes in the
++    CFLAGS.
++
++ -- James Troup <james@nocrew.org>  Thu,  1 Oct 1998 11:57:16 +0100
++
++gpm (1.13-5) frozen unstable; urgency=HIGH
++
++  * mouse-test.c (main): exclude devices with a minor number of 130 from 
++    the device probe to avoid causing spontaneous reboots on machines
++    where watchdog is used.  Reported by Jim Studt <jim@federated.com>
++    [#22602]
++  * debian/gpmconfig: s/protocl/protocol/ and improve description of ps2
++    mice, thanks to Paul Slootman <paul@debian.org>. [#21428]
++  * debian/control (libgpmg1): Recommend gpm _or_ xbase, as xbase provides
++    a mouse server too. [#20449]
++  * debian/control (libgpm1): ditto.
++  
++  * Following changes are a patch for Intellimouse PS/2 support from Ben
++    Pfaff <pfaffben@pilot.msu.edu>. [#22496]
++  * kmouse.h: Add PROTO_IMPS2.
++  * mice.c: (I_imps2) New function.
++    (mice[]) New entry for imps2: PS/2 Intellimouse.
++
++ -- James Troup <J.J.Troup@comp.brad.ac.uk>  Thu, 21 May 1998 00:00:11 +0200
++
++gpm (1.13-4) frozen unstable; urgency=medium
++
++  * Makefile.in: compile the shared library with the pic versions of
++    $EXTRAOBJS, Greg Stark <gsstark@mit.edu>. [#20008]
++  * mice.c: #include <string.h> for memset() prototype.
++  * libcurses.c: ditto.
++  * mice.c (I_pnp): don't define unsed variable c.
++  * debian/rules (binary-gpm): install mouse-test as gpm-mouse-test.
++  * gpm-root.y: disable undocumented f.debug function because it uses a
++    file in /tmp in a fashion which invites symlink abuse.
++  * doc/doc.gpm: add information to generate a man page for mouse-test.
++  * debian/rules (binary-gpm): install mouse-test manpage, and correct the
++    name.
++  * debian/rules (build): compile with "-g -O3 -Wall" (as opposed to "-O3
++    -fomit-frame-pointer").
++  * debian/rules (build-libc5): ditto.
++  * debian/gpmconfig: offer the user the chance to run mouse-test,
++    suggested by Tony Finch <fanf@lspace.org> [#5551].
++  * debian/gpmconfig.8: updated to reflect changes in gpmconfig.
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Thu, 26 Mar 1998 12:40:31 +0000
++
++gpm (1.13-3) unstable; urgency=low
++
++  * debian/postinst (check_gpm_conf): fix embarrassing typo
++    (s/you're/your/). [#18086]
++  * debian/control (libgpmg1): Recommend not Depend on gpm, since
++    applications linked with libgpm retain their functionality in
++    X. [#18223]
++  * debian/control (libgpm1): ditto.
++  * debian/control (libgpm1): Correct section (s/libs/oldlibs/).
++  * debian/control (libgpm1-altdev): ditto (s/devel/oldlibs/).
++  * debian/gpmconfig.8: new manpage for gpmconfig.
++  * debian/postrm (purge): remove /etc/gpm.conf.
++  * debian/rules (binary-gpm): install gpmconfig.8.
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Sat, 21 Feb 1998 00:44:34 +0000
++
++gpm (1.13-2) unstable; urgency=low
++
++  * gpm.c (processConn): type of socket length changed (size_t -> socket_t).
++    [#16043]
++  * gpm-root.y (get_winsize): Open /dev/tty0 not /dev/console. [#10583]
++  * debian/control (libgpmg1-dev): Replaces bo's libgpm1 to avoid overwrite 
++    problems.  
++  * debian/rules: s/g-ws/go=rX/g for all chmod calls.
++  * debian/conffiles: /etc/gpm.conf is no longer a dpkg-handled conffile.
++    [#16081]
++  * debian/postinst (configure): drop test for previously unconfigured gpm
++    and instead test for the presence of /etc/gpm.conf, if one is not
++    found create a default and run gpmconfig.
++  * debian/rules (binary-gpm): don't install /etc/gpm.conf.
++  * debian/rc (reload): removed; gpm takes it configuration from the
++    command line, a reload target makes no sense.
++  * debian/rc (force-reload): new target which is an alias for restart
++    (see above).
++  * debian/control (Standards-Version): Updated to 2.4.0.0.
++  * debian/rules (COMPAT_ARCHS): don't build libc5-compat stuff for sparc.
++  * doc/manpager: Add an additional rule to convert "\ " to "\\ " to avoid
++    the problem of groff escaping the slash away. [#12031]
++  * debian/postinst (create_gpm_conf): new function to create a default
++    configuration file suitable for the architecture.
++  * debian/postinst (restart_gpm): new function which has the odious task
++    of deciding whether or not to restart gpm.
++  * debian/postinst: split into two case structures to avoid repetition.
++  * debian/gpm.conf-i386: removed as it is now obsolete.
++  * debian/gpm.conf-m68k: ditto.
++  * debian/gpm.conf-axp: ditto.
++  * debian/gpm.conf-sparc: ditto.
++  * debian/gpmconfig: escape any backslashes in the append string to
++    protect it from sed.
++  * debian/gpmconfig: reversed change from 1.13-1 and use " to enclose the
++    append string not '.
++  * debian/gpmconfig: ensure any " in the append string are escaped with
++    two backslashes to ensure shell meta-characters are protected from
++    evaluation.
++  * debian/postinst: change format of append line in default /etc/gpm.conf
++    to avoid corruption of it.
++  * debian/postinst (check_gpm_conf): new function to try and fix old
++    broken gpm.conf files.
++  * debian/rules (build-libc5): use a separate configure cache instead of
++    removing the cache from the libc6 build.
++  * debian/rules (clean): remove configc1.cache.
++  * debian/copyright: improved and extended changes description.
++  * debian/copyright: altered to reflect now uncompressed state of GPL in
++    /usr/doc/copyright.
++  * debian/prerm: remove superfluous duplicate  "set -e".
++  * debian/control (libgpmg1): Depend on gpm since applications linked
++    against libgpm require it for the mouse functions to work.
++  * debian/control (libgpm1): ditto.
++  * debian/copyright: update FSF's address.
++  * debian/rules (binary-libgpm-altdev): use relative not absolute symlink
++    for libgpm.so.
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Mon,  9 Feb 1998 13:18:47 +0000
++
++gpm (1.13-1) unstable; urgency=low
++
++  * New upstream version. [#13397]
++  * Uses pristine upstream source.
++  * debian/gpmconfig: Extended descriptions of mouse types. [#9216 (2/2)]
++  * debian/gpmconfig: added support for logim, ms3 and pnp mouse types.
++  * debian/gpmconfig: More helpful error messages.
++  * debian/gpmconfig: default mouse type in help is no longer i386-specific.
++  * debian/gpmconfig: Append is enclosed in ' and not ".
++  * debian/gpmconfig: When asked for additional arguments, append is
++    cleared if the user answers {N,n} [#13893].
++  * debian/rules: only build libc5-compat stuff for i386, m68k and sparc.
++  * debian/rules: use $(STRIP).
++  * debian/rules: strip libgpm.a with --strip-debug.
++  * debian/rules: add a SHELL=/bin/bash.
++
++  * debian/lib.postinst: only run ldconfig if called with configure as an
++    argument.
++  * debian/lib.postrm: removed; there's no need to run ldconfig at this
++    point.
++  * debian/postrm: rewritten in the style of the other
++    *{{post,pre}{rm,inst}}* scripts.  
++  * debian/prerm: don't stop the daemon or remove info documentation on 
++    failed-upgrade.
++  * debian/rc: rewritten and added reload target.
++  * debian/lib5.preinst: ensure ld.so.1.x.x knows about
++    /usr/lib/libc5-compat.
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Sat,  6 Dec 1997 17:42:00 +0000
++
++gpm (1.12-6) unstable; urgency=low
++
++  * Removed spurious liblow.c.orig which was bloating the diff.gz.
++  * Removed t-mouse.el{,c} and any reference to it from the binary
++    package, it doesn't work with recent versions of emacs and is
++    superceded by gpmemacs.
++  * Added check to /etc/init.d/gpm to ensure that only root can run it.
++  * Added `:' and `~' to the default inword LUT, to make double clicking
++    on URLs easier.
++  * Fixed gpn.c so gpm will accept 1 as an argument to -a [#11911].
++  * Lots of spelling corrections/typo fixes and a couple of minor 
++    alterations to the info file and man page.
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Fri,  8 Aug 1997 23:55:01 +0100
++
++gpm (1.12-5) unstable; urgency=low
++
++  * Corrected bogus libgpmg1 shlibs file.  
++  * Corrected gpm.h so that programs linked against libgpm 
++    don't cause problems after being run in an xterm [#10959].
++  * /etc/init.d/gpm is now a conffile.
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Wed,  9 Jul 1997 10:49:20 +0100
++
++gpm (1.12-4) unstable; urgency=low
++
++  * Build libgpm.so with -lc, to ensure the dynamic linker 
++    can distinguish between the libc5 and libc6 version.
++  * If $DISPLAY is set gpm will ask if gpm should be started
++    since the problems reported in #7343 don't happen to 
++    everyone [#10929].
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Tue, 01 Jul 1997 02:19:40 +0100
++
++gpm (1.12-3) unstable; urgency=low
++
++  * Rebuilt for libc6.
++  * Configure gpm only if there is no previously configured
++    version [#9216 (1/2)].
++  * Don't restart gpm if $DISPLAY is set [#7343, #10766].
++  * Force doc/manpager to use gawk, fixes problem of text 
++    running together without spaces in gpm.1 [#9753 (1/2)].
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Thu, 26 Jun 1997 17:30:23 +0100
++
++gpm (1.12-2) unstable; urgency=low
++
++  * Patched for glibc.  Patch from Michael Alan Dorman <mdorman@debian.org>.
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Sun, 27 Apr 1997 23:24:54 +0100
++
++gpm (1.12-1) unstable; urgency=low
++
++  * New upstream version.
++  * Really compile libgpm1 with -DREENTRANT.
++  * Added support for ligim, sun, ncr and wacom to gpmconfig.
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Thu, 24 Apr 1997 20:42:52 +0100
++
++gpm (1.10-7) unstable; urgency=low
++
++  * New maintainer.
++  * Reworked debian/* to my tastes.
++  * Strip libgpm.so with --strip-unneeded as per standard.
++  * Removed empty /usr/include directory from gpm.
++  * install-info --remove call moved to prerm as per standard.
++  * Removed obsolete preinst.
++  * Altered prerm, gpmconfig and /etc/init.d/gpm to use start-stop-daemon.
++  * Removed command line arguments from startup message.
++  * gpm once more Suggests: emacs, it got lost at some stage.
++  * Added seperate gpm.conf files for m68k, sparc and alpha
++    (Thanks to Eric Delauney and Michael Alan Dorman for sparc and 
++    alpha information).
++  * Patched for glibc.  Patch from Michael Alan Dorman <mdorman@debian.org>.
++  * Changed default mouse type for i386 to ms (bug #7935).
++
++ -- James Troup <jjtroup@comp.brad.ac.uk>  Wed, 23 Apr 1997 09:13:11 +0100
++
++gpm (1.10-6) unstable; urgency=low
++
++  * Modified preinst to work properly (Bug#7176)
++
++ -- Martin Schulze <joey@debian.org>  Sun, 10 Feb 1997 08:45:41 +0100
++
++gpm (1.10-5) unstable; urgency=low
++
++  * Made /etc/init.d/gpm more verbose, according to standard
++
++  * Compressed manpages
++  
++  * Uncompressed copyright
++
++ -- Martin Schulze <joey@finlandia.infodrom.north.de>  Sat, 8 Feb 1997 11:12:02 +0100
++
++gpm (1.10-4) unstable; urgency=low
++
++  * Converted to Standards-Version: 2.1.1.2 with great help by James Troup
++    <J.J.Troup@comp.brad.ac.uk>
++  
++  * Moved libgpm1 from section misc into libs
++  
++  * Modified prerm to work correct with broken versions of
++    /etc/init.de/gpm that would kill itself instead of the daemon.
++
++ -- Martin Schulze <joey@finlandia.infodrom.north.de>  Fri, 31 Jan 1997 10:24:58 +0100
++
++Thu Jan  2 13:53:31 1997  Martin Schulze  <joey@finlandia.infodrom.north.de>
++
++	* debian.rc: Use pidof instead of killall (Bug#6043)
++
++Sun Dec 22 11:31:26 1996  Martin Schulze  <joey@finlandia.infodrom.north.de>
++
++	* debian.rules: Installed upstream ChangeLog
++
++Wed Oct 30 08:17:25 1996  Martin Schulze  <joey@finlandia.infodrom.north.de>
++
++	* stripped gpm (Bug#5076)
++	* stripped libgpm.so.$(version) (Bug#5129)
++
++Thu Sep 26 09:32:26 1996  Martin Schulze  <joey@finlandia.infodrom.north.de>
++
++	* debian.copyright: added new address for Alessandro
++
++	* debian.rc: gpm -i --> killall gpm - needed to reduce hangs when
++	called under X11
++
++	This is what we (Allesandro and I) found out. Release 1.11 of gpm
++	will have a timeout added.
++
++	* debian.gpmconfig: gpm -i --> killall gpm
++
++Sun Sep  1 15:38:17 1996  Martin Schulze  <joey@finlandia.infodrom.north.de>
++
++	* /etc/init.d/gpm: Configuration based on /etc/gpm.conf
++	* Created /usr/sbin/gpmconfig to manipulate /etc/gpm.conf
++	* /etc/init.d/gpm: no longer a configuration file
++	* /usr/doc/copyright/{gpm,libgpm1} --> /usr/doc/{gpm,libgpm1}/copyright
++	* /usr/doc/{gpm,libgpm1}/changelog.gz
++	* Moved gpm into /usr/sbin as it's a system and not a user program
++	* Modified prerm/postrm (Bug#4252)
++
++Sat Jul  6 11:27:39 1996  Martin Schulze  <joey@finlandia.infodrom.north.de>
++
++	* removed /usr/man/man1/libgpm.so.1 (Bug#3528)
++
++Mon Jul  1 10:23:39 1996  Martin Schulze  <joey@finlandia.infodrom.north.de>
++
++	* Splitted the binary into two packages, one consisting of a
++	(shared) library and one containing the executable.
++
++Wed May  8 00:54:43 1996  Martin Schulze  <joey@finlandia.infodrom.north.de>
++
++	* created first version of 1.06. While packaging I solved
++	Bug#1669, Bug#2215, Bug#2232, Bug#2388, Bug#2518, Bug#2521, Bug#2522
++
++
++Local variables:
++mode: debian-changelog
++End:
+--- gpm-1.19.6.orig/debian/conffiles
++++ gpm-1.19.6/debian/conffiles
+@@ -0,0 +1 @@
++/etc/init.d/gpm
+--- gpm-1.19.6.orig/debian/control
++++ gpm-1.19.6/debian/control
+@@ -0,0 +1,41 @@
++Source: gpm
++Maintainer: Zephaniah E. Hull <warp@debian.org>
++Section: misc
++Priority: optional
++Standards-Version: 3.5.6.0
++Build-Depends: automake, autoconf, libtool, debhelper (>= 3.0.0), bzip2, gawk, bison, libncurses5-dev (>= 5.2.20010310-1), tetex-bin, texinfo
++
++Package: gpm
++Architecture: any
++Depends: ${shlibs:Depends}, debianutils (>= 1.7)
++Section: misc
++Priority: optional
++Description: General Purpose Mouse Interface
++ This package provides a daemon that listens to the mouse when the
++ console is displayed, and delivers them to applications.
++ .
++ The default when no application is running is to emulate
++ "selection", i.e. allow cut-and-paste with the mouse on the
++ console the same way as under X.
++
++Package: libgpmg1
++Architecture: any
++Depends: ${shlibs:Depends}
++Suggests: gpm
++Conflicts: libgpm1 (<< 1.12-3)
++Section: libs
++Priority: optional
++Description: General Purpose Mouse Library [libc6]
++ This package provides a library that handles mouse requests
++ and delivers them to applications.
++
++Package: libgpmg1-dev
++Architecture: any
++Depends: libgpmg1 (= ${Source-Version}), libc6-dev
++Replaces: libgpm1 (<< 1.12-3)
++Section: devel
++Priority: optional
++Description: General Purpose Mouse Library, development files [libc6]
++ This package provides a library that handles mouse requests
++ and delivers them to applications.
++
+--- gpm-1.19.6.orig/debian/copyright
++++ gpm-1.19.6/debian/copyright
+@@ -0,0 +1,58 @@
++This is Debian GNU/Linux's prepackaged version of the General Purpose
++Mouse Interface utility. The general purpose mouse daemon tries to be
++a useful mouse server for applications running on the Linux console.
++
++This package was put together by me, James Troup <james@nocrew.org>,
++from the sources, which I obtained from
++
++<URL:ftp://ftp.prosa.it:/pub/gpm/>
++
++The changes were minor :-
++
++- adding support for the Debian package maintenance scheme, by adding
++  various debian/* files.
++- gpm.c (processConn): type of socket length changed (size_t -> socklen_t).
++- debuglog.c: #include <string.h> to quiet -Wall.
++- doc/Makefile.in (maintainer-clean): clean without interaction and
++  clean all relevant files (i.e. gpm.info-{1,2}).
++- doc/Makefile.in: add support for mouse-test.1.
++
++The following changes were thought of and done mostly by François
++Gouget <fgouget@mygale.org>; though I didn't apply his patches as
++they were for various reasons:
++
++- gpn.c (cmdline): modified handling of -t command line argument, so it
++  can be used by anyone regardless of whether or not a copy of gpm is
++  already running.
++- gpn.c (usage): update for new -t option "types".
++- mice.c: improved descriptions of mouse types.
++- mice.c (M_listMice): function used by -t help, reworked version of
++  old M_listTypes.
++- mice.c (M_listTypes): function used by -t types; lists only
++  mnemonics.
++
++(1.10-1 -> 1.10-6): Modifications for Debian Copyright (C) 1996, 1997
++                                                       Martin Schulze
++
++(1.10-7 and onwards): Modifications for Debian Copyright (C) 1997, 1998, 1999
++						       James Troup
++
++gpm - General Purpose Mouse Interface is copyrighted:
++
++Copyright 1993        ajh@gec-mrc.co.uk (Andrew Haylett)
++Copyright 1994-1998   rubini@linux.it (Alessandro Rubini)
++
++This program is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; version 2 dated June, 1991.
++
++This program is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License with
++your Debian GNU/Linux system, in /usr/share/common-licenses/GPL, or with
++the Debian GNU/Linux gpm source package as the file COPYING.  If not,
++write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
++Boston, MA 02111-1307, USA.
+--- gpm-1.19.6.orig/debian/read
++++ gpm-1.19.6/debian/read
+@@ -0,0 +1,399 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h* -x *.elc -x *.d gpm-1.19.6.orig/src/mice.c gpm-1.19.6/src/mice.c
++--- gpm-1.19.6.orig/src/mice.c	Fri Jan 11 17:11:03 2002
+++++ gpm-1.19.6/src/mice.c	Fri Jan 11 17:10:56 2002
++@@ -63,6 +63,7 @@
++ #include <sys/types.h>
++ #include <sys/stat.h> /* stat() */
++ #include <sys/time.h> /* select() */
+++#include <sys/poll.h> /* poll() */
++ 
++ #include <linux/kdev_t.h> /* MAJOR */
++ #include <linux/keyboard.h>
++@@ -533,62 +534,64 @@
++   return 0;
++ }
++ 
+++/*
+++ * PS/2 mouse parser.
+++ * Also called by the 'children' of the PS/2 mouse, for insanity sake.
+++ *  -- Zephaniah E. Hull.
+++ */
+++/* Some PS/2 mice send reports with negative bit set in data[0]
+++ * and zero for movement.  I think this is a bug in the mouse, but
+++ * working around it only causes artifacts when the actual report is -256;
+++ * they'll be treated as zero. This should be rare if the mouse sampling
+++ * rate is set to a reasonable value; the default of 100 Hz is plenty.
+++ * (Stephen Tell)
+++ */
+++
++ static int M_ps2(Gpm_Event *state,  unsigned char *data)
++ {
++   static int tap_active=0; /* there exist glidepoint ps2 mice */
++ 
++-  state->buttons=
++-    !!(data[0]&1) * GPM_B_LEFT +
++-    !!(data[0]&2) * GPM_B_RIGHT +
++-    !!(data[0]&4) * GPM_B_MIDDLE;
+++  state->dx = state->dy = state->wdx = state->wdy = 0;
+++
+++  state->buttons =
+++    ((data[0] & 0x02) ? (1 << 0) : 0) |		// Right.
+++    ((data[0] & 0x04) ? (1 << 1) : 0) |		// Middle.
+++    ((data[0] & 0x01) ? (1 << 2) : 0);		// Left.
++ 
++-  if (data[0]==0 && opt_glidepoint_tap) /* by default this is false */
+++  if (!data[0] && opt_glidepoint_tap) /* by default this is false */
++     state->buttons = tap_active = opt_glidepoint_tap;
++   else if (tap_active) {
++     if (data[0]==8)
++       state->buttons = tap_active = 0;
++     else state->buttons = tap_active;
++-  }  
+++  }
+++
+++  if (data[1])
+++    state->dx =   (data[0] & 0x10) ? data[1]-256 : data[1];
+++  if (data[2])
+++    state->dy = -((data[0] & 0x20) ? data[2]-256 : data[2]);
++ 
++- /* Some PS/2 mice send reports with negative bit set in data[0]
++-  * and zero for movement.  I think this is a bug in the mouse, but
++-  * working around it only causes artifacts when the actual report is -256;
++-  * they'll be treated as zero. This should be rare if the mouse sampling
++-  * rate is set to a reasonable value; the default of 100 Hz is plenty.
++-  * (Stephen Tell)
++-  */
++-  if(data[1] != 0)
++-    state->dx=   (data[0] & 0x10) ? data[1]-256 : data[1];
++-  else
++-    state->dx = 0;
++-  if(data[2] != 0)
++-    state->dy= -((data[0] & 0x20) ? data[2]-256 : data[2]);
++-  else
++-    state->dy = 0;
++   return 0;
++ }
++ 
+++/*
+++ * I cheat, because the two protocols are almost identical except for
+++ * the 4th and 5th buttons, I just handle both.
+++ *
+++ * Note, the only thing that I've seen describe the 4th and 5th buttons
+++ * for the IMPS/2 protocol is the X4 source, someone let me know if they
+++ * actually see this used?
+++ *  -- Zephaniah E. Hull.
+++ */
++ static int M_imps2(Gpm_Event *state,  unsigned char *data)
++ {
++-  static int tap_active=0;     // there exist glidepoint ps2 mice
++-  state->wdx = state->wdy = 0; // Clear them..
+++  M_ps2(state, data);
++ 
++-  state->dx = state->dy = state->wdx = state->wdy = 0;
++-
++-  state->buttons= ((data[0] & 1) << 2) // left
++-    | ((data[0] & 6) >> 1); // middle and right
++-
++-  if (data[0]==0 && opt_glidepoint_tap) // by default this is false
++-    state->buttons = tap_active = opt_glidepoint_tap;
++-  else if (tap_active) {
++-    if (data[0]==8)
++-      state->buttons = tap_active = 0;
++-    else state->buttons = tap_active;
++-  }
++-
++-  // Standard movement..
++-  state->dx = (data[0] & 0x10) ? data[1] - 256 : data[1];
++-  state->dy = (data[0] & 0x20) ? -(data[2] - 256) : -data[2];
+++  state->buttons +=
+++    ((data[0] & 0x40) ? (1 << 3) : 0) | // IMPS/2 Button 4
+++    ((data[0] & 0x80) ? (1 << 4) : 0) | // IMPS/2 Button 5
+++    ((data[3] & 0x10) ? (1 << 3) : 0) | // EXPS/2 Button 4
+++    ((data[3] & 0x20) ? (1 << 4) : 0);  // EXPS/2 Button 5
++ 
++   // The wheels..
++   switch (data[3] & 0x0f) {
++@@ -1748,97 +1751,158 @@
++  * 
++  * Returns 0 if OK, or >0 if 1 or more errors occurred.
++  */
++-static int write_to_mouse(int fd, unsigned char *data, size_t len)
+++static int write_ps2(int fd, unsigned char cmd0, unsigned char cmd1,
+++    	size_t num, size_t rnum, unsigned long int sleep)
++ {
++-  int i;
++-  int error = 0;
++-  for (i = 0; i < len; i++) {
++-    unsigned char c;
++-    write(fd, &data[i], 1);
++-    read(fd, &c, 1);
++-    if (c != GPM_AUX_ACK) {
++-      error++;
++-    }
++-  }
+++  int i, error = 0, rcnt;
+++  unsigned char cmd[2], ret[512];
+++//  struct pollfd ufds;
++ 
++-  /* flush any left-over input */
++-  usleep (30000);
++-  tcflush (fd, TCIFLUSH);
++-  return(error);
++-}
+++  cmd[0] = cmd0; cmd[1] = cmd1;
++ 
+++  if (sleep == -1)
+++      sleep = 50000;
++ 
++-/* intellimouse, ps2 version: Ben Pfaff and Colin Plumb */
++-/* Autodetect: Steve Bennett */
++-static Gpm_Type *I_imps2(int fd, unsigned short flags, struct Gpm_Type *type)
++-{
++-  int id;
++-  static unsigned char basic_init[] = { GPM_AUX_ENABLE_DEV, GPM_AUX_SET_SAMPLE, 100 };
++-  static unsigned char imps2_init[] = { GPM_AUX_SET_SAMPLE, 200, GPM_AUX_SET_SAMPLE, 100, GPM_AUX_SET_SAMPLE, 80, };
++-  static unsigned char ps2_init[] = { GPM_AUX_SET_SCALE11, GPM_AUX_ENABLE_DEV, GPM_AUX_SET_SAMPLE, 100, GPM_AUX_SET_RES, 3, };
++-
++-  /* Do a basic init in case the mouse is confused */
++-  write_to_mouse(fd, basic_init, sizeof (basic_init));
++-
++-  /* Now try again and make sure we have a PS/2 mouse */
++-  if (write_to_mouse(fd, basic_init, sizeof (basic_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed init");
++-    return(NULL);
++-  }
+++  alarm(1);
+++  rcnt = write(fd, cmd, num);
+++  if (rcnt != num)
+++	  return 1;
+++  alarm(0);
++ 
++-  /* Try to switch to 3 button mode */
++-  if (write_to_mouse(fd, imps2_init, sizeof (imps2_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed (3 button) init");
++-    return(NULL);
++-  }
+++  usleep(sleep);
++ 
++-  /* Read the mouse id */
++-  id = read_mouse_id(fd);
++-  if (id == GPM_AUX_ID_ERROR) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed to read id, assuming standard PS/2");
++-    id = GPM_AUX_ID_PS2;
++-  }
+++  alarm(1);
+++  rcnt = read(fd, ret, sizeof(ret));
+++  alarm(0);
++ 
++-  /* And do the real initialisation */
++-  if (write_to_mouse(fd, ps2_init, sizeof (ps2_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed setup, continuing...");
++-  }
+++  usleep(sleep);
++ 
++-  if (id == GPM_AUX_ID_IMPS2) {
++-    /* Really an intellipoint, so initialise 3 button mode (4 byte packets) */
++-    gpm_debug_log(LOG_NOTICE, "imps2: Auto-detected intellimouse PS/2");
+++  if (rcnt <= 0)
+++	error++;
++ 
++-    return type;
++-  }
++-  if (id != GPM_AUX_ID_PS2) {
++-    gpm_debug_log(LOG_ERR, "imps2: Auto-detected unknown mouse type %d, assuming standard PS/2", id);
++-  }
++-  else {
++-    gpm_debug_log(LOG_NOTICE, "imps2: Auto-detected standard PS/2");
+++  for (i = 0; i < rcnt; i++) {
+++    if (ret[i] != GPM_AUX_ACK)
+++      error++;
++   }
+++
+++  return(error);
+++}
+++
+++static Gpm_Type *get_mouse_type (char *name)
+++{
+++  Gpm_Type *type;
+++
++   for (type=mice; type->fun; type++) {
++-    if (strcmp(type->name, "ps2") == 0) {
+++    if (strcmp(type->name, name) == 0) {
++       return(type);
++     }
++   }
++-  /* ps2 was not found!!! */
++-  return(NULL);
+++  return NULL;
++ }
++ 
++-/*
++- * This works with Dexxa Optical Mouse, but because in X same initstring
++- * is named ExplorerPS/2 so I named it in the same way.
++- */
++-static Gpm_Type *I_exps2(int fd, unsigned short flags,
++-			 struct Gpm_Type *type, int argc, char **argv)
+++/* intellimouse, ps2 version: Ben Pfaff and Colin Plumb */
+++/* Autodetect: Steve Bennett */
+++static Gpm_Type *I_ps2(int fd, unsigned short flags_unused,
+++	struct Gpm_Type *type, int argc, char **argv)
++ {
++-  static unsigned char s1[] = { 243, 200, 243, 200, 243, 80, };
+++  int id, error = 0, rate, flags;
++ 
++-  if (check_no_argv(argc, argv)) return NULL;
+++  /* Flush any existing input. */
+++  tcflush (fd, TCIOFLUSH);
++ 
++-  write (fd, s1, sizeof (s1));
++-  usleep (30000);
++-  tcflush (fd, TCIFLUSH);
+++  /* Non blocking IO during init! */
+++  flags = fcntl(fd, F_GETFL);
+++  fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+++
+++  if (write_ps2 (fd, GPM_AUX_DEFAULTS, '\0', 1, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init");
+++    return(NULL);
+++  }
+++
+++  // Magic to enable the IMPS/2 protocol.
+++  if ((!strcmp(type->name, "imps2")) || (!strcmp(type->name, "autops2"))) {
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
+++    if (error) {
+++      gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed (3 button) init");
+++      return(NULL);
+++    }
+++  }
+++  if ((!strcmp(type->name, "exps2")) || (!strcmp(type->name, "autops2"))) {
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
+++    if (error) {
+++      gpm_debug_log (LOG_ERR, "exps2: PS/2 mouse failed (3 button) init");
+++      return (NULL);
+++    }
+++  }
+++
+++  if (write_ps2 (fd, GPM_AUX_SET_SCALE11, '\0', 1, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init: Unable to set 1:1 scale.");
+++    return (NULL);
+++  }
+++
+++  if (opt_sample > 0) {
+++    if (opt_sample >= 200) rate = 200;
+++    else if (opt_sample >= 100) rate = 100;
+++    else if (opt_sample >= 80) rate = 80;
+++    else if (opt_sample >= 60) rate = 60;
+++    else if (opt_sample >= 40) rate = 40;
+++    else if (opt_sample >= 20) rate = 20;
+++    else if (opt_sample >= 10) rate = 10;
+++    else rate = 100;
+++  } else {
+++    rate = 100;
+++  }
+++
+++  if (write_ps2 (fd, GPM_AUX_SET_SAMPLE, rate, 2, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init: Unable to set rate.");
+++    return (NULL);
+++  }
+++
+++  if (!strcmp(type->name, "autops2")) {
+++    /* Read the mouse id */
+++    id = read_mouse_id(fd);
+++
+++    switch (id) {
+++      case GPM_AUX_ID_ERROR:
+++	gpm_debug_log (LOG_ERR, "Unable to read PS/2 mouse ID: Using base PS/2 protocol.\n");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("ps2");
+++      case GPM_AUX_ID_PS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected base PS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("ps2");
+++      case GPM_AUX_ID_IMPS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected IMPS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("imps2");
+++      case GPM_AUX_ID_EXPS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected EXPS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("exps2");
+++      default:
+++	gpm_debug_log (LOG_ERR, "Unknown mouse ID, using base PS/2 protocol.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("ps2");
+++    }
+++  }
+++
+++  write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++  write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++  fcntl(fd, F_SETFL, flags);
++   return type;
++ }
++ 
++@@ -1851,9 +1915,9 @@
++   if (check_no_argv(argc, argv)) return NULL;
++ 
++   // Magic to enable the IMPS/2 protocol.
++-  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 1, -1);
++-  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 1, -1);
++-  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 1, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 2, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
++   if (error) {
++     gpm_debug_log(LOG_ERR, "fuimps2: PS/2 mouse failed (3 button) init");
++     return(NULL);
++@@ -2205,8 +2269,10 @@
++   {"bm",   "For some busmice, including Microsoft and Logitech busmice.",
++            "BusMouse", M_bm, I_empty, STD_FLG, /* bm is sun */
++                                 {0xf8, 0x80, 0x00, 0x00}, 3, 3, 0, 0, 0},
++-  {"ps2",  "For most busmice connected to a PS/2 port (round with 6 metal\n"
++-           "                     pins).",
+++  {"ps2",  "For PS/2 mice (round with 6 metal pins).\n",
+++           "PS/2", M_ps2, I_ps2, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
+++  {"fups2",  "For /BROKEN/ PS/2 mice (round with 6 metal pins).\n",
++            "PS/2", M_ps2, I_empty, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
++   {"ncr",  "Ncr3125pen, found on some laptops",
++@@ -2226,18 +2292,20 @@
++            "                     Try it if '-t ms' does not work.",
++            "", M_bare, I_pnp, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 0, 0, 0},
++-  {"imps2","For the Microsoft IntelliMouse on a PS/2 port (round\n"
++-           "                     connector with 6 pins), 3 buttons (wheel is repeated).",
++-
++-           "", M_imps2, I_imps2, STD_FLG,
+++  {"imps2","For the Microsoft IntelliMouse on a PS/2 port\n"
+++           "(round connector with 6 pins), 3 buttons (wheel is repeated).",
+++           "", M_imps2, I_ps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++   {"fuimps2","For BROKEN wheel mice on a PS/2 port\n"
++            "(round connector with 6 pins), 3 buttons (wheel is repeated).",
++            "", M_imps2, I_fuimps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++-  {"exps2",   "IntelliMouse Explorer (ps2) - 3 buttons, wheel unused",
++-           "ExplorerPS/2", M_ps2, I_exps2, STD_FLG,
+++  {"exps2",  "IntelliMouse Explorer (ps2) - 3 buttons (wheel is repeated).",
+++           "ExplorerPS/2", M_imps2, I_ps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
+++  {"autops2","For PS/2 type mouse, specific protocol will be auto detected",
+++           "", M_ps2, I_ps2, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
++   {"ms3",  "For the Microsoft IntelliMouse (serial), 3 buttons (wheel is repeated).",
++            "", M_ms3, I_pnp, CS7 | STD_FLG,
++                                 {0xc0, 0x40, 0xc0, 0x00}, 4, 1, 0, 0, R_ms3},
+--- gpm-1.19.6.orig/debian/009_fups2_fuimps2_000
++++ gpm-1.19.6/debian/009_fups2_fuimps2_000
+@@ -0,0 +1,14 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/mice.c gpm-1.19.6/src/mice.c
++--- gpm-1.19.6.orig/src/mice.c  Thu Oct  4 23:40:48 2001
+++++ gpm-1.19.6/src/mice.c       Thu Oct  4 23:40:34 2001
++@@ -2211,6 +2211,10 @@
++ 
++            "", M_imps2, I_imps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
+++  {"fuimps2","For BROKEN wheel mice on a PS/2 port\n"
+++           "(round connector with 6 pins), 3 buttons (wheel is repeated).",
+++           "", M_imps2, I_fuimps2, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++   {"exps2",   "IntelliMouse Explorer (ps2) - 3 buttons, wheel unused",
++            "ExplorerPS/2", M_ps2, I_exps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
+--- gpm-1.19.6.orig/debian/libgpmg1-dev.dirs
++++ gpm-1.19.6/debian/libgpmg1-dev.dirs
+@@ -0,0 +1,2 @@
++usr/include
++usr/lib
+--- gpm-1.19.6.orig/debian/libgpmg1.dirs
++++ gpm-1.19.6/debian/libgpmg1.dirs
+@@ -0,0 +1 @@
++usr/lib/
+--- gpm-1.19.6.orig/debian/libgpmg1.shlibs
++++ gpm-1.19.6/debian/libgpmg1.shlibs
+@@ -0,0 +1 @@
++libgpm 1 libgpmg1 (>= 1.19.6-1)
+--- gpm-1.19.6.orig/debian/009_fups2_fuimps2_001
++++ gpm-1.19.6/debian/009_fups2_fuimps2_001
+@@ -0,0 +1,30 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h -x *.elc gpm-1.19.6.orig/src/mice.c gpm-1.19.6/src/mice.c
++--- gpm-1.19.6.orig/src/mice.c  Thu Oct  4 23:40:48 2001
+++++ gpm-1.19.6/src/mice.c       Thu Oct  4 23:40:34 2001
++@@ -1842,6 +1842,26 @@
++   return type;
++ }
++ 
+++/* PS/2 Init */
+++static Gpm_Type *I_fuimps2(int fd, unsigned short flags,
+++                               struct Gpm_Type *type, int argc, char **argv)
+++{
+++  int error = 0;
+++
+++  if (check_no_argv(argc, argv)) return NULL;
+++
+++  // Magic to enable the IMPS/2 protocol.
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 1, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 1, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 1, -1);
+++  if (error) {
+++    gpm_debug_log(LOG_ERR, "fuimps2: PS/2 mouse failed (3 button) init");
+++    return(NULL);
+++  }
+++
+++  return type;
+++}
+++
++ static Gpm_Type *I_twid(int fd, unsigned short flags,
++ 			struct Gpm_Type *type, int argc, char **argv)
++ {
+--- gpm-1.19.6.orig/debian/substvars
++++ gpm-1.19.6/debian/substvars
+@@ -0,0 +1 @@
++shlibs:Depends=libc6 (>= 2.2.2-2)
+--- gpm-1.19.6.orig/debian/010_ps2_rework_mice_c_001
++++ gpm-1.19.6/debian/010_ps2_rework_mice_c_001
+@@ -0,0 +1,409 @@
++diff -ruN -x Makefile -x configure -x config.cache -x config.h -x *.[178] -x gpm.info -x gpmdoc.ps -x gpmdoc.txt -x gpm-root.c -x stamp-h* -x *.elc -x *.d gpm-1.19.6.orig/src/mice.c gpm-1.19.6/src/mice.c
++--- gpm-1.19.6.orig/src/mice.c	Sun Jan 13 08:47:14 2002
+++++ gpm-1.19.6/src/mice.c	Sun Jan 13 08:46:39 2002
++@@ -63,6 +63,7 @@
++ #include <sys/types.h>
++ #include <sys/stat.h> /* stat() */
++ #include <sys/time.h> /* select() */
+++#include <sys/poll.h> /* poll() */
++ 
++ #include <linux/kdev_t.h> /* MAJOR */
++ #include <linux/keyboard.h>
++@@ -533,62 +534,64 @@
++   return 0;
++ }
++ 
+++/*
+++ * PS/2 mouse parser.
+++ * Also called by the 'children' of the PS/2 mouse, for insanity sake.
+++ *  -- Zephaniah E. Hull.
+++ */
+++/* Some PS/2 mice send reports with negative bit set in data[0]
+++ * and zero for movement.  I think this is a bug in the mouse, but
+++ * working around it only causes artifacts when the actual report is -256;
+++ * they'll be treated as zero. This should be rare if the mouse sampling
+++ * rate is set to a reasonable value; the default of 100 Hz is plenty.
+++ * (Stephen Tell)
+++ */
+++
++ static int M_ps2(Gpm_Event *state,  unsigned char *data)
++ {
++   static int tap_active=0; /* there exist glidepoint ps2 mice */
++ 
++-  state->buttons=
++-    !!(data[0]&1) * GPM_B_LEFT +
++-    !!(data[0]&2) * GPM_B_RIGHT +
++-    !!(data[0]&4) * GPM_B_MIDDLE;
+++  state->dx = state->dy = state->wdx = state->wdy = 0;
+++
+++  state->buttons =
+++    ((data[0] & 0x02) ? (1 << 0) : 0) |		// Right.
+++    ((data[0] & 0x04) ? (1 << 1) : 0) |		// Middle.
+++    ((data[0] & 0x01) ? (1 << 2) : 0);		// Left.
++ 
++-  if (data[0]==0 && opt_glidepoint_tap) /* by default this is false */
+++  if (!data[0] && opt_glidepoint_tap) /* by default this is false */
++     state->buttons = tap_active = opt_glidepoint_tap;
++   else if (tap_active) {
++     if (data[0]==8)
++       state->buttons = tap_active = 0;
++     else state->buttons = tap_active;
++-  }  
+++  }
+++
+++  if (data[1])
+++    state->dx =   (data[0] & 0x10) ? data[1]-256 : data[1];
+++  if (data[2])
+++    state->dy = -((data[0] & 0x20) ? data[2]-256 : data[2]);
++ 
++- /* Some PS/2 mice send reports with negative bit set in data[0]
++-  * and zero for movement.  I think this is a bug in the mouse, but
++-  * working around it only causes artifacts when the actual report is -256;
++-  * they'll be treated as zero. This should be rare if the mouse sampling
++-  * rate is set to a reasonable value; the default of 100 Hz is plenty.
++-  * (Stephen Tell)
++-  */
++-  if(data[1] != 0)
++-    state->dx=   (data[0] & 0x10) ? data[1]-256 : data[1];
++-  else
++-    state->dx = 0;
++-  if(data[2] != 0)
++-    state->dy= -((data[0] & 0x20) ? data[2]-256 : data[2]);
++-  else
++-    state->dy = 0;
++   return 0;
++ }
++ 
+++/*
+++ * I cheat, because the two protocols are almost identical except for
+++ * the 4th and 5th buttons, I just handle both.
+++ *
+++ * Note, the only thing that I've seen describe the 4th and 5th buttons
+++ * for the IMPS/2 protocol is the X4 source, someone let me know if they
+++ * actually see this used?
+++ *  -- Zephaniah E. Hull.
+++ */
++ static int M_imps2(Gpm_Event *state,  unsigned char *data)
++ {
++-  static int tap_active=0;     // there exist glidepoint ps2 mice
++-  state->wdx = state->wdy = 0; // Clear them..
++-
++-  state->dx = state->dy = state->wdx = state->wdy = 0;
++-
++-  state->buttons= ((data[0] & 1) << 2) // left
++-    | ((data[0] & 6) >> 1); // middle and right
++-
++-  if (data[0]==0 && opt_glidepoint_tap) // by default this is false
++-    state->buttons = tap_active = opt_glidepoint_tap;
++-  else if (tap_active) {
++-    if (data[0]==8)
++-      state->buttons = tap_active = 0;
++-    else state->buttons = tap_active;
++-  }
+++  M_ps2(state, data);
++ 
++-  // Standard movement..
++-  state->dx = (data[0] & 0x10) ? data[1] - 256 : data[1];
++-  state->dy = (data[0] & 0x20) ? -(data[2] - 256) : -data[2];
+++  state->buttons +=
+++    ((data[0] & 0x40) ? (1 << 3) : 0) | // IMPS/2 Button 4
+++    ((data[0] & 0x80) ? (1 << 4) : 0) | // IMPS/2 Button 5
+++    ((data[3] & 0x10) ? (1 << 3) : 0) | // EXPS/2 Button 4
+++    ((data[3] & 0x20) ? (1 << 4) : 0);  // EXPS/2 Button 5
++ 
++   // The wheels..
++   switch (data[3] & 0x0f) {
++@@ -1748,97 +1751,170 @@
++  * 
++  * Returns 0 if OK, or >0 if 1 or more errors occurred.
++  */
++-static int write_to_mouse(int fd, unsigned char *data, size_t len)
+++static int write_ps2(int fd, unsigned char cmd0, unsigned char cmd1,
+++    	size_t num, size_t rnum, unsigned long int sleep)
++ {
++-  int i;
++-  int error = 0;
++-  for (i = 0; i < len; i++) {
++-    unsigned char c;
++-    write(fd, &data[i], 1);
++-    read(fd, &c, 1);
++-    if (c != GPM_AUX_ACK) {
++-      error++;
++-    }
++-  }
+++  int i, error = 0, rcnt;
+++  unsigned char cmd[2], ret[512];
+++//  struct pollfd ufds;
++ 
++-  /* flush any left-over input */
++-  usleep (30000);
++-  tcflush (fd, TCIFLUSH);
++-  return(error);
++-}
+++  cmd[0] = cmd0; cmd[1] = cmd1;
++ 
+++  if (sleep == -1)
+++      sleep = 50000;
++ 
++-/* intellimouse, ps2 version: Ben Pfaff and Colin Plumb */
++-/* Autodetect: Steve Bennett */
++-static Gpm_Type *I_imps2(int fd, unsigned short flags, struct Gpm_Type *type)
++-{
++-  int id;
++-  static unsigned char basic_init[] = { GPM_AUX_ENABLE_DEV, GPM_AUX_SET_SAMPLE, 100 };
++-  static unsigned char imps2_init[] = { GPM_AUX_SET_SAMPLE, 200, GPM_AUX_SET_SAMPLE, 100, GPM_AUX_SET_SAMPLE, 80, };
++-  static unsigned char ps2_init[] = { GPM_AUX_SET_SCALE11, GPM_AUX_ENABLE_DEV, GPM_AUX_SET_SAMPLE, 100, GPM_AUX_SET_RES, 3, };
++-
++-  /* Do a basic init in case the mouse is confused */
++-  write_to_mouse(fd, basic_init, sizeof (basic_init));
++-
++-  /* Now try again and make sure we have a PS/2 mouse */
++-  if (write_to_mouse(fd, basic_init, sizeof (basic_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed init");
++-    return(NULL);
+++  alarm(1);
+++  rcnt = write(fd, cmd, num);
+++  alarm(0);
+++  if ((rcnt < 0) && (errno == EAGAIN)) {
+++      usleep(500000);
+++      alarm(1);
+++      rcnt = write(fd, cmd, num);
+++      alarm(0);
++   }
+++  if (rcnt != num)
+++	  return 1;
++ 
++-  /* Try to switch to 3 button mode */
++-  if (write_to_mouse(fd, imps2_init, sizeof (imps2_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed (3 button) init");
++-    return(NULL);
++-  }
+++  usleep(sleep);
++ 
++-  /* Read the mouse id */
++-  id = read_mouse_id(fd);
++-  if (id == GPM_AUX_ID_ERROR) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed to read id, assuming standard PS/2");
++-    id = GPM_AUX_ID_PS2;
+++  alarm(1);
+++  rcnt = read(fd, ret, sizeof(ret));
+++  alarm(0);
+++  if ((rcnt < 0) && (errno == EAGAIN)) {
+++      usleep(500000);
+++      alarm(1);
+++      rcnt = read(fd, ret, sizeof(ret));
+++      alarm(0);
++   }
++ 
++-  /* And do the real initialisation */
++-  if (write_to_mouse(fd, ps2_init, sizeof (ps2_init)) != 0) {
++-    gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed setup, continuing...");
++-  }
+++  usleep(sleep);
++ 
++-  if (id == GPM_AUX_ID_IMPS2) {
++-    /* Really an intellipoint, so initialise 3 button mode (4 byte packets) */
++-    gpm_debug_log(LOG_NOTICE, "imps2: Auto-detected intellimouse PS/2");
+++  if (rcnt <= 0)
+++	error++;
++ 
++-    return type;
++-  }
++-  if (id != GPM_AUX_ID_PS2) {
++-    gpm_debug_log(LOG_ERR, "imps2: Auto-detected unknown mouse type %d, assuming standard PS/2", id);
++-  }
++-  else {
++-    gpm_debug_log(LOG_NOTICE, "imps2: Auto-detected standard PS/2");
+++  for (i = 0; i < rcnt; i++) {
+++    if (ret[i] != GPM_AUX_ACK)
+++      error++;
++   }
+++
+++  return(error);
+++}
+++
+++static Gpm_Type *get_mouse_type (char *name)
+++{
+++  Gpm_Type *type;
+++
++   for (type=mice; type->fun; type++) {
++-    if (strcmp(type->name, "ps2") == 0) {
+++    if (strcmp(type->name, name) == 0) {
++       return(type);
++     }
++   }
++-  /* ps2 was not found!!! */
++-  return(NULL);
+++  return NULL;
++ }
++ 
++-/*
++- * This works with Dexxa Optical Mouse, but because in X same initstring
++- * is named ExplorerPS/2 so I named it in the same way.
++- */
++-static Gpm_Type *I_exps2(int fd, unsigned short flags,
++-			 struct Gpm_Type *type, int argc, char **argv)
+++/* intellimouse, ps2 version: Ben Pfaff and Colin Plumb */
+++/* Autodetect: Steve Bennett */
+++static Gpm_Type *I_ps2(int fd, unsigned short flags_unused,
+++	struct Gpm_Type *type, int argc, char **argv)
++ {
++-  static unsigned char s1[] = { 243, 200, 243, 200, 243, 80, };
+++  int id, error = 0, rate, flags;
++ 
++-  if (check_no_argv(argc, argv)) return NULL;
+++  /* Flush any existing input. */
+++  tcflush (fd, TCIOFLUSH);
++ 
++-  write (fd, s1, sizeof (s1));
++-  usleep (30000);
++-  tcflush (fd, TCIFLUSH);
+++  /* Non blocking IO during init! */
+++  flags = fcntl(fd, F_GETFL);
+++  fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+++
+++  if (write_ps2 (fd, GPM_AUX_DEFAULTS, '\0', 1, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init");
+++    return(NULL);
+++  }
+++
+++  // Magic to enable the IMPS/2 protocol.
+++  if ((!strcmp(type->name, "imps2")) || (!strcmp(type->name, "autops2"))) {
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
+++    if (error) {
+++      gpm_debug_log(LOG_ERR, "imps2: PS/2 mouse failed (3 button) init");
+++      return(NULL);
+++    }
+++  }
+++  if ((!strcmp(type->name, "exps2")) || (!strcmp(type->name, "autops2"))) {
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++    error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
+++    if (error) {
+++      gpm_debug_log (LOG_ERR, "exps2: PS/2 mouse failed (3 button) init");
+++      return (NULL);
+++    }
+++  }
+++
+++  if (write_ps2 (fd, GPM_AUX_SET_SCALE11, '\0', 1, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init: Unable to set 1:1 scale.");
+++    return (NULL);
+++  }
+++
+++  if (opt_sample > 0) {
+++    if (opt_sample >= 200) rate = 200;
+++    else if (opt_sample >= 100) rate = 100;
+++    else if (opt_sample >= 80) rate = 80;
+++    else if (opt_sample >= 60) rate = 60;
+++    else if (opt_sample >= 40) rate = 40;
+++    else if (opt_sample >= 20) rate = 20;
+++    else if (opt_sample >= 10) rate = 10;
+++    else rate = 100;
+++  } else {
+++    rate = 100;
+++  }
+++
+++  if (write_ps2 (fd, GPM_AUX_SET_SAMPLE, rate, 2, 1, -1)) {
+++    gpm_debug_log(LOG_ERR, "PS/2 mouse failed init: Unable to set rate.");
+++    return (NULL);
+++  }
+++
+++  if (!strcmp(type->name, "autops2")) {
+++    /* Read the mouse id */
+++    id = read_mouse_id(fd);
+++
+++    switch (id) {
+++      case GPM_AUX_ID_ERROR:
+++	gpm_debug_log (LOG_ERR, "Unable to read PS/2 mouse ID: Using base PS/2 protocol.\n");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("ps2");
+++      case GPM_AUX_ID_PS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected base PS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("ps2");
+++      case GPM_AUX_ID_IMPS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected IMPS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("imps2");
+++      case GPM_AUX_ID_EXPS2:
+++	gpm_debug_log(LOG_NOTICE, "Detected EXPS/2 protocol mouse.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("exps2");
+++      default:
+++	gpm_debug_log (LOG_ERR, "Unknown mouse ID, using base PS/2 protocol.");
+++	write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++	write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++	fcntl(fd, F_SETFL, flags);
+++	return get_mouse_type("ps2");
+++    }
+++  }
+++
+++  write_ps2 (fd, GPM_AUX_SET_STREAM, '\0', 1, 1, 1);
+++  write_ps2 (fd, GPM_AUX_ENABLE_DEV, '\0', 1, 1, 1);
+++  fcntl(fd, F_SETFL, flags);
++   return type;
++ }
++ 
++@@ -1851,9 +1927,9 @@
++   if (check_no_argv(argc, argv)) return NULL;
++ 
++   // Magic to enable the IMPS/2 protocol.
++-  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 1, -1);
++-  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 1, -1);
++-  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 1, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 200, 2, 2, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 100, 2, 2, -1);
+++  error += write_ps2 (fd, GPM_AUX_SET_SAMPLE, 80, 2, 2, -1);
++   if (error) {
++     gpm_debug_log(LOG_ERR, "fuimps2: PS/2 mouse failed (3 button) init");
++     return(NULL);
++@@ -2205,8 +2281,10 @@
++   {"bm",   "For some busmice, including Microsoft and Logitech busmice.",
++            "BusMouse", M_bm, I_empty, STD_FLG, /* bm is sun */
++                                 {0xf8, 0x80, 0x00, 0x00}, 3, 3, 0, 0, 0},
++-  {"ps2",  "For most busmice connected to a PS/2 port (round with 6 metal\n"
++-           "                     pins).",
+++  {"ps2",  "For PS/2 mice (round with 6 metal pins).\n",
+++           "PS/2", M_ps2, I_ps2, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
+++  {"fups2",  "For /BROKEN/ PS/2 mice (round with 6 metal pins).\n",
++            "PS/2", M_ps2, I_empty, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
++   {"ncr",  "Ncr3125pen, found on some laptops",
++@@ -2226,18 +2304,20 @@
++            "                     Try it if '-t ms' does not work.",
++            "", M_bare, I_pnp, CS7 | STD_FLG,
++                                 {0x40, 0x40, 0x40, 0x00}, 3, 1, 0, 0, 0},
++-  {"imps2","For the Microsoft IntelliMouse on a PS/2 port (round\n"
++-           "                     connector with 6 pins), 3 buttons (wheel is repeated).",
++-
++-           "", M_imps2, I_imps2, STD_FLG,
+++  {"imps2","For the Microsoft IntelliMouse on a PS/2 port\n"
+++           "(round connector with 6 pins), 3 buttons (wheel is repeated).",
+++           "", M_imps2, I_ps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++   {"fuimps2","For BROKEN wheel mice on a PS/2 port\n"
++            "(round connector with 6 pins), 3 buttons (wheel is repeated).",
++            "", M_imps2, I_fuimps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
++-  {"exps2",   "IntelliMouse Explorer (ps2) - 3 buttons, wheel unused",
++-           "ExplorerPS/2", M_ps2, I_exps2, STD_FLG,
+++  {"exps2",  "IntelliMouse Explorer (ps2) - 3 buttons (wheel is repeated).",
+++           "ExplorerPS/2", M_imps2, I_ps2, STD_FLG,
++                                 {0xc0, 0x00, 0x00, 0x00}, 4, 1, 0, 0, 0},
+++  {"autops2","For PS/2 type mouse, specific protocol will be auto detected",
+++           "", M_ps2, I_ps2, STD_FLG,
+++                                {0xc0, 0x00, 0x00, 0x00}, 3, 1, 0, 0, 0},
++   {"ms3",  "For the Microsoft IntelliMouse (serial), 3 buttons (wheel is repeated).",
++            "", M_ms3, I_pnp, CS7 | STD_FLG,
++                                 {0xc0, 0x40, 0xc0, 0x00}, 4, 1, 0, 0, R_ms3},
+--- gpm-1.19.6.orig/Makefile
++++ gpm-1.19.6/Makefile
+@@ -0,0 +1,5 @@
++all: gpm_has_mouse_control.c
++	gcc -o gpm_has_mouse_control -Wall gpm_has_mouse_control.c
++
++clean:
++	-rm -f gpm_has_mouse_control
+--- gpm-1.19.6.orig/gpm_has_mouse_control.c
++++ gpm-1.19.6/gpm_has_mouse_control.c
+@@ -0,0 +1,17 @@
++#include <sys/fcntl.h>
++#include <sys/kd.h>
++#include <stdio.h>
++#include <sys/ioctl.h>
++
++int main (int argc, char **argv)
++{
++    int  fd;
++    int  mode;
++    fd = open ("/dev/tty0", O_RDONLY);
++    if (fd == -1)
++	perror ("open");
++    if (ioctl (fd, KDGETMODE, &mode) != 0)
++	perror ("ioctl");
++    exit(mode);
++}
++

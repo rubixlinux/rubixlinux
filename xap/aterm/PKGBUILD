@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=aterm
+pkgver=0.4.2
+pkgrel=1
+pkgdesc="aterm is designed to provide pleasing visual effects, while performing such a mundane function as terminal emulation under X. It is largely based on rxvt code."
+depends=('x11')
+url=http://aterm.sourceforge.net
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('5c29d0cde4225bdbd63ccb6a4dd94c56')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure				\
+		--prefix=/usr			\
+		--enable-utmp			\
+		--enable-wtmp			\
+		--enable-background-image	\
+		--enable-transparency		\
+		--enable-fading			\
+		--enable-menubar		\
+		--enable-graphics		\
+		--enable-next-scroll
+	make
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		ChangeLog		\
+		INSTALL			\
+		README.configure	\
+		aterm.lsm		\
+		doc			\
+		scripts			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

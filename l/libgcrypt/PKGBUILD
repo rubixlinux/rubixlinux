@@ -1,0 +1,50 @@
+# Maintainer: dorphell <dorphell@archlinux.org>
+
+pkgname=libgcrypt
+pkgver=1.2.2
+pkgrel=1
+pkgdesc="Libgcrypt is a general purpose cryptographic library based on the code from GnuPG. It provides functions for all cryptographic building blocks: symmetric ciphers, hash algorithms, MACs, public key algorithms, large integer functions, random numbers and a lot of supporting functions."
+url="http://www.gnupg.org"
+depends=('glibc' 'libgpg-error')
+source=(ftp://ftp.gnupg.org/gcrypt/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('1a4f886e4c1eb9b6908d39831c6f75b3')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 1.2.2 2005.10.19
+#rel3: one more rebuild 2005.09.26
+#rel2: rebuild with new stackexec flag 2005.03.04
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	rm $startdir/pkg/usr/info/dir
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		AUTHORS			\
+		BUGS			\
+		COPYING*		\
+		ChangeLog		\
+		INSTALL			\
+		NEWS			\
+		README*			\
+		THANKS			\
+		TODO			\
+		VERSION			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

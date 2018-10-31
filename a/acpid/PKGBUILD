@@ -1,0 +1,73 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=acpid
+pkgver=1.0.4
+pkgrel=4
+pkgdesc="acpid (ACPI daemon) Most modern computers support the Advanced Configuration and Power Interface (ACPI) standard to allow intelligent power management. This package contains acpid, which is the user-space daemon needed in order to make the Linux ACPI support completely functional. ACPI must be compiled into the kernel to run acpid."
+url="http://acpid.sourceforge.net"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz	\
+	acpi									\
+	acpi_handler.sh								\
+	default									)
+backup=('etc/acpi/acpi_handler.sh'	\
+	'etc/acpi/events/default'	)
+md5sums=('3aff94e92186e99ed5fd6dcee2db7c74' \
+	 '5d8a726a4dcc378914659011a03b7fbd' \
+	 '5b75ac83f4be996d9669609028490eab' \
+	 '107052da02d51d3959fc3d1ad502a200' )
+
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: updated rc script to new format 2006.01.14
+##   rel3: fixed rc script 2005.04.12
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	make || return 1
+
+	mkdir -p		$startdir/pkg/usr/sbin
+	cp acpid		$startdir/pkg/usr/sbin
+	chmod 755		$startdir/pkg/usr/sbin/acpid
+	chown -R root.bin	$startdir/pkg/usr/sbin
+
+	mkdir -p	$startdir/pkg/usr/man/man8
+	cp acpid.8	$startdir/pkg/usr/man/man8
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		Changelog	\
+		README		\
+		samples		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc/acpi/events
+	cp $startdir/src/acpi_handler.sh	$startdir/pkg/etc/acpi
+	cp $startdir/src/default		$startdir/pkg/etc/acpi/events
+	chmod 755 $startdir/pkg/etc/acpi/acpi_handler.sh
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/acpi	$startdir/pkg/etc/rc.d
+	chmod 755		$startdir/pkg/etc/rc.d/acpi
+
+}

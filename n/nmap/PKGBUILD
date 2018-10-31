@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=nmap
+pkgver=4.00
+pkgrel=1
+pkgdesc="nmap (network scanner) Nmap (\"Network Mapper\") is an open source utility for network exploration or security auditing.  It was designed to rapidly scan large networks, although it works fine against single hosts.  Nmap uses raw IP packets in novel ways to determine what hosts are available on the network, what services (ports) they are offering, what operating system (and OS version) they are running, what type of packet filters/firewalls are in use, and dozens of other characteristics.  Nmap runs on most types of computers, and both console and graphical versions are available."
+url="http://www.insecure.org"
+depends=('glibc' 'openssl' 'gcc' 'pcre')
+source=(http://download.insecure.org/$pkgname/dist/$pkgname-$pkgver.tgz)
+md5sums=('67c324b541eacc0935659e4e23905f0f')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 4.00 2006.02.01
+##   rel2: rebuilt without nmapfe, I didn't like the X dependence here 2006.01.20
+##   rel1: upgraded to 3.95 2005.12.20
+##   rel1: upgraded to 3.93 2005.09.18
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --without-nmapfe $CHOST
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		COPYING.OpenSSL	\
+		HACKING		\
+		INSTALL		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a docs/nmap.usage.txt $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

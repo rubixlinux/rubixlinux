@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=wlan-config
+pkgver=3.5
+pkgrel=2
+pkgdesc="wlan-config (tool for connecting to wireless networks) wlan-config provides a simple way to connect to wireless networks."
+url="http://www.sourceforge.net/projects/wlan-config"
+depends=('perl-config-general' 'wireless_tools' 'tcpip')
+source=($pkgname-$pkgver.tar.bz2	\
+	$pkgname			)
+backup=("etc/$pkgname/$pkgname.conf" 	\
+	"etc/$pkgname/alwaysrun"	\
+	"etc/$pkgname/disconnect"	\
+	"etc/$pkgname/preconnect"	\
+	"etc/rc.d/$pkgname"		)
+md5sums=('a7e6d9c00db31806fd7c7ad1cd6bfb77' \
+	 '2fb75869dd9f6497e364832f996ae844' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.17
+##   rel1: Upgraded to 3.5 2005.10.09
+##   rel1: Upgraded to 3.4 2004.04.02
+##   rel1: Upgraded to 3.3 2005.03.04
+##   rel1: Upgraded to 3.2 2005.02.26
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	install -o root -g root -D -m755 alwaysrun		$startdir/pkg/etc/$pkgname/alwaysrun
+	install -o root -g root -D -m755 disconnect		$startdir/pkg/etc/$pkgname/disconnect
+	install -o root -g root -D -m755 network		$startdir/pkg/etc/$pkgname/network
+	install -o root -g root -D -m755 preconnect		$startdir/pkg/etc/$pkgname/preconnect
+	install -o root -g root -D -m755 $pkgname		$startdir/pkg/usr/sbin/$pkgname
+	install -o root -g root -D -m644 $pkgname.conf		$startdir/pkg/etc/$pkgname/$pkgname.conf
+	install -o root -g root -D -m644 $pkgname.conf.5.gz	$startdir/pkg/usr/man/man5/$pkgname.conf.5.gz
+	install -o root -g root -D -m644 $pkgname.8.gz		$startdir/pkg/usr/man/man8/$pkgname.8.gz
+	install -o root -g root -D -m755 ../$pkgname		$startdir/pkg/etc/rc.d/$pkgname
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		CHANGES	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

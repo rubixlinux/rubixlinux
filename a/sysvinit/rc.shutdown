@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# /etc/rc.shutdown: Local multi-user shutdown script.
+#
+
+# End of file

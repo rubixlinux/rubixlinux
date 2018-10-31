@@ -1,0 +1,86 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=ntp
+pkgver=4.2.0
+pkgrel=2
+pkgdesc="ntp (Network Time Protocol daemon) The Network Time Protocol (NTP) is used to synchronize the time of a computer client or server to another server or reference time source, such as a radio or satellite receiver or modem. It provides client accuracies typically within a millisecond on LANs and up to a few tens of milliseconds on WANs relative to a primary server synchronized to Coordinated Universal Time (UTC) via a Global Positioning Service (GPS) receiver, for example."
+url="http://www.ntp.org"
+depends=('openssl' 'readline')
+conflicts=('openntpd')
+source=(http://www.eecis.udel.edu/~ntp/ntp_spool/${pkgname}4/$pkgname-$pkgver.tar.gz	\
+	ntp.conf									\
+	ntp.keys									\
+	$pkgname									)
+md5sums=('0f8fabe87cf54f409b57c6283f0c0c3d' \
+	 '2dd21920ef5513af033fced8d9270dc8' \
+	 '32e69b89c80eeeb12516766bdc03a5f4' \
+	 '14b7830b340458c569fd7266df6480d8' )
+backup=('etc/ntp.conf'		\
+	'etc/ntp/ntp.keys'	)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.17
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 2777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 2755 -exec chmod 755 {} \;
+	find . -perm 774 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--localstatedir=/var	\
+		--sysconfdir=/etc	\
+		--bindir=/usr/sbin	\
+		--program-prefix=	\
+		--program-suffix=	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p			$startdir/pkg/etc/ntp
+	cp $startdir/src/ntp.conf	$startdir/pkg/etc
+	cp $startdir/src/ntp.keys	$startdir/pkg/etc/ntp/ntp.keys
+	chmod 600			$startdir/pkg/etc/ntp/ntp.keys
+	touch				$startdir/pkg/etc/ntp/step-tickers
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYRIGHT	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		TODO		\
+		WHERE-TO-START	\
+		*.y2kfixes	\
+		clockstuff	\
+		conf		\
+		html		\
+		scripts		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir $startdir/pkg/usr/doc/$pkgname-$pkgver/util
+	cp -a util/README $startdir/pkg/usr/doc/$pkgname-$pkgver/util
+
+	mkdir $startdir/pkg/usr/doc/$pkgname-$pkgver/ntpdate
+	cp -a ntpdate/README $startdir/pkg/usr/doc/$pkgname-$pkgver/ntpdate
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

@@ -1,0 +1,128 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=nfs-utils
+pkgver=1.0.7
+pkgrel=4
+pkgdesc="nfs-utils (Network File System daemons and utilities) The nfs-utils package contains the necessary daemons and utilities to run an NFS server on Linux. You'll also need the portmap package to use NFS."
+url='http://nfs.sourceforge.net'
+backup=(etc/exports)
+depends=('portmap')
+source=(http://dl.sourceforge.net/sourceforge/nfs/$pkgname-$pkgver.tar.gz	\
+	nfsd									\
+	nfsmount								\
+	exports									)
+md5sums=('8f863120261cd572ad320a9152581e11' \
+	 '04aa868a16f7349ee8f8feb76ec7c614' \
+	 '766b51985c3bb7c8db3e0ac986187551' \
+	 '215c0531f55c849d7c43e6810eea34c4' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: fixed a but in the nfsmount rc script 2006.01.20
+##   rel3: Updated rc script to new format 2006.01.16
+##   rel2: Fixed small rc script bug 2005.06.03
+##   rel1: Initial Rubix release 2005.06.03
+
+build() {
+
+	export MAKEFLAGS=""
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/usr/man/man{5,8}
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/nhfsstone
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/statd
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure				\
+		--prefix=/usr			\
+		--with-statedir=/var/lib/nfs	\
+		--enable-nfsv3			\
+		--enable-nfsv4=no		\
+		--enable-gss=no			\
+		--enable-secure-statd		\
+		--program-prefix=		\
+		--program-suffix=		\
+		$CHOST
+	make || return 1
+
+	cp utils/exportfs/exportfs		$startdir/pkg/usr/sbin/exportfs
+	cp utils/exportfs/exportfs.man		$startdir/pkg/usr/man/man8/exportfs.8
+	cp utils/exportfs/exports.man		$startdir/pkg/usr/man/man5/exports.5
+
+	cp utils/lockd/lockd			$startdir/pkg/usr/sbin/rpc.lockd
+	cp utils/lockd/lockd.man		$startdir/pkg/usr/man/man8/lockd.8
+
+	cp utils/mountd/mountd			$startdir/pkg/usr/sbin/rpc.mountd
+	cp utils/mountd/mountd.man		$startdir/pkg/usr/man/man8/mountd.8
+
+	cp utils/nfsd/nfsd			$startdir/pkg/usr/sbin/rpc.nfsd
+	cp utils/nfsd/nfsd.man			$startdir/pkg/usr/man/man8/nfsd.8
+
+	cp utils/nfsstat/nfsstat		$startdir/pkg/usr/sbin/nfsstat
+	cp utils/nfsstat/nfsstat.man		$startdir/pkg/usr/man/man8/nfsstat.8
+
+	cp utils/nhfsstone/nhfsgraph		$startdir/pkg/usr/sbin/nhfsgraph
+	cp utils/nhfsstone/nhfsnums		$startdir/pkg/usr/sbin/nhfsnums
+	cp utils/nhfsstone/nhfsrun		$startdir/pkg/usr/sbin/nhfsrun
+	cp utils/nhfsstone/nhfsstone		$startdir/pkg/usr/sbin/nhfsstone
+	cp utils/nhfsstone/nhfsgraph.man	$startdir/pkg/usr/man/man8/nhfsgraph.8
+	cp utils/nhfsstone/nhfsnums.man		$startdir/pkg/usr/man/man8/nhfsnums.8
+	cp utils/nhfsstone/nhfsrun.man		$startdir/pkg/usr/man/man8/nhfsrun.8
+	cp utils/nhfsstone/nhfsstone.man	$startdir/pkg/usr/man/man8/nhfsstone.8
+
+	cp	-a				\
+		utils/nhfsstone/DISCLAIMER	\
+		utils/nhfsstone/README		\
+		utils/nhfsstone/README.linux	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/nhfsstone
+
+	cp utils/showmount/showmount		$startdir/pkg/usr/sbin/showmount
+	cp utils/showmount/showmount.man	$startdir/pkg/usr/man/man8/showmount.8
+
+	cp utils/statd/statd			$startdir/pkg/usr/sbin/rpc.statd
+	cp utils/statd/statd.man		$startdir/pkg/usr/man/man8/statd.8
+
+	cp	-a			\
+		utils/statd/COPYING	\
+		utils/statd/COPYRIGHT	\
+		utils/statd/TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/statd
+
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+		linux-nfs	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type d -exec chmod 755 {} \;
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+	cp $startdir/src/nfsd			$startdir/pkg/etc/rc.d
+	cp $startdir/src/nfsmount		$startdir/pkg/etc/rc.d
+	cp $startdir/src/exports		$startdir/pkg/etc
+
+	mkdir -p $startdir/pkg/var/lib/nfs
+	touch $startdir/pkg/var/lib/nfs/rmtab
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

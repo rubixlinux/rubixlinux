@@ -1,0 +1,93 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=asterisk
+pkgver=1.2.1
+pkgrel=1
+pkgdesc="Asterisk is a complete PBX in software. It runs on Linux and provides all of the features you would expect from a PBX and more. Asterisk does voice over IP in many protocols, and can interoperate with almost all standards-based telephony equipment using relatively inexpensive hardware."
+url="http://www.asterisk.org"
+depends=('glibc' 'ncurses' 'libvorbis' 'mysql' 'openssl' 'libogg' 'zlib' 'popt' 'alsa-lib')
+install=$pkgname.install
+source=(http://ftp.digium.com/pub/$pkgname/$pkgname-$pkgver.tar.gz		\
+	http://ftp.digium.com/pub/$pkgname/$pkgname-addons-$pkgver.tar.gz	\
+	http://ftp.digium.com/pub/$pkgname/$pkgname-sounds-$pkgver.tar.gz	\
+	iaxyprov.tar.gz								\
+	nonroot.diff								\
+	$pkgname.rc								)
+md5sums=('04657086791e80f319c0d728af705001' \
+	 '28bdfb79835e223cdff8bfa8365d1720' \
+	 'bed4259905a7d7bc070c6319142b2075' \
+	 '308aa0638f2eb9c474f0b6127061c136' \
+	 '3ce178fe9779a9903f8d01e10dc41e9f' \
+	 '32a1a081f5b7f98f84801a4c44b33480' )
+
+## Notes:
+##   None
+
+## Todo:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.2.1, converted rc script to new format 2006.01.11
+##   rel1: upgraded to 1.2.0 2005.11.21
+##   rel4: fixed man page location 2005.08.29
+##   rel3: added asterisk-addons, asterisk-sounds, iaxy stuff and install script, zaptel will be another package 2005.08.13
+##   rel2: made asterisk run as a non root user, added rc script 2005.08.10
+##   rel1: Initial Rubix release 2005.08.09
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/nonroot.diff || return 1
+
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+	make DESTDIR=$startdir/pkg samples
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS		\
+		CHANGES		\
+		COPYING		\
+		CREDITS		\
+		ChangeLog	\
+		HARDWARE	\
+		LICENSE		\
+		README*		\
+		SECURITY	\
+		UPGRADE.txt	\
+		doc/		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/$pkgname-addons-$pkgver
+	make || return 1
+	make INSTALL_PREFIX=$startdir/pkg install
+
+	cd $startdir/src/iaxyprov
+	make || return 1
+	cp -a iaxydebug iaxyprov $startdir/pkg/usr/sbin
+	cp -a iaxy.conf.sample $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/$pkgname-sounds-$pkgver
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/etc/asterisk/samples
+	mv $startdir/pkg/etc/asterisk/* $startdir/pkg/etc/asterisk/samples 2> /dev/null
+
+	chown -R root.asterisk $startdir/pkg/etc/asterisk
+	find $startdir/pkg/etc/asterisk -perm 755 -exec chmod 750 {} \;
+	find $startdir/pkg/etc/asterisk -perm 644 -exec chmod 640 {} \;
+
+	chown -R asterisk.asterisk $startdir/pkg/var/*/*
+	find $startdir/pkg/var/*/* -perm 755 -exec chmod 750 {} \;
+	find $startdir/pkg/var/*/* -perm 644 -exec chmod 640 {} \;
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname.rc $startdir/pkg/etc/rc.d/$pkgname
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

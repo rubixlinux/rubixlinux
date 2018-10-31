@@ -1,0 +1,21 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kde-i18n-tg
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kde-i18n-tg Tajik language support for KDE."
+depends=('kdebase')
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/kde-i18n/$pkgname-$pkgver.tar.bz2)
+md5sums=('d194d2dec68878c8014a21bc73b88a5b')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/opt/kde
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+}

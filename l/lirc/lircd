@@ -1,0 +1,29 @@
+#!/bin/bash
+
+## You need to choose the correct driver for lirc
+##  To get a list of available drivers do:
+##    lircd --driver=?
+##  All devices that use a kernel module use the "default" driver
+DRIVER=default
+SCRIPT=`basename $0`
+PROG=/usr/sbin/lircd
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG --driver=$DRIVER
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"  
+esac

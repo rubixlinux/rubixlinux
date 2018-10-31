@@ -1,0 +1,100 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+SHORTVER=8.15.1
+FONTS=6.0
+
+pkgname=espgs
+pkgver=8.15.1
+pkgrel=2
+pkgdesc="espgs (ESP Ghostscript) ESP Ghostscript is a customized version of GNU Ghostscript, an interpreter of Adobe Systems' PostScript(tm) and Portable Document Format (PDF) languages.  Ghostscript is an essential part of the printing subsystem, taking PostScript output from applications and converting it into an appropriate printer or display format. Ghostscript supports many printers directly, and more are supported through gimp-print and HPIJS, which are add-on packages that work with Ghostscript's IJS driver."
+url="http://www.cups.org/espgs"
+depends=('glibc' 'libjpeg' 'openssl' 'cups' 'zlib' 'gcc' 'libpng')
+source=(ftp://ftp.easysw.com/pub/ghostscript/$pkgver/$pkgname-$pkgver-source.tar.bz2	\
+	ftp://ftp.gnu.org/gnu/ghostscript/gnu-gs-fonts-std-$FONTS.tar.gz		)
+md5sums=('2a21136953c3559e6088522753b06b1f' \
+	 '1521fab85ca3e8ce3ce781d4970e6c79' )
+
+#Todo:
+#None
+
+#Notes:
+#gs requires X11, but I package gs-no-x11 too so that x11 and libtiff do not have to be included as dependencies
+#gs still requires libtiff, but libtiff requires x11, so I have removed libtiff too
+# let me know if this causes big problems...
+
+#Changelog:
+#rel2: added gnu-gs-fonts 2005.10.17
+#rel1: Upgraded to 8.15.1 2005.09.30
+#rel1: Upgraded to 8.15rc4 2005.09.16
+#rel1: Upgraded to 8.15rc3
+#rel1: Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/include/ijs
+
+	cd $startdir/src/$pkgname-$pkgver/ijs
+
+	rm missing
+	ln -sf /usr/share/automake-1.9/install-sh .
+	ln -sf /usr/share/automake-1.9/missing .
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	cd ..
+
+	./configure					\
+		--prefix=/usr				\
+		--enable-cups				\
+		--with-drivers=ALL			\
+		--with-ijs				\
+		--with-gimp-print			\
+		--with-omni				\
+		--with-x				\
+		$CHOST
+	make || return 1
+	make prefix=$startdir/pkg/usr datadir=$startdir/pkg/usr/share install_prefix=$startdir/pkg install
+
+	make clean
+	./configure					\
+		--prefix=/usr				\
+		--enable-cups				\
+		--with-drivers=ALL			\
+		--with-ijs				\
+		--with-gimp-print			\
+		--with-omni				\
+		--with-x=no				\
+		$CHOST
+	make || return 1
+	cp bin/gs $startdir/pkg/usr/bin/gs-no-x11
+	chmod 755 $startdir/pkg/usr/bin/gs-no-x11
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	ln -sf /usr/share/ghostscript/$SHORTVER/doc $startdir/pkg/usr/doc/$pkgname-$pkgver/doc
+	ln -sf /usr/share/ghostscript/$SHORTVER/examples $startdir/pkg/usr/doc/$pkgname-$pkgver/examples
+
+	cd $startdir/pkg/usr/man/de/man1
+	rm gsbj.1 gsdj.1 gsdj500.1 gslj.1
+
+	cd $startdir/pkg/usr/man/man1
+	ln -sf ps2ps.1.gz	eps2eps.1.gz
+	ln -sf gslp.1.gz	gsbj.1.gz
+	ln -sf gslp.1.gz	gsdj.1.gz
+	ln -sf gslp.1.gz	gsdj500.1.gz
+	ln -sf gslp.1.gz	gslj.1.gz
+	ln -sf ps2pdf.1.gz	ps2pdf12.1.gz
+	ln -sf ps2pdf.1.gz	ps2pdf13.1.gz
+
+	cd $startdir/pkg/usr/man/de/man1
+	ln -sf ps2ps.1.gz	eps2eps.1.gz
+	ln -sf ps2pdf.1.gz	ps2pdf12.1.gz
+	ln -sf ps2pdf.1.gz	ps2pdf13.1.gz
+
+	mv $startdir/src/fonts $startdir/pkg/usr/share/ghostscript
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

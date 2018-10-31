@@ -1,0 +1,42 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=cogito
+pkgver=0.16.4
+pkgrel=1
+pkgdesc="Cogito is a version control system layered on top of the git tree history storage system. It aims at seamless user interface and ease of use, providing generally smoother user experience than the "raw" Core GIT itself and indeed many other version control systems."
+depends=('git')
+source=(http://www.kernel.org/pub/software/scm/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('1996515a5cbf9167e2643aa4f3880313')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make prefix=/usr || return 1
+	make prefix=/usr DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		Documentation	\
+		INSTALL		\
+		README*		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 666 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 777 -exec chmod 755 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

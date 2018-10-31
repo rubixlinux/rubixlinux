@@ -1,0 +1,93 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+REALVER=2.5.STABLE12
+
+pkgname=squid
+pkgver=2.5.12
+pkgrel=2
+pkgdesc="Squid is a full-featured Web proxy cache"
+url="http://www.squid-cache.org"
+depends=('glibc' 'openssl' 'openldap' 'cyrus-sasl')
+backup=('etc/squid/squid.conf'		\
+	'etc/squid/cachemgr.conf'	\
+	'etc/squid/mime.conf'		\
+	'etc/squid/msntauth.conf'	\
+	'etc/rc.d/squid'		)
+source=(http://www.squid-cache.org/Versions/v2/2.5/$pkgname-$REALVER.tar.bz2	\
+	$pkgname								)
+md5sums=('7354255015b3772a1e024dfac173e48c' \
+	 '36ccd4cd512664843f04b0520a7b7664' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.16
+##   rel1: upgraded to 2.5.STABLE12 2005.10.31
+##   rel1: upgraded to 2.5.STABLE11 2005.09.30
+##   rel3: added LDAP authentication 2005.06.15
+##   rel2: added a few more files to the backup list 2005.06.15
+##   rel1: upgraded to 2.5.STABLE10 2005.06.13
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$REALVER
+
+	./configure												\
+		--prefix=/usr											\
+		--sysconfdir=/etc/squid										\
+		--libexecdir=/usr/libexec/squid									\
+		--datadir=/usr/share/squid									\
+		--localstatedir=/var/cache/squid								\
+		--enable-carp											\
+		--enable-async-io										\
+		--enable-storeio="aufs,coss,diskd,ufs,null"							\
+		--enable-removal-policies="heap,lru"								\
+		--enable-delay-pools										\
+		--enable-icmp											\
+		--enable-useragent-log										\
+		--enable-referer-log										\
+		--enable-snmp											\
+		--enable-arp-acl										\
+		--enable-htcp											\
+		--enable-ssl											\
+		--enable-cache-digests										\
+		--enable-poll											\
+		--enable-linux-netfilter									\
+		--enable-ident-lookups										\
+		--enable-truncate										\
+		--enable-auth="basic,digest,ntlm"								\
+		--enable-basic-auth-helpers="MSNT,LDAP,NCSA,SASL,SMB,YP,getpwnam,multi-domain-NTLM,winbind"	\
+		--enable-ntlm-auth-helpers="SMB,fakeauth,no_check,winbind"					\
+		--enable-digest-auth-helpers="password"								\
+		--enable-external-acl-helpers="ip_user,unix_group,wbinfo_group,winbind_group"			\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$REALVER
+	cp	-a			\
+		CONTRIBUTORS		\
+		COPYING			\
+		COPYRIGHT		\
+		CREDITS			\
+		ChangeLog		\
+		INSTALL			\
+		QUICKSTART		\
+		README			\
+		RELEASENOTES.html	\
+		SPONSORS		\
+	$startdir/pkg/usr/doc/$pkgname-$REALVER
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	chown -R nobody.nogroup $startdir/pkg/var/cache/$pkgname
+
+}

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+SQUID_ARGS="-D -sYC"
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/squid
+
+. /etc/rubixlib
+
+init_squid() {
+	if [ ! -f /var/cache/squid/cache/swap.state ]; then
+		stat_busy "initializing squid cache"
+		$PROG -z > /dev/null 2>&1
+		stat_done
+	fi
+}
+
+case "$1" in
+	start)
+		init_squid
+		start_daemon $SCRIPT $PROG $SQUID_ARGS
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG -k shutdown
+		;;
+	restart)
+		$0 stop
+		sleep 5
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

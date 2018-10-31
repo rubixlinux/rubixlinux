@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=aumix
+pkgver=2.8
+pkgrel=1
+pkgdesc="aumix (GTK+/ncurses audio mixer) This is a program for adjusting audio mixers from the command line or scripts, or interactively at the console or a terminal with a full-screen, ncurses-based interface or a GTK-based X interface."
+depends=('gtk+2')
+source=(http://jpj.net/~trevor/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	aumix.alsa.diff.gz						)
+md5sums=('dc3fc7209752207c23e7c94ab886b340' \
+	 'ad3981b74d02b194894d99b8e460a6d0' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/aumix.alsa.diff
+
+	./configure --prefix=/usr --without-gtk1
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		BUGS		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm $startdir/pkg/usr/bin/xaumix $startdir/pkg/usr/man/man1/xaumix.1
+
+	mv $startdir/pkg/usr/bin/mute $startdir/pkg/usr/doc/$pkgname-$pkgver/mute.sh
+
+}

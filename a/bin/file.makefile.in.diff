@@ -1,0 +1,18 @@
+--- ./magic/Makefile.in.orig	2004-02-25 13:30:29.000000000 -0800
++++ ./magic/Makefile.in	2004-02-25 13:31:14.000000000 -0800
+@@ -167,6 +167,7 @@
+ Magdir/convex \
+ Magdir/ctags \
+ Magdir/database \
++Magdir/debian-additions \
+ Magdir/diamond \
+ Magdir/diff \
+ Magdir/digital \
+@@ -302,6 +303,7 @@
+ Magdir/xenix \
+ Magdir/xwindows \
+ Magdir/zilog \
++Magdir/zisofs \
+ Magdir/zyxel
+ 
+ subdir = magic

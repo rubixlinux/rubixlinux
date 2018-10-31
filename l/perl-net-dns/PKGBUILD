@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-net-dns
+pkgver=0.51
+pkgrel=1
+pkgdesc="Net::DNS Perl interface to the DNS resolver"
+depends=('perl-digest-hmac' 'perl-net-ip')
+source=(http://www.cpan.org/authors/id/O/OL/OLAF/Net-DNS-$pkgver.tar.gz)
+md5sums=('fc358c06e65b1918b93e1a92e02065b8')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 0.51 and rebuilt for perl 5.8.7 2005.06.13
+#rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/Net-DNS-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Net-DNS-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/Net-DNS-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

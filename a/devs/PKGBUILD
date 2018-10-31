@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=devs
+pkgver=1.0
+pkgrel=4
+pkgdesc="devs (system device files) This package creates special files in the /dev directory that represent your system's hardware, and a tool (/dev/MAKEDEV) for creating new device files.  These files are required to access hardware on a Linux system."
+url="http://www.rubix-os.org"
+source=(devs.tar.gz			\
+	makedev.hd.diff.gz		\
+	makedev_2.3.1-46.2.diff.gz	\
+	makedev_2.3.1.hd.diff.gz	\
+	makedev_2.3.1.orig.tar.gz	)
+md5sums=('bc511b1776b51e0e4d08ed1c40f8ddcb' \
+	 '3d638d3aba7733ea4efea6b992ae2983' \
+	 '983d3d72194f6120e79d4110af8fd9b9' \
+	 '630f66d9a60774080bbc968c9edd9a0a' \
+         'dd47fd52347b2307c1782f799bf20d7f' )
+
+#Todo:
+#Explain patches
+
+#Notes:
+#None
+
+#Changelog:
+#rel4: added lirc and ivtv devices 2005.05.28
+#rel3: added usb hid devices 2005.04.14
+#rel2: added i2c devs 2005.03.08
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/pkg
+
+	tar zxpf $startdir/src/devs.tar.gz
+
+	cd $startdir/src/MAKEDEV-2.3.1
+
+	patch -p1 < $startdir/src/makedev_2.3.1-46.2.diff
+	patch -p1 < $startdir/src/makedev_2.3.1.hd.diff
+	patch -p1 < $startdir/src/makedev.hd.diff
+
+	cp MAKEDEV $startdir/pkg/dev
+
+	cp README $startdir/pkg/dev/README.MAKEDEV
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	cp MAKEDEV.man $startdir/pkg/usr/man/man8/MAKEDEV.8
+
+}

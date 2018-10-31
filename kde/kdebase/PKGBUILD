@@ -1,0 +1,110 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdebase
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdebase (KDE base package) Core applications for the K Desktop Environment.  Included are: kdm (replacement for xdm), kwin (window manager), konqueror (filemanager, web browser, ftp client), konsole (xterm replacement), kicker (application starter and desktop pager), kaudio (audio server), kdehelp (viewer for kde help files, info and man pages), kthememgr (system for managing alternate theme packages) plus other KDE components like kcheckpass, kikbd, kscreensaver, kcontrol, kfind, kfontmanager, kmenuedit, and kappfinder."
+url="http://www.kde.org"
+groups=('kde')
+depends=('qt' 'glibc' 'db' 'heimdal' 'esound' 'xfsprogs' 'fontconfig' 'openssl' 'expat' 'zlib' 'alsa-lib'	\
+	 'libjpeg' 'libidn' 'dbus' 'libvorbis' 'audiofile' 'libmad' 'lm_sensors' 'libmng' 'openldap' 'samba'	\
+	 'libpng' 'hal' 'e2fsprogs' 'x11' 'libogg' 'libusb' 'libart_lgpl' 'cyrus-sasl' 'freetype2' 'pcre'	\
+	 'arts' 'glib2' 'gcc' 'kdelibs'										)
+backup=('opt/kde/share/config/kdm/kdmrc'	\
+	'opt/kde/share/config/kdm/backgroundrc'	)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2	\
+	kde.csh									\
+	kde.sh									\
+	xinitrc.kde								\
+	kdm									\
+	$pkgname.startkde.xdg.diff						\
+	konsolerc								\
+	konsole.desktop								\
+	kcmartsrc								)
+md5sums=('484c7b3895ce4f95173f4789571eb1cc' \
+	 '546280a2b78b0c0719f20a9c35324cf0' \
+	 'ae49d5b1404862fca964ffd41006e488' \
+	 '7b7330459463c5bb1387b56acbfdc64f' \
+	 '4229f54d695229400e0f175502261056' \
+	 'aa0483f0c48560df1ee08d010ade1d36' \
+	 '8c7961a62291692de216a6c48458955b' \
+	 '534f3dee952ae4a63b6a297125d2193b' \
+	 '490cb3c600a5aadb22a551cc293a8e43' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 3.5.1 2006.01.31
+##   rel3: updated kdm rc script to new format 2006.01.16
+##   rel2: fixed default kdmrc 2005.12.31
+##   rel1: upgraded to 3.5.0 2005.12.18
+##   rel1: upgraded to 3.4.3 2005.10.15
+##   rel4: added patches from slackware 2005.10.01
+##   rel3: added security patch 2005.09.05
+##   rel2: Rebuilt for new openssl 2005.09.04
+##   rel1: Upgraded to 3.4.2 2005.07.31
+##   rel2: Rebuilt with openldap 2005.06.03
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel3: Add new Xservers file to allow multiple simultaneous kde sessions 2005.02.21
+##   rel2: Rebuild without reference to libGL.la 2005.02.19
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.startkde.xdg.diff || return 1
+  
+	./configure			\
+		--prefix=/opt/kde	\
+		--enable-final		\
+		--with-shadow		\
+		--disable-debug
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cp $startdir/src/kcmartsrc $startdir/pkg/opt/kde/share/config
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		INSTALL		\
+		README		\
+		kdebase.lsm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p			$startdir/pkg/etc/X11/xinit
+	cp $startdir/src/xinitrc.kde	$startdir/pkg/etc/X11/xinit
+
+	mkdir -p			$startdir/pkg/etc/profile.d
+	cp $startdir/src/kde.sh		$startdir/pkg/etc/profile.d
+	cp $startdir/src/kde.csh	$startdir/pkg/etc/profile.d
+
+	cp $startdir/src/konsolerc		$startdir/pkg/opt/kde/share/config
+	cp $startdir/src/konsole.desktop	$startdir/pkg/opt/kde/share/applications/kde
+
+	chmod	755					\
+		$startdir/pkg/etc/X11/xinit/xinitrc.kde	\
+		$startdir/pkg/etc/profile.d/kde.sh	\
+		$startdir/pkg/etc/profile.d/kde.csh
+
+	$startdir/pkg/opt/kde/bin/genkdmconf --no-old --no-old-scripts --no-backup --in $startdir/pkg/opt/kde/share/config/kdm
+	sed -i s/AllowRootLogin=false/AllowRootLogin=true/  $startdir/pkg/opt/kde/share/config/kdm/kdmrc
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/kdm $startdir/pkg/etc/rc.d
+
+}

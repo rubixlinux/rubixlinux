@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libvisual-plugins
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="Libvisual is a library that acts as a middle layer between applications that want audio visualisation and audio visualisation plugins."
+url="http://libvisual.sourceforge.net"
+depends=('libvisual')
+source=(http://dl.sourceforge.net/sourceforge/libvisual/$pkgname-$pkgver.tar.gz)
+md5sums=('b7c7dcae33a510af36c6bb9cdb7133dd')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release 2005.03.15
+
+build()
+{
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

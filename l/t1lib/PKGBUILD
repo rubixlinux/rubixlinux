@@ -1,0 +1,78 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=t1lib
+pkgver=5.1.0
+pkgrel=1
+depends=('glibc' 'x11')
+url="http://www.ibiblio.org/pub/Linux/libs/graphics/!INDEX.html"
+pkgdesc="t1lib (Type 1 font rasterizer library) t1lib is a library distributed under the GNU General Public Library License for generating character and string glyphs from Adobe Type 1 fonts under UNIX.  t1lib uses most of the code of the X11 rasterizer donated by IBM to the X11 project."
+source=(http://www.ibiblio.org/pub/Linux/libs/graphics/$pkgname-$pkgver.tar.gz	\
+	t1lib.config.gz								\
+	t1lib.csh.gz								\
+	t1lib.sh.gz								)
+md5sums=('a05bed4aa63637052e60690ccde70421' \
+	 '882cbe55bb2c972471071f2fee907398' \
+	 '74c55d51044c5f2d695d7997c2079758' \
+	 'c6c50fc131e38fa9e9c34910327aaae5' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 5.1.0 2005.09.16
+#rel2: Fixed /etc/profile.d perms 2005.02.17
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --enable-static=no $CHOST
+	make || return 1
+	mkdir -p $startdir/pkg/usr
+	make install prefix=$startdir/pkg/usr
+
+	chmod 755 $startdir/pkg/usr/lib/*.so
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mv $startdir/pkg/usr/share/t1lib/doc/t1lib_doc.ps $startdir/pkg/usr/doc/$pkgname-$pkgver
+	gzip -9 $startdir/pkg/usr/doc/$pkgname-$pkgver/t1lib_doc.ps
+
+	rm -r $startdir/pkg/usr/share/t1lib/doc
+
+	cp -a Fonts $startdir/pkg/usr/share/t1lib
+
+	ls 							\
+		$startdir/pkg/usr/share/t1lib/Fonts/afm/*.afm	\
+		/usr/X11R6/lib/X11/fonts/Type1/*.afm		\
+		| sort | uniq | wc -l | sed -e 's/ //g' > $startdir/pkg/usr/share/t1lib/FontDataBase
+
+	cd $startdir/pkg/usr/share/t1lib/Fonts/afm
+	ls *.afm | sort | uniq >> $startdir/pkg/usr/share/t1lib/FontDataBase
+	cd /usr/X11R6/lib/X11/fonts/Type1
+	ls *.afm | sort | uniq >> $startdir/pkg/usr/share/t1lib/FontDataBase
+
+	cp $startdir/src/t1lib.config $startdir/pkg/usr/share/t1lib
+
+	mkdir -p $startdir/pkg/etc/profile.d
+	cp $startdir/src/t1lib.sh  $startdir/pkg/etc/profile.d
+	cp $startdir/src/t1lib.csh $startdir/pkg/etc/profile.d
+
+	cd $startdir/src/$pkgname-$pkgver
+	cp	-a			\
+		Changes			\
+		LGPL			\
+		LICENSE			\
+		README.t1lib-$pkgver	\
+		README.t1python		\
+		README.win32		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+	chmod 755 $startdir/pkg/etc/profile.d/*
+
+}

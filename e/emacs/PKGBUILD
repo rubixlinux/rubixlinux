@@ -1,0 +1,78 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=emacs
+pkgver=21.4
+pkgrel=1
+pkgdesc="emacs (GNU Emacs) Base binaries and support files for the GNU Emacs editor/environment. This version supports X.  If you do not have X installed, you will also have to install the replacement Emacs binary that does not require the X11, Xaw3d, and Xt libraries. The emacs binary in this package was configured with these options: $CHOST --prefix=/usr --with-x11 --with-x-toolkit --with-pop"
+url="http://www.gnu.org/software/emacs/emacs.html"
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-${pkgver}a.tar.gz		\
+	ftp://ftp.gnu.org/gnu/$pkgname/leim-$pkgver.tar.gz			)
+depends=('ncurses')
+md5sums=('8f9d97cbd126121bd5d97e5e31168a87' \
+	 '32938cb5a7505d995a1e835639d19707' )
+
+#Todo:
+#None
+
+#Notes:
+#There is an X version and a non-X version included in this package
+#  As such, the dependencies reflect only the non-X version
+#ctags is not included here since it is included in vim too, and I 
+#  would guess that vim is more commonly installed than emacs ;)
+#For the X version the deps are: 
+#   depends=('libjpeg' 'libtiff' 'libungif' 'x11')
+
+#Changelog:
+#rel1: Upgraded to 21.4a 2005.06.12
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		BUGS	\
+		FTP	\
+		INSTALL	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	./configure		\
+		$CHOST		\
+		--prefix=/usr	\
+		--with-x=no	\
+		--with-pop
+	make
+	make prefix=$startdir/pkg/usr install
+
+	mv $startdir/pkg/usr/bin/$pkgname-$pkgver $startdir/pkg/usr/bin/$pkgname-$pkgver-no-x11
+
+	./configure			\
+		$CHOST			\
+		--prefix=/usr		\
+		--with-x11		\
+		--with-x-toolkit	\
+		--with-pop
+	make
+	make prefix=$startdir/pkg/usr install
+
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver
+	ln -sf /usr/share/$pkgname/$pkgver/etc .
+
+	cd $startdir/pkg/usr/bin
+	mv $pkgname-$pkgver $pkgname-$pkgver-with-x11 
+	ln -sf $pkgname-$pkgver-with-x11 $pkgname
+
+	chown -R root.bin $startdir/pkg/usr/bin
+	rm $startdir/pkg/usr/info/dir
+	find $startdir/pkg -type d -exec chmod 0755 {} \;
+
+	rm $startdir/pkg/usr/bin/ctags
+	rm $startdir/pkg/usr/man/man1/ctags.1
+
+}

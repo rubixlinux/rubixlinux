@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-io-stringy
+pkgver=2.110
+pkgrel=2
+pkgdesc="IO-stringy - I/O on in-core objects like strings and arrays"
+url="http://search.cpan.org/~dskoll/IO-stringy-2.110/lib/IO/Stringy.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/D/DS/DSKOLL/IO-stringy-$pkgver.tar.gz)
+md5sums=('2e6a976cfa5521e815c1fdf4006982de')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/IO-stringy-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/IO-stringy-$pkgver
+	cp	-a		\
+		COPYING		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/IO-stringy-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/IO-stringy-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

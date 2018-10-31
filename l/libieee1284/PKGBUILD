@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libieee1284
+pkgver=0.2.10
+pkgrel=1
+pkgdesc="libieee1284 This library is intended to be used by applications that need to communicate with (or at least identify) devices that are attached via a parallel port.  For example, SANE uses it to identify scanners."
+url="http://cyberelk.net/tim/libieee1284"
+depends=('glibc')
+source=(http://cyberelk.net/tim/data/$pkgname/stable/$pkgname-$pkgver.tar.bz2)
+md5sums=('8b6e6bd74ad5e49e7fa5da07faf03e17')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

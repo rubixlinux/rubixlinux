@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=automake
+pkgver=1.9.6
+pkgrel=1
+pkgdesc="automake (a Makefile generator) This is Automake, a Makefile generator.  It was inspired by the 4.4BSD make and include files, but aims to be portable and to conform to the GNU standards for Makefile variables and targets.  Automake is a Perl script.  The input files are called Makefile.am.  The output files are called Makefile.in; they are intended for use with Autoconf.  Automake requires certain things to be done in your configure.in.  You must install the "m4" and "perl" packages to be able to use automake."
+url="http://www.gnu.org/software/automake"
+depends=('m4' 'perl')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('c60f77a42f103606981d456f1615f5b4')
+
+#Todo:
+#emulate slackware install script
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 1.9.6 2005.09.30
+#rel1: Upgraded to 1.9.5 2005.05.12
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	SHORTNAME=`echo $pkgver | cut -f1,2 -d .`
+	cd $startdir/pkg/usr/bin
+	rm -rf aclocal
+	ln -sf aclocal-$SHORTNAME aclocal
+	rm -rf automake
+	ln -sf automake-$SHORTNAME automake
+
+	mkdir -p $startdir/pkg/usr/share/aclocal
+	touch $startdir/pkg/usr/share/aclocal
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+		THANKS	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

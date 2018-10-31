@@ -1,0 +1,201 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=shadow
+pkgver=4.0.13
+pkgrel=2
+pkgdesc="This set of login related programs utilizes an alternate, non-readable file to contain the actual encrypted passwords. This is presumed to increase system security by increasing the difficulty with which system crackers obtain encrypted passwords. It was written by Julianne Frances Haugh and the Linux port is maintained by Tomasz Kloczko. This package provides 'login', which is needed to log into the system."
+url="http://shadow.pld.org.pl"
+backup=(etc/login.defs \
+	etc/login.access\
+	var/log/faillog)
+depends=('cracklib' 'glibc' 'skey')
+source=(ftp://ftp.pld.org.pl/software/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	shadow.login.defs.diff.gz					\
+	shadow.audiovideocdrom.diff.gz					\
+	adduser.gz							\
+	shadow.skey.diff.gz						)
+md5sums=('5c6a105d89afb0900922260e9c5650cc' \
+	 'cc5b757624f1aa62c971ddf4c87898c4' \
+	 '788e74bd2997a89df6d4618e2760df3f' \
+	 '1d8fd09754b16b8048c2a53a48394070' \
+	 '887d0ae3bfbc6f40d14a40b603e9196a' )
+
+## Todo:
+##   None
+
+#Notes:
+#shadow.shadowconfig patch not needed since shadowconfig is no longer included
+#  there is no reason to turn off shadow passwords anyway.
+#shadow.newgrp.nopam patch is not necessary since we build --without-libpam
+#shadow.audiovideocdrom changes /etc/login.defs and makes the following changes:
+#  enable the CONSOLE_GROUPS option and adds video to the included groups
+#  this means that these groups are added to the user's supplementary group set
+#  when logging in on the console
+#shadow.login.defs changes /etc/login.defs and makes the following changes:
+#  update ENV_PATH and ENV_SUPATH to include standard /usr/local directories
+#  change TTYPERM to 0620 so setgid programs in that group can write to tty
+#  set the correct CRACKLIB_DICTPATH
+#  change CHFN_RESTRICT to frwh
+#  enable MD5_CRYPT_ENAB
+#dpasswd is no longer included
+#usr/man/man1/groups.1.gz and usr/man/man1/id.1.gz are provided by core-utils so they
+#  are no longer included in shadow
+
+#Changelog:
+#rel2: rebuilt with skey support 2005.10.30
+#rel1: upgraded to 4.0.13 with cracklib support 2005.10.12
+#rel1: upgraded to 4.0.12 2005.09.04
+#rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/shadow.login.defs.diff	|| return 1
+	patch -p1 < $startdir/src/shadow.audiovideocdrom.diff	|| return 1
+	patch -p1 < $startdir/src/shadow.skey.diff		|| return 1
+
+	./configure			\
+		--prefix=/usr		\
+		--disable-shared	\
+		--disable-desrpc	\
+		--without-libpam	\
+		--without-selinux	\
+		--with-skey		\
+		--with-libcrack		\
+		$CHOST
+	make || return 1
+
+	mkdir -p $startdir/pkg/etc
+	mkdir -p $startdir/pkg/bin
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/var/log
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/man/man3
+	mkdir -p $startdir/pkg/usr/man/man5
+	mkdir -p $startdir/pkg/usr/man/man8
+
+	install -m0644		etc/login.defs		$startdir/pkg/etc/login.defs
+	install -m0644		etc/login.access	$startdir/pkg/etc/login.access
+	install -m0755 -g bin	$startdir/src/adduser	$startdir/pkg/usr/sbin/adduser
+	
+	cd po
+	for file in *.gmo ; do
+		mkdir -p $startdir/pkg/usr/share/locale/`basename $file .gmo`/LC_MESSAGES
+		cp $file $startdir/pkg/usr/share/locale/`basename $file .gmo`/LC_MESSAGES/shadow.mo
+	done
+
+	cd ../src
+	install -m0755 -g bin login	$startdir/pkg/bin/login
+	install -m4711 -g bin su	$startdir/pkg/bin/su
+	install -m0755 -g bin sulogin	$startdir/pkg/sbin/sulogin
+
+	for file in \
+		chpasswd	faillog		groupadd	groupdel	\
+		groupmod	grpck		lastlog 	logoutd		\
+		newusers	pwck		useradd		userdel		\
+		usermod		pwconv		pwunconv	grpconv		\
+		grpunconv	vipw
+	do
+		install -m0755 -g bin $file $startdir/pkg/usr/sbin/$file
+	done
+
+	for file in chage chfn chsh expiry gpasswd newgrp passwd ; do
+		install -m4711 -g bin $file $startdir/pkg/usr/bin/$file
+	done
+
+	cd ..
+	cp -a ABOUT-NLS ChangeLog NEWS TODO doc/* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd man
+	for file in chage.1 chfn.1 chsh.1 gpasswd.1 login.1 newgrp.1 passwd.1 su.1 ; do
+		if [ -r $file ]; then
+			cp $file $startdir/pkg/usr/man/man1
+		fi
+	done
+	for file in pw_auth.3 shadow.3 ; do
+		if [ -r $file ]; then
+			cp $file $startdir/pkg/usr/man/man3
+		fi
+	done
+	for file in faillog.5 limits.5 login.access.5 login.defs.5 passwd.5 porttime.5 shadow.5 suauth.5 ; do
+		if [ -r $file ]; then
+			cp $file $startdir/pkg/usr/man/man5
+		fi
+	done
+	for file in \
+		chpasswd.8	dpasswd.8	faillog.8	groupadd.8	groupdel.8	\
+		groupmod.8	grpck.8		lastlog.8	logoutd.8	newusers.8	\
+		pwauth.8	pwck.8		pwconv.8	shadowconfig.8	sulogin.8	\
+		useradd.8	userdel.8	usermod.8	vipw.8
+	do
+		if [ -r $file ]; then
+			cp $file $startdir/pkg/usr/man/man8
+		fi
+	done
+
+	for dir in * ; do
+		if [ -d $dir ] ; then
+			cd $dir
+			for file in chage.1 chfn.1 chsh.1 gpasswd.1 groups.1 id.1 login.1 newgrp.1 passwd.1 su.1 ; do
+				if [ -r $file ]; then
+					mkdir -p $startdir/pkg/usr/man/$dir/man1
+					cp $file $startdir/pkg/usr/man/$dir/man1
+				fi
+			done
+			for file in pw_auth.3 shadow.3 ; do
+				if [ -r $file ]; then
+					mkdir -p $startdir/pkg/usr/man/$dir/man3
+					cp $file $startdir/pkg/usr/man/$dir/man3
+				fi
+			done
+			for file in faillog.5 limits.5 login.access.5 login.defs.5 passwd.5 porttime.5 shadow.5 suauth.5 ; do
+				if [ -r $file ]; then
+					mkdir -p $startdir/pkg/usr/man/$dir/man5
+					cp $file $startdir/pkg/usr/man/$dir/man5
+				fi
+			done
+			for file in \
+				chpasswd.8	dpasswd.8	faillog.8	groupadd.8	groupdel.8	\
+				groupmod.8	grpck.8		lastlog.8	logoutd.8	newusers.8	\
+				pwauth.8	pwck.8		pwconv.8	shadowconfig.8	sulogin.8	\
+				useradd.8	userdel.8	usermod.8	vipw.8
+			do
+				if [ -r $file ]; then
+					mkdir -p $startdir/pkg/usr/man/$dir/man8
+					cp $file $startdir/pkg/usr/man/$dir/man8
+				fi
+			done
+			cd ..
+		fi
+	done
+
+	touch $startdir/pkg/var/log/faillog
+	chmod 0640 $startdir/pkg/var/log/faillog
+
+	cd $startdir/pkg/bin
+	ln -sf /sbin/sulogin sulogin
+
+	cd $startdir/pkg/usr/man/man8
+	ln -sf pwconv.8.gz pwunconv.8.gz
+
+	cd $startdir/pkg/usr/man/man1
+	ln -sf newgrp.1.gz sg.1.gz
+
+	cd $startdir/pkg/usr/bin
+	ln -sf newgrp sg
+
+	cd $startdir/pkg/usr/sbin
+	ln -sf vipw vigr
+
+	cd $startdir/pkg/usr/man/man8
+	ln -sf vipw.8.gz vigr.8.gz
+
+	cd $startdir/pkg
+	chown -R root.bin bin sbin usr/bin usr/sbin
+
+}

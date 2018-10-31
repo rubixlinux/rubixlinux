@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=rxvt
+pkgver=2.7.10
+pkgrel=1
+pkgdesc="rxvt (terminal emulator) rxvt is a color vt102 terminal emulator intended as an xterm replacement for users who do not require features such as Tektronix 4014 emulation and toolkit-style configurability.  As a result, rxvt uses much less memory -- a significant advantage on a machine serving many X sessions.  Also included is rclock, an analog clock for X."
+depends=('x11')
+source=(ftp://ftp.rxvt.org/pub/rxvt/$pkgname-$pkgver.tar.gz	\
+	$pkgname.utempter.diff.gz				)
+md5sums=('302c5c455e64047b02d1ef19ff749141' \
+	 '7cfd080c5868c5c267c103c7d55357b9' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.utempter.diff
+
+	./configure			\
+		--prefix=/usr/X11R6	\
+		--enable-languages	\
+		--enable-utmp		\
+		--enable-wtmp		\
+		--enable-xpm-background	\
+		--enable-transparency	\
+		--enable-menubar	\
+		--enable-graphics	\
+		--enable-rxvt-scroll	\
+		--enable-next-scroll	\
+		--enable-xterm-scroll	\
+		--enable-xim		\
+		--enable-frills		\
+		--enable-linespace	\
+		--enable-24bit		\
+		--enable-keepscrolling	\
+		--enable-mousewheel	\
+		--enable-slipwheeling	\
+		--enable-xgetdefault	\
+		--enable-old-selection	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	rmdir $startdir/pkg/usr/X11R6/lib $startdir/pkg/usr/X11R6/include
+
+	rm $startdir/pkg/usr/X11R6/bin/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		$pkgname-$pkgver.lsm	\
+		doc			\
+		rclock/rclock.html	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/doc/$pkgname-$pkgver/doc/yodl
+
+}

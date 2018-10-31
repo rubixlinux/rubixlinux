@@ -1,0 +1,28 @@
+post_install() {
+	depmod -a -e -F /boot/System.map-2.4.32         2.4.32         > /dev/null 2>&1
+	depmod -a -e -F /boot/System.map-2.4.32-grsec   2.4.32-grsec   > /dev/null 2>&1
+	depmod -a -e -F /boot/System.map-2.6.15.5-Rubix 2.6.15.5-Rubix > /dev/null 2>&1
+	if [ ! -r usr/X11R6/lib/modules/extensions/libglx.so.xorg -a ! -L usr/X11R6/lib/modules/extensions/libglx.so.xorg ]; then
+		mv usr/X11R6/lib/modules/extensions/libglx.so usr/X11R6/lib/modules/extensions/libglx.so.xorg
+	fi
+	ln -sf libGL.so.1.0.8178 usr/lib/libGL.so.1
+	ln -sf libGL.so.1        usr/lib/libGL.so
+	ln -sf libglx.so.1       usr/X11R6/lib/modules/extensions/libglx.so
+}
+
+post_upgrade() {
+	post_install $1
+}
+
+post_remove() {
+	ln -sf /usr/X11R6/lib/libGL.so.1 usr/lib/libGL.so.1
+	ln -sf /usr/X11R6/lib/libGL.so   usr/lib/libGL.so
+	rm -f  usr/X11R6/lib/modules/extensions/libglx.so
+	if [ -r usr/X11R6/lib/modules/extensions/libglx.so.xorg -a ! -L usr/X11R6/lib/modules/extensions/libglx.so.xorg ]; then
+		mv usr/X11R6/lib/modules/extensions/libglx.so.xorg usr/X11R6/lib/modules/extensions/libglx.so
+	fi
+}
+
+op=$1
+shift
+$op $*

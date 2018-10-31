@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+CS=3.2.8
+
+pkgname=pcmciautils
+pkgver=011
+pkgrel=2
+pkgdesc="PCMCIAutils contains the initialization tools necessary to allow the PCMCIA subsystem to behave (almost) as every other hotpluggable bus system."
+url="http://kernel.org/pub/linux/utils/kernel/pcmcia/pcmcia.html"
+depends=('glibc' 'sysfsutils' 'hotplug')
+source=(http://kernel.org/pub/linux/utils/kernel/pcmcia/$pkgname-$pkgver.tar.bz2	\
+	http://dl.sourceforge.net/sourceforge/pcmcia-cs/pcmcia-cs-$CS.tar.gz		)
+md5sums=('8a7a014ea8177cf4514032722b695a9e' \
+	 '0d6d65be8896eff081aee996049afaa5' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: fixed manpage location 2006.01.13
+##   rel1: upgraded to 011, added the proper firmware files 2005.12.17
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make || return 1
+	make DESTDIR=$startdir/pkg mandir=/usr/man install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp COPYING $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm -r $startdir/pkg/etc/pcmcia
+
+	chown -R root.bin $startdir/pkg/sbin
+
+	mkdir -p $startdir/pkg/lib/firmware
+	cd $startdir/src/pcmcia-cs-$CS/etc/cis
+	cp *.cis $startdir/pkg/lib/firmware
+	chmod 644 $startdir/pkg/lib/firmware/*
+
+	rm -r $startdir/pkg/etc/udev
+
+}

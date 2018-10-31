@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# /etc/rc.M
+#
+
+. /etc/rc.conf
+. /etc/rubixlib
+
+if [ "$DISPLAY_MANAGER" != "" ]; then
+	if [ "$DISPLAY_MANAGER" = "kdm" ]; then
+		printh1 "starting kdm"
+		printsep
+		if [ -x /opt/kde/bin/kdm ]; then
+			exec /opt/kde/bin/kdm -nodaemon
+		else
+			stat_err "kdm is not executable or is not installed!"
+			stat_err "Can not start a display manager."
+		fi
+	elif [ "$DISPLAY_MANAGER" = "xdm" ]; then
+		printh1 "starting xdm"
+		printsep
+		if [ -x /usr/X11R6/bin/xdm ]; then
+			exec /usr/X11R6/bin/xdm -nodaemon
+		else
+			stat_err "xdm is not executable or is not installed!"
+			stat_err "Can not start a display manager."
+		fi
+	elif [ "$DISPLAY_MANAGER" = "entrance" ]; then
+		printh1 "starting entrance"
+		printsep
+		if [ -x /usr/sbin/entranced ]; then
+			exec /usr/sbin/entranced -nodaemon
+		else
+			stat_err "entrance is not executable or is not installed!"
+			stat_err "Can not start a display manager."
+		fi
+	else
+		stty onlcr
+		clear
+		stat_err "The only valid values for DISPLAY_MANAGER in /etc/rc.conf are:"
+		stat_err "  kdm or xdm"
+		stat_err "Please edir /etc/rc.conf and enter a valid value."
+		stat_err "Can not start a display manager."
+		stat_err "Will switch to runlevel 3 in 20 seconds..."
+		sleep 20
+		telinit 3
+	fi
+else
+	stat_err "You need to put a value in DISPLAY_MANAGER in /etc/rc.conf!"
+	stat_err "Can not start a display manager."
+fi
+
+
+# End of file

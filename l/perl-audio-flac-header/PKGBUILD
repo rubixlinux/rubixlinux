@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-audio-flac-header
+pkgver=1.4
+pkgrel=1
+pkgdesc="Audio::FLAC::Header - interface to FLAC header metadata."
+depends=('glibc' 'flac' 'perl')
+url="http://search.cpan.org/~daniel/Audio-FLAC-Header-$pkgver/Header.pm"
+source=(http://search.cpan.org/CPAN/authors/id/D/DA/DANIEL/Audio-FLAC-Header-$pkgver.tar.gz)
+md5sums=('55f896f35555840b225c24836a663f70')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/Audio-FLAC-Header-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Audio-FLAC-Header-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Audio-FLAC-Header-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

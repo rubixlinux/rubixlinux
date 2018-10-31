@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+
+pkgname=mod_perl
+pkgver=1.29
+pkgrel=1
+pkgdesc="mod_perl brings together the full power of the Perl programming language and the Apache HTTP server. You can use Perl to manage Apache, respond to requests for web pages and much more."
+url="http://perl.apache.org"
+depends=('glibc' 'apache' 'perl')
+source=(http://perl.apache.org/dist/$pkgname-$pkgver.tar.gz)
+md5sums=('1491931790509b9af06fc037d02b0e7a')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	perl Makefile.PL			\
+		USE_APXS=1			\
+		WITH_APXS=/path/to/bin/apxs	\
+		EVERYTHING=1
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/libexec/apache
+	cp apaci/libperl.so $startdir/pkg/usr/libexec/apache
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CREDITS		\
+		Changes		\
+		INSTALL*	\
+		LICENSE		\
+		README		\
+		STATUS		\
+		SUPPORT		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi/auto/mod_perl
+
+}

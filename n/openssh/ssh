@@ -1,0 +1,54 @@
+#!/bin/bash
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/sshd
+DPID=`cat /var/run/sshd.pid 2>/dev/null`
+
+. /etc/rubixlib
+
+init_ssh() {
+	if [ ! -r /etc/ssh/ssh_host_key ]; then
+		stat_busy "generating rsa1 host key"
+		/usr/bin/ssh-keygen -t rsa1 -f /etc/ssh/ssh_host_key -N '' > /dev/null 2>&1
+		stat_done
+	fi
+	if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
+		stat_busy "generating dsa host key"
+		/usr/bin/ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''  > /dev/null 2>&1
+		stat_done
+	fi
+	if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+		stat_busy "generating rsa host key"
+		/usr/bin/ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' > /dev/null 2>&1
+		stat_done
+	fi
+}
+
+case "$1" in
+	start)
+		init_ssh
+		start_daemon $SCRIPT $PROG
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		if [ ! -z "$DPID" ]; then
+			stat_err "WARNING: killing listener process only.  To kill every sshd process, you must"
+			stat_err "         use 'rc.sshd stop'.  'rc.sshd restart' kills only the parent sshd to"
+			stat_err "         allow an admin logged in through sshd to use 'rc.sshd restart' without"
+			stat_err "         being cut off.  If sshd has been upgraded, new connections will now"
+			stat_err "         use the new version, which should be a safe enough approach."
+			stop_daemon $SCRIPT kill $DPID
+		else
+			$0 stop
+		fi
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

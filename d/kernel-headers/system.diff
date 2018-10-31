@@ -1,0 +1,20 @@
+--- linux-2.6.15/include/asm-i386/system.h.orig	2006-01-17 11:17:57.000000000 -0700
++++ linux-2.6.15/include/asm-i386/system.h	2006-01-17 11:18:06.000000000 -0700
+@@ -12,6 +12,8 @@
+ struct task_struct;	/* one of the stranger aspects of C forward declarations.. */
+ extern struct task_struct * FASTCALL(__switch_to(struct task_struct *prev, struct task_struct *next));
+ 
++#endif  /* __KERNEL__ */
++
+ #define switch_to(prev,next,last) do {					\
+ 	unsigned long esi,edi;						\
+ 	asm volatile("pushl %%ebp\n\t"					\
+@@ -144,8 +146,6 @@
+ 	__asm__ __volatile__("movl %0,%%cr4": :"r" (x));
+ #define stts() write_cr0(8 | read_cr0())
+ 
+-#endif	/* __KERNEL__ */
+-
+ #define wbinvd() \
+ 	__asm__ __volatile__ ("wbinvd": : :"memory");
+ 

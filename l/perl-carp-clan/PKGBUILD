@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-carp-clan
+pkgver=5.3
+pkgrel=1
+pkgdesc="Carp::Clan - Report errors from perspective of caller of a "clan" of modules"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/S/ST/STBEY/Carp-Clan-$pkgver.tar.gz)
+md5sums=('d0a0431921b2c786aac234dfb6fe02ca')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Carp-Clan-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Carp-Clan-$pkgver
+	cp	-a		\
+		*.txt		\
+		MANIFEST	\
+	$startdir/pkg/usr/doc/perl-$PERL/Carp-Clan-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/Carp-Clan-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+}

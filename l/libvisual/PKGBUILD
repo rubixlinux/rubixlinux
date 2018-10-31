@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libvisual
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="Libvisual is a library that acts as a middle layer between applications that want audio visualisation and audio visualisation plugins."
+url="http://libvisual.sourceforge.net"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('668236dcbd252c70f1beff551f36b8b3')
+
+#Todo:
+#None
+
+#Notes:
+#Builds, but crashes with SSP
+
+#Changelog:
+#rel1: Initial Rubix release 2005.03.15
+
+build()
+{
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

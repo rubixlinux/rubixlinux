@@ -1,0 +1,31 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=bittornado
+pkgver=0.3.13
+pkgrel=1
+pkgdesc="BitTornado (a modified version of the BitTorrent utility) BitTornado is a file distribution utility which utilizes the upload capacity of machines which are downloading a file to help distribute it to other downloading machines. BitTornado is TheSHAD0W's experimental version of Bram Cohen's BitTorrent utility."
+url="http://www.bittornado.com"
+install=$pkgname.install
+depends=('python')
+source=(http://download2.bittornado.com/download/BitTornado-$pkgver.tar.gz	\
+	btdownloadxterm.sh.gz							)
+md5sums=('2ad36b3437778ecb635d02a35f3bfca9' \
+	 '4eb8658dc2f89209059a2f919497c49e' )
+
+build() {
+
+	cd $startdir/src/BitTornado-CVS
+
+	python setup.py build install --root=$startdir/pkg || return 1
+
+	mkdir -p				$startdir/pkg/usr/bin
+	cp $startdir/src/btdownloadxterm.sh	$startdir/pkg/usr/bin
+	chown -R root.bin			$startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/BitTornado-$pkgver
+	cp	-a			\
+		LICENSE.txt		\
+		README.txt		\
+	$startdir/pkg/usr/doc/BitTornado-$pkgver
+
+}

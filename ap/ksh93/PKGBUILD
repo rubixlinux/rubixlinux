@@ -1,0 +1,68 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+LONGVER=2005-02-02
+
+pkgname=ksh93
+pkgver=20050202
+pkgrel=1
+backup=('bin/ksh')
+pkgdesc="ksh (AT&T Korn Shell 93) The KornShell language and interactive shell were designed by David G. Korn at AT&T Bell Laboratories.  Besides offering a powerful interactive shell, it also offers a robust programming language with such features as associative arrays and built in integer math operations.  ksh is an excellent choice for system administration scripts and for everyday interactive use. The official site for the Korn Shell is http://www.kornshell.com"
+url="http://www.kornshell.com"
+depends=('glibc')
+install=$pkgname.install
+source=(INIT.$LONGVER.tgz		\
+	ast-ksh.$LONGVER.tgz		\
+	ast-ksh-locale.$LONGVER.tgz	)
+md5sums=('50339ec5c16f102e865f8f766da9016d' \
+	 'fecce7e67b55fe986c7c2163346e0977' \
+	 '5a5e306db1323a7b0d17a58a2da43f48' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   Initial rubix release 2005.08.22
+
+build() {
+
+	cd $startdir/src
+
+	mkdir -p ast-base/lib/package/tgz
+	cp $startdir/src/*.tgz ast-base/lib/package/tgz
+	cd ast-base/
+
+	tar -xvzf lib/package/tgz/INIT.$LONGVER.tgz
+	bin/package read || return 1
+	bin/package make SHELL=/bin/bash || return 1
+
+	mkdir -p			$startdir/pkg/bin
+	cp arch/linux.i386/bin/ksh	$startdir/pkg/bin/ksh
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	sed -e "s#\.nr Z 0#\.nr Z 1#g" src/cmd/ksh93/sh.1 > $startdir/pkg/usr/man/man1/ksh.1
+
+	ln -s ksh	$startdir/pkg/bin/rksh
+	ln -s ksh.1	$startdir/pkg/usr/man/man1/rksh.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cd src/cmd/ksh93
+ 	cp	-a		\
+		COMPATIBILITY	\
+		DESIGN		\
+		OBSOLETE	\
+		README		\
+		RELEASE*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/ast-base
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/LICENSE
+	cp -a README $startdir/pkg/usr/doc/$pkgname-$pkgver/LICENSE
+	cp -a lib/package/LICENSES/ast $startdir/pkg/usr/doc/$pkgname-$pkgver/LICENSE/LICENSE.ast
+
+	chown -R root.root	$startdir/pkg
+	chown -R root.bin	$startdir/pkg/bin
+
+}

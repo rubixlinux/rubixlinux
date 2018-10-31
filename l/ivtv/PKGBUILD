@@ -1,0 +1,104 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+REALVER=0.4.3
+
+pkgname=ivtv
+pkgver=0.4.3
+pkgrel=1
+pkgdesc="ivtv The primary goal of the IvyTV Project is to create a kernel driver for the iTVC15 familiy of MPEG codecs. The iTVC15 family includes the iTVC15 (CX24315) and iTVC16 (CX24316). These chips are commonly found on Hauppauge's WinTV PVR-250 and PVR-350 TV capture cards."
+depends=('glibc' 'gcc')
+source=(http://dl.ivtvdriver.org/ivtv/archive/0.4.x/$pkgname-$REALVER.tar.gz	\
+	v4l-cx2341x-dec.fw							\
+	v4l-cx2341x-enc.fw							\
+	v4l-cx25840.fw								\
+	ivtvdev_drv.so								)
+md5sums=('8837d8a7dc729be91f232ee2b63fe1da' \
+	 '305dba74bbe5905447add8883f3ecb68' \
+	 '5f5fa240ada73c3565f5f7de4c7b5138' \
+	 '3a4803384f749d644ee1f1ca9dcb12fa' \
+	 'eb98101d627318467949ffb739c153bc' )
+url="http://www.ivtvdriver.org/index.php/Main_Page"
+install=$pkgname.install
+
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upraded to 0.4.3, built for 2.6.15.5 2006.03.03
+##   rel5: rebuilt for 2.6.15.4 2006.02.12
+##   rel4: fixed some permission issues 2006.02.08
+##   rel3: rebuilt for 2.6.15.3 2006.02.07
+##   rel2: rebuilt for 2.6.15.2 2006.01.31
+##   rel1: upgraded to 0.4.2, built for kernel 2.6.15.1, removed 2.4 kernels 2006.01.20
+##   rel4: upgraded to 0.4.1, built for kernel 2.6.15 (rel1 through 3 were only used internally) 2006.01.10
+##   rel4: changed firmware location to proper place 2005.12.15
+##   rel3: fixed a problem with ivtv-fb and built for 2.4 kernels 2005.12.06
+##   rel1: upgraded to 0.4.0 built for kernel 2.6.14 2005.10.27
+##   rel2: added firmware 2005.09.25
+##   rel1: upgraded to 0.3.9 2005.09.20
+##   rel2: added the X11 driver again 2005.09.03
+##   rel1: upgraded to 0.3.8 and kernel 2.6.13 2005.09.01
+##   rel1: upgraded to 0.3.7h and removed support for 2.4 kernels 2005.08.23
+##   rel1: upgraded to 0.3.7d (would not build on 2.4 kernels, hopefully this will be remedied soon) 2005.08.16
+##   rel1: upgraded to 0.3.7b 2005.08.04
+##   rel1: upgraded to 0.3.7a renamed msp3400 to msp3400-ivtv and tveeprom to tveeprom-ivtv 2005.07.27
+##         this is the devel module, but has been working great for me and has xv support
+##   rel5: rebuilt for kernel 2.6.12.1 2005.06.23
+##   rel4: rebuilt for rebuilt kernel26 2005.06.22
+##   rel3: upgraded to kernels 2.4.31, 2.4.31-grsec, 2.6.12 2005.06.18
+##   rel2: added *.pl to docs dir, more utils 2005.05.30
+##   rel1: Initial Rubix Release 2005.05.28
+
+build() {
+
+	export MAKEFLAGS=""
+
+	mkdir -p $startdir/pkg/usr/include/linux
+
+	cd $startdir/src/$pkgname-$REALVER
+
+	cd utils
+
+	make || return 1
+	make DESTDIR=$startdir/pkg PREFIX=/usr install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/X11R6/lib/modules/drivers
+	cp $startdir/src/ivtvdev_drv.so $startdir/pkg/usr/X11R6/lib/modules/drivers || return 1
+
+	cd ../driver
+
+	export CFLAGS=""
+	export CXXFLAGS=""
+
+	make KVER=$vver26 || return 1
+	make KVER=$vver26 DESTDIR=$startdir/pkg install
+	make KVER=$vver26 clean
+
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+		doc/*		\
+		utils/*.pl	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/lib/modules -type f -name *.o  -exec gzip {} \;
+	find $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
+
+	mkdir -p				$startdir/pkg/lib/firmware
+	cp $startdir/src/v4l-cx2341x-dec.fw	$startdir/pkg/lib/firmware
+	cp $startdir/src/v4l-cx2341x-enc.fw	$startdir/pkg/lib/firmware
+	cp $startdir/src/v4l-cx25840.fw		$startdir/pkg/lib/firmware
+	cp v4l-cx2341x-init.mpg			$startdir/pkg/lib/firmware
+
+}

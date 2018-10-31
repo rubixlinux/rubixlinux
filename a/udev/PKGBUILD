@@ -1,0 +1,118 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=udev
+pkgver=081
+pkgrel=1
+pkgdesc="udev (dynamic device directory system) udev provides a dynamic device directory containing only the files for the devices which are actually present.  It creates or removes device node files usually located in the /dev directory. udev requires a 2.6 or newer kernel. Greg Kroah-Hartman is the primary udev developer."
+url="http://www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html"
+depends=('glibc')
+backup=('lib/udev/start_udev'			\
+	'etc/udev/rules.d/10-udev.rules'	)
+source=(ftp://ftp.kernel.org/pub/linux/utils/kernel/hotplug/$pkgname-$pkgver.tar.bz2	\
+	cdrom-symlinks.sh								\
+	firmware.sh									\
+	start_udev									\
+	udev.conf									\
+	10-udev.rules									)
+md5sums=('09ea8b37e76741c731cbf2b8b36d0696' \
+	 '822852fe6ab0a9ca4f9d74e7b13fe59d' \
+	 'aec3e7069ef14fb1d0f6ee82203fc5ea' \
+	 'ebbdb98e366efdd4e4428700ca2e6796' \
+	 '02d249975f1c7de6e9dc4d0ddb023c24' \
+	 '05a49d64a13bef5c646fd2ed6db3cc77' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 081 2006.01.18
+##   rel1: upgraded to 080 2006.01.13
+##   rel1: upgraded to 079 2005.12.31
+##   rel1: upgraded to 078 2005.12.21
+##   rel2: rebuilt with rules for 2.6.15 (udev now replaces hotplug for 2.6 kernels) 2005.12.17
+##   rel1: upgraded to 077 2005.12.06
+##   rel1: upgraded to udev 075 2005.11.10
+##   rel3: fixed cdrom/floppy perms 2005.10.02
+##   rel2: got kde media:/ working again 2005.10.01
+##   rel1: upgraded to 070 2005.09.30
+##   rel2: fixed perms for ttyUSB devs 2008.08.31
+##   rel1: upgraded to 068, there are still issues with udev
+##           I may go back to 058 if these issues are not fixed soon 2005.08.20
+##   rel1: upgraded to 067 2005.08.15
+##   rel1: upgraded to 058 2005.06.13
+##   rel2: added hotplug as a dep 2005.03.08
+##   rel1: Initial Rubix release 2005.02.25
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/lib/udev/devices
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	rm -r $startdir/pkg/etc/udev
+
+	mkdir -p $startdir/pkg/etc/udev/rules.d
+
+	cp $startdir/src/udev.conf			$startdir/pkg/etc/udev
+	cp $startdir/src/10-udev.rules			$startdir/pkg/etc/udev/rules.d
+
+	cp $startdir/src/cdrom-symlinks.sh		$startdir/pkg/lib/udev
+	cp $startdir/src/firmware.sh			$startdir/pkg/lib/udev
+
+	chmod 755 $startdir/pkg/lib/udev/*
+
+	cp $startdir/src/start_udev $startdir/pkg/lib/udev
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		ChangeLog		\
+		FAQ			\
+		README			\
+		RELEASE-NOTES		\
+		TODO			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm $startdir/pkg/usr/man/man8/udevsend.8
+	ln -s udevd.8 $startdir/pkg/usr/man/man8/udevsend.8
+
+	rmdir $startdir/pkg/dev
+
+	find $startdir/pkg -perm 666 -exec chmod 644 {} \;
+
+	chown -R root.bin $startdir/pkg/sbin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	cd $startdir/pkg/lib/udev/devices
+
+	mknod null c 1 3
+	chmod 666 null
+	touch -t 200010220101 null
+
+	mknod zero c 1 5
+	chmod 666 zero
+	touch -t 200010220101 zero
+
+	mknod console c 5 1
+	chmod 600 console
+	chown root.tty console
+	touch -t 200010220101 console
+
+}

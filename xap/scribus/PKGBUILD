@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=scribus
+pkgver=1.2.4.1
+pkgrel=1
+pkgdesc="Scribus brings award-winning professional DTP to Linux and *nix desktops with a combination of "press-ready" output and new approaches to page layout."
+url="http://www.scribus.org.uk"
+depends=('glibc' 'qt' 'libtiff' 'fontconfig' 'x11' 'expat' 'openssl' 'zlib' 'lcms' 'libart_lgpl'	\
+	 'python' 'freetype2' 'libjpeg' 'libxml2' 'libmng' 'cups' 'gcc' 'libpng'			)
+source=(http://www.scribus.org.uk/downloads/$pkgver/$pkgname-$pkgver.tar.bz2)
+md5sums=('d72ffe72b1d9ba1230557692af803927')
+
+## Todo:
+##   Figure out why svg importing doesn't work
+
+## Notes:
+##   The plugins dont like pie or ssp
+
+## Changelog:
+##   rel1: upgraded to 1.2.4.1 2006.01.18
+##   rel1: downgraded to 1.2.3 for stability reasons 2005.12.21
+##   rel2: rebuilt with cairo, fixed plugins 2005.11.15
+##   rel1: upgraded to 1.3.1 2005.11.01
+##   rel1: upgraded to 1.3.0 2005.08.29
+##   rel1: initial rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/scribus-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		ChangeLogCVS	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

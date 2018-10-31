@@ -1,0 +1,42 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libid3tag
+pkgver=0.15.1b
+pkgrel=1
+pkgdesc="libid3tag (ID3 tag manipulation library) libid3tag is a library for reading and (eventually) writing ID3 tags, both ID3v1 and the various versions of ID3v2. libid3tag was written by Robert Leslie."
+url="http://www.underbit.com/products/mad"
+depends=('zlib')
+source=(ftp://ftp.mars.org/pub/mpeg/$pkgname-$pkgver.tar.gz)
+md5sums=('e5808ad997ba32c498803822078748c3')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --disable-debugging $CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		COPYING		\
+		COPYRIGHT	\
+		CREDITS		\
+		README		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

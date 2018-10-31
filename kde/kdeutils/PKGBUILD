@@ -1,0 +1,56 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdeutils
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdeutils (various utilities for KDE) Includes: ark (tar/gzip archive  manager), kab (address book), karm (personal time tracker), kcalc (scientific calculator), kedit (simple text editor), kfloppy (floppy formatting tool), khexedit (hex editor), kjots (note taker), klipper (clipboard tool), kljettool(HP printer configuration tool), klpq (print queue manager), knotes (sticky notes for the desktop), kpm (process manager similar to 'top', but more advanced), kwrite (improved text editor)."
+url="http://www.kde.org"
+groups=('kde')
+depends=('qt' 'glibc' 'xfsprogs' 'x11' 'fontconfig' 'expat' 'zlib' 'libart_lgpl' 'python' 'freetype2'	\
+	 'glib' 'libjpeg' 'libidn' 'gmp' 'libmng' 'xmms' 'gcc' 'gtk+' 'kdelibs' 'libpng'		)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('1286c6a09b04452adfe492de2fad79bd')
+
+## Todo:
+##   None
+
+## Notes:
+##   None                     
+
+## Changelog:
+##   rel1: Upgraded to 3.5.1 2006.01.31
+##   rel1: Upgraded to 3.5.0 2005.12.18
+##   rel1: Upgraded to 3.4.3 2005.10.16
+##   rel1: Upgraded to 3.4.2 2005.08.01
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+        ./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		INSTALL		\
+		README		\
+		kdeutils.lsm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

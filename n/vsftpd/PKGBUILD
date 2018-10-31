@@ -1,0 +1,87 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=vsftpd
+pkgver=2.0.4
+pkgrel=1
+pkgdesc="vsftpd (Very Secure FTP Daemon) vsftpd is an FTP server, or daemon. The 'vs' stands for Very Secure. Obviously this is not a guarantee, but a reflection that the entire codebase was written with security in mind, and carefully designed to be resilient to attack (as well as extremely fast and scalable). The vsftpd homepage is http://vsftpd.beasts.org The Very Secure FTP Daemon was written by Chris Evans."
+backup=('etc/vsftpd.conf'		\
+	'etc/logrotate.d/vsftpd'	)
+url="http://vsftpd.beasts.org"
+depends=('libcap' 'openssl')
+source=(ftp://vsftpd.beasts.org/users/cevans/$pkgname-$pkgver.tar.gz	\
+	$pkgname.builddefs.diff						\
+	$pkgname.conf.diff						\
+	$pkgname.log							\
+	$pkgname							)
+md5sums=('c0bf8c7b8e15ab15827172786fc56115' \
+	 '25cab68a61d0cf600d86d0cb90e8cfb7' \
+	 '5535618d71cd16f3c36dc2a24105661b' \
+	 '22e92bbfb36ee2310a94d854dc3eecec' \
+	 '0f282a543ed434552870706d05501a8b' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.0.4, updated rc script to new format 2006.01.17
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	patch -p1 < $startdir/src/$pkgname.builddefs.diff	|| return 1
+	patch -p1 < $startdir/src/$pkgname.conf.diff		|| return 1
+
+	make || return 1
+
+	mkdir -p		$startdir/pkg/usr/sbin
+	cp $pkgname		$startdir/pkg/usr/sbin
+	chmod 755		$startdir/pkg/usr/sbin/$pkgname
+	chown -R root.bin	$startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/man/man{5,8}
+	cp $pkgname.conf.5	$startdir/pkg/usr/man/man5
+	cp $pkgname.8		$startdir/pkg/usr/man/man8
+
+	mkdir -p $startdir/pkg/etc
+	cp $pkgname.conf $startdir/pkg/etc
+
+	mkdir -p $startdir/pkg/etc/logrotate.d
+	cp $startdir/src/$pkgname.log $startdir/pkg/etc/logrotate.d/$pkgname
+
+	mkdir -p $startdir/pkg/usr/share/empty
+	mkdir -p $startdir/pkg/home/ftp
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUDIT		\
+		BENCHMARKS	\
+		BUGS		\
+		COPYING		\
+		COPYRIGHT	\
+		Changelog	\
+		EXAMPLE		\
+		FAQ		\
+		INSTALL		\
+		LICENSE		\
+		README*		\
+		REFS		\
+		REWARD		\
+		SECURITY	\
+		SIZE		\
+		SPEED		\
+		TODO		\
+		TUNING		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+}

@@ -1,0 +1,26 @@
+--- heimdal-0.7.1/lib/kadm5/sample_passwd_check.c.orig	2005-11-03 14:42:23.000000000 -0700
++++ heimdal-0.7.1/lib/kadm5/sample_passwd_check.c	2005-11-03 14:55:36.000000000 -0700
+@@ -35,6 +35,7 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <krb5.h>
++#include <crack.h>
+ 
+ /* specify the api-version this library conforms to */
+ 
+@@ -70,14 +71,11 @@
+ {
+     char *s = malloc(password->length + 1);
+     char *msg;
+-    char *strings[2];
+     if(s == NULL)
+ 	return NULL; /* XXX */
+-    strings[0] = principal->name.name_string.val[0]; /* XXX */
+-    strings[1] = NULL;
+     memcpy(s, password->data, password->length);
+     s[password->length] = '\0';
+-    msg = FascistCheck(s, DICTPATH, strings);
++    msg = FascistCheck(s, DICTPATH);
+     memset(s, 0, password->length);
+     free(s);
+     return msg;

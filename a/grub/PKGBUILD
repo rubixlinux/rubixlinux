@@ -1,0 +1,84 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=grub
+pkgver=0.97
+pkgrel=6
+pkgdesc="grub (GNU GRUB Legacy bootloader) This is the legacy (0.9x) version of GNU GRUB, the GRand Unified Bootloader.  GRUB is an alternative to other familiar bootloaders such as LILO.  Unlike LILO, it loads a kernel through direct file-system support rather than a block list so it does not need to be updated if a new kernel is installed. Also included is Kent Robotti's 'grubconfig' tool (similar to the Slackware 'liloconfig' setup tool)."
+url="http://www.gnu.org/software/grub"
+depends=('ncurses' 'reiser4progs')
+source=(ftp://alpha.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz	\
+	rubix_reiser_splash.diff					\
+	rubix_splash.xpm.gz						\
+	menu.lst							)
+md5sums=('cd3f3eb54446be6003156158d51f4884' \
+	 'ee977f8a749ae726d8dd65beea8f6ede' \
+	 '092e3acf0d016616c60efd4ea304be73' \
+	 '1b3c5d48d23ad6c41b24acf76ecc1ba5' )
+backup=('boot/grub/menu.lst')
+
+## Todo:
+##   None
+
+## Notes:
+##   will not build with propolice or pie
+##   grubconfig is not included in this package
+
+## Changelog:
+##   rel6: changed the rubix splash screen, added some more hints to menu.lst 2006.02.08
+##   rel5: fixed splash screen and hiddenmenu 2006.02.02
+##   rel4: added reiser4progs to depends 2006.02.01
+##   rel3: added reiserfs, reiser4 and splash screen support 2006.02.01
+##   rel2: added 'quiet' to default menu.lst 2006.01.18
+##   rel1: Upgraded to 0.97 2005.05.12
+##   rel1: Upgraded to 0.96, fixed menu.lst 2005.04.24
+##   rel2: Added ncurses as a dependency 2005.04.22
+##   rel1: Initial rubix release
+
+build() {
+
+	#Disable SSP and PIE
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/rubix_reiser_splash.diff || return 1
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	aclocal			|| return 1
+	autoheader		|| return 1
+	autoconf		|| return 1
+	automake --add-missing	|| return 1
+
+	./configure --prefix=/usr --bindir=/bin --sbindir=/sbin
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a			\
+		AUTHORS		\
+		BUGS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		MAINTENANCE	\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/boot/grub/images
+	cp $startdir/src/menu.lst $startdir/pkg/boot/grub
+	cp $startdir/src/rubix_splash.xpm $startdir/pkg/boot/grub/images
+
+	gzip -9 $startdir/pkg/boot/grub/images/*
+	chmod 600 $startdir/pkg/boot/grub/menu.lst
+
+}

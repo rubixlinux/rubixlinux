@@ -1,0 +1,75 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gnupg
+pkgver=1.4.2.2
+pkgrel=1
+pkgdesc="gnupg (The GNU Privacy Guard) GnuPG is GNU's tool for secure communication and data storage.  It can be used to encrypt data and to create digital signatures.  It includes an advanced key management facility and is compliant with the proposed OpenPGP Internet standard as described in RFC2440."
+url="http://www.gnupg.org"
+depends=('glibc' 'openssl' 'bzip2' 'libusb' 'openldap' 'zlib' 'readline' 'libtermcap' 'cyrus-sasl')
+source=(ftp://ftp.gnupg.org/GnuPG/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname.diff							)
+md5sums=('50d8fd9c5715ff78b7db0e5f20d08550' \
+	 'c23d51ccf048f10b5e8b10b45570c13a' )
+
+## Todo:
+##   None
+
+## Notes:
+##   The patch is to increase security. It is included with loop-aes, the following is
+##   in the loop-aes README:
+##   When gpg encrypts data with symmetric cipher only or when gpg encrypts
+##   secret keyring keys with secret passphrase, gpg uses seeded (salted) and
+##   iterated key setup. However, default amount of iteration is tuned for slow
+##   processors and can be increased for better resistance against dictionary
+##   attacks. Larger key iteration makes key setup much slower, but also makes
+##   dictionary attacks much slower too.
+##   Included optional gpg patch makes gpg password iteration 128 times slower.
+##   gpg stores new iteration value along with seed bytes into symmetric cipher
+##   encrypted output file or secret keyring, so unpatched gpg versions will read
+##   and decrypt the data just fine.
+
+## Changelog:
+##   rel1: ugraded to 1.4.2.2 *security* 2006.03.09
+##   rel1: upgraded to 1.4.2.1 for security reasons 2006.02.15
+##   rel1: rebuilt against proper openldap 2005.08.19
+##   rel1: upgraded to 1.4.2 2005.08.19
+##   rel1: upgraded to 1.4.1 2005.04.13
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.diff || return 1
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	chmod 4755 $startdir/pkg/usr/bin/gpg
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		BUGS		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		PROJECTS	\
+		README		\
+		THANKS		\
+		TODO		\
+		VERSION		\
+		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver
+	ln -s /usr/share/gnupg/FAQ FAQ
+	ln -s /usr/share/gnupg/faq.html faq.html
+
+}

@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=git
+pkgver=1.1.3
+pkgrel=1
+pkgdesc="GIT is a \"directory content manager\" designed to handle absolutely massive projects with speed and efficiency"
+url="http://git.or.cz"
+depends=('glibc' 'expat' 'openssl' 'curl' 'libidn' 'zlib')
+source=(http://www.kernel.org/pub/software/scm/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('7633e120b9007ccaa7565393ac6deb46')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make prefix=/usr || return 1
+	make prefix=/usr DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		Documentation	\
+		INSTALL		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 666 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 777 -exec chmod 755 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

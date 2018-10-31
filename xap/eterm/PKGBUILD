@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=eterm
+pkgver=0.9.3
+pkgrel=1
+pkgdesc="Eterm is a color vt102 terminal emulator intended as a replacement for xterm. It is designed with a Freedom of Choice philosophy, leaving as much power, flexibility, and freedom as possible in the hands of the user. It is designed to look good and work well, but takes a feature-rich approach rather than one of minimalism while still maintaining speed and efficiency."
+depends=('libast')
+url=http://www.eterm.org
+source=(http://www.eterm.org/download/Eterm-$pkgver.tar.gz)
+md5sums=('dd089fa7768f945341d721dd4942c702')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Eterm-$pkgver
+
+	./configure		\
+		--prefix=/usr	\
+		--enable-trans	\
+		--enable-utmp	\
+		$CHOST
+	make
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/Eterm-$pkgver
+	cp	-a			\
+		CVS-README		\
+		ChangeLog		\
+		Eterm.spec		\
+		README			\
+		ReleaseNotes		\
+		ReleaseNotes.1		\
+	$startdir/pkg/usr/doc/Eterm-$pkgver
+
+}

@@ -1,0 +1,219 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+DB=1.7.6
+HTTP=1.4.0
+MAIL=1.1.9
+SMTP=1.2.8
+SOCKET=1.0.6
+PARSER=1.2.7
+RPC=1.4.5
+HARD=0.4.8
+
+TAR=1.3.1
+GETOPT=1.2
+HTMLTMP=1.1.3
+
+pkgname=php
+pkgver=4.4.2
+pkgrel=3
+pkgdesc="php (HTML-embedded scripting language) PHP is an HTML-embedded scripting language.  It shares syntax characteristics with C, Java, and Perl.  The primary objective behind this language is to make a fast and easy-to-use scripting language for dynamic web sites. More information can be found online at http://www.php.net"
+url="http://www.php.net"
+install=$pkgname.install
+backup=('etc/apache/php.ini')
+depends=('glibc' 'db' 'mhash' 'gdbm' 'expat' 'openssl' 'curl' 'zlib' 'cyrus-sasl' 'apache' 'libjpeg' 'libidn' 'libxml2' 'pcre' 'gmp' 'mysql' 'bzip2' 'openldap' 'libpng')
+makedepends=('pine')
+source=(http://www.php.net/distributions/$pkgname-$pkgver.tar.gz		\
+	http://www.hardened-php.net/hardening-patch-$pkgver-$HARD.patch.gz	\
+	http://pear.php.net/get/DB-$DB.tgz					\
+	http://pear.php.net/get/HTTP-$HTTP.tgz					\
+	http://pear.php.net/get/Mail-$MAIL.tgz					\
+	http://pear.php.net/get/Net_SMTP-$SMTP.tgz				\
+	http://pear.php.net/get/Net_Socket-$SOCKET.tgz				\
+	http://pear.php.net/get/XML_Parser-$PARSER.tgz				\
+	http://pear.php.net/get/XML_RPC-$RPC.tgz				\
+	http://pear.php.net/get/Archive_Tar-$TAR.tgz				\
+	http://pear.php.net/get/Console_Getopt-$GETOPT.tgz			\
+	http://pear.php.net/get/HTML_Template_IT-$HTMLTMP.tgz			\
+	$pkgname.ini.diff							\
+	mod_php.conf.example							)
+md5sums=('a7ae7ed8f2edf1592bd94eab91c634fa' \
+	 'fa67e075f724b5cb4701ffdd0a05e03d' \
+	 'b5ff032f7e8873174e3e7fc21b7ec696' \
+	 '62f3ef8c163e2ac11b8ea0163f2a5d3e' \
+	 'ce8dcb33a9ad9ea7072ca0175fd4ce8f' \
+	 'acd7c31aa6a083ff6bff86ffba02bcbb' \
+	 'f961deffb093a58eb4c48478de1b27ed' \
+	 'f4a491b49843f8257df8ded088854db3' \
+	 'e526da7331b818e70ade5f006a4e7a9d' \
+	 '31e54ce401302065d43888223a0be4d9' \
+	 '8f9ec8253c04350bc01ee7ca941e24b6' \
+	 '3743bc7ebb54b03694f1cf5e7c361650' \
+	 '264b6f7a1226e3aeedcd8803f4acf26d' \
+	 '036111d84b671958afbf9262d5414bff' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: fixed some bad pear modules 2006.02.14
+##   rel2: fixed some missing files 2006.01.21
+##   rel1: upgraded to 4.4.2 2006.01.18
+##   rel1: downgraded to 4.4.1, php5 is great, there were just too many incompatabilities,
+##         I will reevaluate php5 after rubix 1.0 release 2005.12.13
+##   rel1: upgraded to 5.1.1, added the hardening patch again 2005.12.01
+##   rel2: rebuilt without hardening patch since php wouldnt start 2005.11.26
+##   rel1: upgraded to 5.1.0, hardening-patch 5.1.0-0.4.6 2005.11.25
+##   rel4: trying something new, since I dont want to go back to php4, yet..., I
+##         am trying the php hardening project's patch, let me know how bad it breaks stuff
+##   rel3: rebuilt against new libmm (in apache) 2005.10.18
+##   rel2: recompiled with support for multibyte strings 2005.09.16
+##   rel1: upgraded to 5.0.5 2005.09.13
+##   rel4: made php support non-shared 2005.06.04
+##   rel3: rebuilt with ldap support 2005.06.04
+##   rel2: removed memory limit and spurius pear modules added mime magic 2005.04.15
+##         I am no longer including any modules by default, does anyone think
+##         that I should package modules here or do you prefer to use pear
+##         to install your stuff???
+##   rel1: upgraded to 5.0.4, security fix
+##         added --with-dom to default install and added libxml2 as a dep 2005.04.12
+##   rel1: initial rubix release
+
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	IMAPLIBDIR=/usr
+
+	mkdir -p $startdir/pkg/etc/apache
+	cp /etc/apache/httpd.conf.default $startdir/pkg/etc/apache/httpd.conf
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	cd pear/packages
+	rm Archive_Tar*
+	rm Console_Getopt*
+	rm HTML_Template*
+	cp $startdir/src/*.tgz .
+	gunzip *.tgz
+	cd ../..
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -name "*.h" -exec chmod 644 {} \;
+
+	find . -name "*.orig" -exec rm {} \;
+
+	patch -p1 < $startdir/src/hardening-patch-$pkgver-$HARD.patch	|| return 1
+	patch -p1 < $startdir/src/php.ini.diff				|| return 1
+
+	php_configure --disable-static --with-apxs=/usr/sbin/apxs
+	make || return 1
+	make install INSTALL_ROOT=$startdir/pkg
+	make distclean
+
+	chmod 755 $startdir/pkg/usr/bin/pear
+
+	php_configure --enable-force-cgi-redirect --enable-fastcgi --enable-pcntl --enable-sigchild
+	make || return 1
+	make install-cli INSTALL_ROOT=$startdir/pkg
+	chmod 755 $startdir/pkg/usr/bin/php
+	chown root.bin $startdir/pkg/usr/bin/php
+
+	cd $startdir/pkg/usr/lib/php
+	find . -perm 666 -exec chmod 644 {} \;
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		CODING_STANDARDS	\
+		CREDITS			\
+		EXTENSIONS		\
+		INSTALL			\
+		LICENSE			\
+		NEWS			\
+		README*			\
+		TODO*			\
+		sapi/cgi/README.FastCGI	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a php.ini-dist php.ini-recommended		$startdir/pkg/etc/apache
+	cp -a $startdir/src/mod_php.conf.example	$startdir/pkg/etc/apache
+	chmod 644 $startdir/pkg/etc/apache/*
+
+	rm $startdir/pkg/etc/apache/httpd*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}
+
+php_configure() {
+
+	EXTENSION_DIR=/usr/lib/php/extensions		\
+	./configure					\
+		--prefix=/usr				\
+		$*					\
+		--sysconfdir=/etc			\
+		--enable-discard-path			\
+		--with-config-file-path=/etc/apache	\
+		--enable-safe-mode			\
+		--with-openssl				\
+		--with-mhash				\
+		--enable-bcmath				\
+		--with-bz2				\
+		--with-pic				\
+		--enable-calendar			\
+		--enable-ctype				\
+		--with-gdbm				\
+		--without-db2				\
+		--without-db3				\
+		--with-db4				\
+		--with-imap-ssl=$IMAPLIBDIR		\
+		--with-imap=$IMAPLIBDIR			\
+		--enable-dbase				\
+		--enable-ftp				\
+		--with-iconv				\
+		--with-exif				\
+		--enable-exif				\
+		--with-gd				\
+		--enable-gd-native-ttf			\
+		--with-jpeg-dir=/usr			\
+		--with-png				\
+		--with-gmp				\
+		--enable-mbstring			\
+		--with-pcre-regex=/usr			\
+		--with-curl=/usr			\
+		--with-mysql=shared,/usr		\
+		--with-gettext=shared,/usr		\
+		--with-expat-dir=/usr			\
+		--with-xml				\
+		--with-xsl=/usr				\
+		--with-dom				\
+		--enable-wddx				\
+		--with-mm=/usr				\
+		--enable-trans-sid			\
+		--enable-shmop				\
+		--enable-sockets			\
+		--with-regex=php			\
+		--enable-sysvsem			\
+		--enable-sysvshm			\
+		--enable-yp				\
+		--with-tsrm-pthreads			\
+		--enable-shared				\
+		--disable-debug				\
+		--with-zlib=/usr			\
+		--with-mime-magic			\
+		--with-ldap				\
+		--with-ldap-sasl
+		# --with-mod_charset    # only for Russian patched Apache
+		# --with-readline=/usr  # this is only for the CGI version
+		# --with-ttf            # this links with the shlib, need X for that
+		# --with-java           # no thanks
+		# --with-curl           # no requests for this, so we'll avoid the dependancy
+
+}

@@ -1,0 +1,100 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=skey
+pkgver=1.1.5
+pkgrel=1
+pkgdesc="skey -- This is the port of S/key implementation from OpenBSD source tree to Linux."
+depends=('cracklib' 'glibc')
+source=($pkgname-$pkgver.tar.gz			\
+	$pkgname-$pkgver-bind-now.patch.gz	\
+	$pkgname-$pkgver-fPIC.patch.gz		\
+	$pkgname-$pkgver-gentoo.diff.gz		\
+	$pkgname-$pkgver-otp.diff.gz		\
+	$pkgname-login_name_max.diff.gz		)
+md5sums=('c4bc3be60fe1aa8961537fb4b3708568' \
+	 '3505e6e2d92c332d471c1e6fbc687f03' \
+	 '671c6b86e575c055ef70a752b1f078a8' \
+	 'c55c9a2c4951fa355321bbe9b288074c' \
+	 '0f93857825972355a916b00fa7995cd2' \
+	 'b55afe9dbd38f92b8f1939eca7b37f0b' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	export CFLAGS="$CFLAGS -DSKEY_HASH_DEFAULT=1"
+	export CXXFLAGS="$CXXFLAGS -DSKEY_HASH_DEFAULT=1"
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver-gentoo.diff		|| return 1
+	patch -p1 < $startdir/src/$pkgname-login_name_max.diff		|| return 1
+	patch -p0 < $startdir/src/$pkgname-$pkgver-fPIC.patch		|| return 1
+	patch -p0 < $startdir/src/$pkgname-$pkgver-bind-now.patch	|| return 1
+	patch -p1 < $startdir/src/$pkgname-$pkgver-otp.diff		|| return 1
+
+	sed -i -e 's:/etc/skeykeys:/etc/skey/skeykeys:g' skeyprune.pl skeyprune.8		|| return 1
+	sed -i -e 's:\(if ( ! /.*/\):\1i:g' skeyprune.pl					|| return 1
+	sed -i 's#\(md4\) \((the default)\), \(md5\) or \(sha1.\)#\1, \3 \2 or \4#g' skeyinit.1	|| return 1
+
+	./configure --prefix=/usr --sysconfdir=/etc/skey
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp	-a		\
+		skey.1 		\
+		skeyaudit.1	\
+		skeyinfo.1	\
+		skeyinit.1	\
+	$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	cp -a skeyprune.8 $startdir/pkg/usr/man/man8
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp	-a		\
+		skey		\
+		skeyinit	\
+		skeyinfo	\
+	$startdir/pkg/usr/bin
+
+	cp -a skeyaudit.sh $startdir/pkg/usr/bin/skeyaudit
+	chmod 755 $startdir/pkg/usr/bin/skeyaudit
+
+	ln -s skey $startdir/pkg/usr/bin/otp-md4
+	ln -s skey $startdir/pkg/usr/bin/otp-sha1
+	ln -s skey $startdir/pkg/usr/bin/otp-md5
+
+	mkdir -p $startdir/pkg/usr/sbin
+	cp -a skeyprune.pl $startdir/pkg/usr/sbin/skeyprune
+	chmod 755 $startdir/pkg/usr/sbin/skeyprune
+
+	mkdir -p $startdir/pkg/usr/lib
+	cp	-a			\
+		libskey.a		\
+		libskey.so.1.1.5	\
+		libskey.so.1.1		\
+		libskey.so.1		\
+		libskey.so		\
+	$startdir/pkg/usr/lib
+
+	mkdir -p $startdir/pkg/usr/include
+	cp -a skey.h $startdir/pkg/usr/include
+
+	mkdir -p $startdir/pkg/etc/skey
+	chmod 700 $startdir/pkg/etc/skey
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	chmod 4755 $startdir/pkg/usr/bin/skeyinit 
+	chmod 4755 $startdir/pkg/usr/bin/skeyinfo
+
+	touch $startdir/pkg/etc/skey/skeykeys
+	chmod 600 $startdir/pkg/etc/skey/skeykeys
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		CHANGES	\
+		INSTALL	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

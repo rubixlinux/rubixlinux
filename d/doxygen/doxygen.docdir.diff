@@ -1,0 +1,11 @@
+--- ./configure.orig	2003-08-25 10:48:25.000000000 -0700
++++ ./configure	2003-11-18 14:41:15.000000000 -0800
+@@ -35,7 +35,7 @@
+        shift; f_prefix=$1
+        ;;
+     --docdir | -docdir)
+-       shift; f_docdir=$1/doxygen
++       shift; f_docdir=$1
+        ;;
+     --shared | -shared)
+        f_shared=YES

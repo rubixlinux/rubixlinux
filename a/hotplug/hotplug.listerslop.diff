@@ -1,0 +1,11 @@
+--- ./etc/hotplug/hotplug.functions.orig	2004-11-03 22:08:03.000000000 -0800
++++ ./etc/hotplug/hotplug.functions	2004-11-03 22:31:07.000000000 -0800
+@@ -81,7 +81,7 @@
+     # ought to expose the data we need to find all candidate drivers.
+     # (on 2.5.48 it does for usb; but maybe not yet for pci.)
+     case "$KERNEL" in
+-    2.2*|2.3*|2.4*)	LISTER=`which ${TYPE}modules` ;;
++    2.2*|2.3*|2.4*|2.5*|2.6*)	LISTER=`which ${TYPE}modules 2>/dev/null` ;;
+     *)			LISTER="" ;;
+     esac
+ 

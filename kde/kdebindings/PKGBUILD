@@ -1,0 +1,70 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+KDE=3.5.1
+
+pkgname=kdebindings
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdebindings This package contains dcopc (DCOP bindings for C), dcopjava (DCOP bindings for JAVA), dcopperl (DCOP bindings for Perl), dcoppython (DCOP bindings for Python), kalyptus (C, Objective-C and Java bindings generator), kdec (KDE bindings for C), kdejava (KDE bindings for Java JNI to use Qt/KDE classes with Java), kdeobjc (KDE bindings for Objective-C), qtc (Qt bindings for C), qtjava (Qt bindings for Java JNI to use Qt/KDE classes with Java), qtobjc (Qt bindings for Objective-C), xparts (allows you to embed non-KDE apps as a KPart)."
+url="http://www.kde.org"
+groups=('kde')
+makedepends=('j2sdk' 'gtk+')
+depends=('glibc' 'qt' 'freetype2' 'libjpeg' 'libidn' 'pcre' 'xfsprogs' 'fontconfig' 'x11' 'expat'	\
+	 'libmng' 'gcc' 'zlib' 'libart_lgpl' 'kdelibs' 'libpng'						)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('302f6a842b5a29701846c49a24a64039')
+
+## Todo:
+##   None
+
+## Notes:
+##   None                     
+
+## Changelog:
+##   rel1: Upgraded to 3.5.1 2006.01.31
+##   rel1: Upgraded to 3.5.0 2005.12.18
+##   rel1: Upgraded to 3.4.3 2005.10.15
+##   rel1: Upgraded to 3.4.2 2005.07.31
+##   rel2: Rebuilt for perl 5.8.7 2005.06.13
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel2: removed perl packlist file 2005.05.12
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	chmod 644 $startdir/pkg/usr/man/man?/*
+
+}

@@ -1,0 +1,49 @@
+# Mantainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mjpegtools
+pkgver=1.6.2
+pkgrel=1
+pkgdesc="Mjpeg tools is a suite of programs which support video capture, editting, playback, and compression to MPEG of MJPEG video. Edit, play and compression software is hardware independent. Capture supports MJPEG hardware (Buz, Miro DC10+ etc)."
+url="http://mjpeg.sourceforge.net"
+depends=('libdv' 'sdl' 'zlib')
+source=(http://dl.sourceforge.net/sourceforge/mjpeg/$pkgname-$pkgver.tar.gz	\
+	stupid.goto.label.fix.diff.gz						\
+	picture.diff.gz								)
+md5sums=('01c0120b0182de67f182ef99ad855daa' \
+	 '40f4a49419d4a7718cfeb03ca5555978' \
+	 '5ad7884bdad9ec8b89397479363ced45' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/stupid.goto.label.fix.diff
+	patch -p0 < $startdir/src/picture.diff
+
+	./configure				\
+		--prefix=/usr			\
+		--disable-cmov-extension	\
+		--disable-simd-accel		\
+		--enable-zalpha			\
+		--with-dv-yv12
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		BUGS		\
+		CHANGES		\
+		COPYING		\
+		ChangeLog	\
+		HINTS		\
+		INSTALL		\
+		NEWS		\
+		PLANS		\
+		README*		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

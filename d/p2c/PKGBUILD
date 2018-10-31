@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=p2c
+pkgver=1.21alpha2
+pkgrel=1
+pkgdesc="p2c (Pascal to C translator) P2c is a tool for translating Pascal programs into C.  The input consists of a set of source files in any of the following Pascal dialects:  HP Pascal, Turbo/UCSD Pascal, DEC VAX Pascal, Oregon Software Pascal/2, Macintosh Programmer's Workshop Pascal, Sun/Berkeley Pascal, Texas Instruments Pascal, Apollo Domain Pascal. Modula-2 syntax is also supported.  Output is a set of .c and .h files that comprise an equivalent program in any of several dialects of C."
+url="http://www.synaptics.com/people/daveg"
+depends=('glibc')
+source=(http://www.synaptics.com/people/daveg/$pkgname-$pkgver.tar.gz	\
+	p2c-1.21alpha2.diff.gz						\
+	p2c-1.21alpha2.time.diff.gz					)
+md5sums=('8340429ae80be2e0e82c01f70c0355bb' \
+	 '852fed47049db1625d619459b1deb1a3' \
+	 '3d52bd0d2d66f8f3d855551627eb7233' )
+
+build() {
+
+	cd $startdir/src
+
+	patch -p1 < $startdir/src/p2c-1.21alpha2.diff		|| return 1
+	patch -p1 < $startdir/src/p2c-1.21alpha2.time.diff	|| return 1
+
+	cd src
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/lib/p2c
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/include/p2c
+
+	cp p2c		$startdir/pkg/usr/bin
+	cp p2cc		$startdir/pkg/usr/bin
+	cp libp2c.a	$startdir/pkg/usr/lib
+	cp p2c.man	$startdir/pkg/usr/man/man1/p2c.1
+	cp p2cc.man	$startdir/pkg/usr/man/man1/p2cc.1
+	cp sys.p2crc	$startdir/pkg/usr/lib/p2c/p2crc
+	cp loc.p2crc	$startdir/pkg/usr/lib/p2c
+	cp system.imp	$startdir/pkg/usr/lib/p2c
+	cp system.m2	$startdir/pkg/usr/lib/p2c
+	cp turbo.imp	$startdir/pkg/usr/lib/p2c
+	cp string.pas	$startdir/pkg/usr/lib/p2c
+	cp p2c.h	$startdir/pkg/usr/include/p2c
+
+	make p2cc	|| return 1
+	cp p2cc		$startdir/pkg/usr/bin
+
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a README ftp.README examples $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm -r $startdir/pkg/usr/doc/$pkgname-$pkgver/examples/c
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

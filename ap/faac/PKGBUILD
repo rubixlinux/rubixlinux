@@ -1,0 +1,35 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=faac
+pkgver=1.24
+pkgrel=1
+pkgdesc="FAAC - Freeware Advanced Audio Coder"
+url="http://www.audiocoding.com"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('e72dc74db17b42b06155613489077ad7')
+
+build() {
+
+	cd $startdir/src/$pkgname
+	chmod +x bootstrap
+	./bootstrap
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

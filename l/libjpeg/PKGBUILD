@@ -1,0 +1,73 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libjpeg
+pkgver=6b
+pkgrel=1
+pkgdesc="libjpeg (Independent JPEG Group's JPEG software) Software to implement JPEG image compression and decompression.  JPEG (pronounced 'jay-peg') is a standardized compression method for full-color and gray-scale images.  JPEG is intended for compressing 'real-world' scenes; cartoons and other non-realistic images are not its strong suit.  JPEG is lossy, however, on typical images of real-world scenes, very good compression levels can be obtained with no visible change, and amazingly high compression levels are possible if you can tolerate a low-quality image."
+depends=('glibc')
+source=(ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v$pkgver.tar.gz	\
+	jpeg-6b.diff.gz						)
+md5sums=('dbd5f3b47ed13132f04c685d608a7547' \
+	 'e41dc04db314278cf7af7cba2e358941' )
+
+#Todo:
+#depends
+#makedepends
+#explain patch
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/jpeg-$pkgver
+
+	patch -p0 < $startdir/src/jpeg-6b.diff
+
+	./configure
+	make
+
+	mkdir -p	$startdir/pkg/usr/bin
+	cp cjpeg	$startdir/pkg/usr/bin
+	cp djpeg	$startdir/pkg/usr/bin
+	cp jpegtran	$startdir/pkg/usr/bin
+	cp rdjpgcom	$startdir/pkg/usr/bin
+	cp wrjpgcom	$startdir/pkg/usr/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+	for page in 		\
+		cjpeg.1		\
+		djpeg.1		\
+		jpegtran.1	\
+		rdjpgcom.1	\
+		wrjpgcom.1
+	do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+
+	mkdir -p		$startdir/pkg/usr/lib
+	cp libjpeg.so.62.0.0	$startdir/pkg/usr/lib
+	cp libjpeg.a		$startdir/pkg/usr/lib
+
+	mkdir -p		$startdir/pkg/usr/include
+	cp	-a		\
+		jconfig.h	\
+		jpeglib.h	\
+		jmorecfg.h	\
+		jerror.h	\
+	$startdir/pkg/usr/include
+
+	mkdir -p		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a README *.doc	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644		$startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/lib
+	ln -sf libjpeg.so.62.0.0	libjpeg.so.62
+	ln -sf libjpeg.so.62		libjpeg.so
+
+}

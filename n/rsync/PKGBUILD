@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=rsync
+pkgver=2.6.6
+pkgrel=1
+pkgdesc="rsync is a replacement for rcp that has many more features.  It uses the \"rsync algorithm\" which provides a very fast method for bringing remote files into sync.  It does this by sending just the differences in the files across the link, without requiring that both sets of files are present at one of the ends of the link beforehand. rsync was written by Andrew Tridgell and Paul Mackerras."
+url="http://samba.anu.edu.au/rsync"
+depends=('glibc' 'popt')
+source=(http://rsync.samba.org/ftp/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('30c4e2849cbeae93f55548453865c2f2')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.6.6 2005.08.16
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp rsync		$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/rsync
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	mkdir -p		$startdir/pkg/usr/man/man1
+	cp rsync.1		$startdir/pkg/usr/man/man1
+	mkdir -p		$startdir/pkg/usr/man/man5
+	cp rsyncd.conf.5	$startdir/pkg/usr/man/man5
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		README		\
+		NEWS		\
+		COPYING		\
+		tech_report.tex	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chown -R root.root $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

@@ -1,0 +1,115 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+NSS=244
+MT=46
+
+pkgname=openldap
+pkgver=2.2.30
+pkgrel=2
+pkgdesc="OpenLDAP Software is an open source implementation of the Lightweight Directory Access Protocol. The suite includes: slapd - stand-alone LDAP daemon (server), slurpd - stand-alone LDAP update replication daemon, libraries implementing the LDAP protocol, and utilities, tools, and sample clients. This package also includes nss_ldap for ldap system authentication."
+url="http://www.openldap.org"
+backup=('etc/openldap/ldap.conf'	\
+	'etc/openldap/slapd.conf'	\
+	'etc/ldap.conf'			\
+	'etc/rc.d/openldap'		)
+depends=('e2fsprogs' 'glibc' 'db' 'openssl' 'heimdal' 'cyrus-sasl')
+source=(ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/$pkgname-$pkgver.tgz	\
+	http://www.padl.com/download/nss_ldap-$NSS.tar.gz				\
+	http://www.padl.com/download/MigrationTools-$MT.tar.gz				\
+	$pkgname									)
+md5sums=('8c8af8070a8e404f61ec9169948cb326' \
+	 '25c237675cdd0f78e0773aff2c877a51' \
+	 'dc80548f76d6aeba2b51b15751e08b21' \
+	 'cd999455688a5aa6901ac70848f82524' )
+
+## Todo:
+##   None
+
+## Notes:
+##   This package contains nss_ldap, but openldap must be installed for nss_ldap to build
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.16
+##   rel1: upgraded to 2.2.30 and nss_lap 244 2005.12.06
+##   rel3: fixed one more small bug in the rc script, rebuilt with sasl password support 2005.11.04
+##   rel2: fixed manpage location for nss_ldap 2005.11.03
+##   rel1: upgraded to 2.2.29, could not get new nss_ldap working (versions 241, 242 or 243) 2005.10.12
+##   rel2: rebuilt against new openssl 2005.09.04
+##   rel1: downgraded to 2.2.28, not quite ready to do this library version change... 2005.08.19
+##   rel1: upgraded to 2.3.5 2005.08.19
+##   rel8: last release of the day, fixed rc script 2005.06.04
+##   rel7: fixed login problems, mandir again... 2005.06.03
+##   rel6: This is a record for one day fixes, added etc/ldap.conf to backup files 2005.06.03
+##   rel5: GRR! Fixed my own typo... 2005.06.03
+##   rel4: Fixed mandir location 2005.06.03
+##   rel3: Added the MigrationTools 2005.06.03
+##   rel2: Changed location of slapd 2005.06.03
+##   rel1: Initial Rubix release 2005.06.03
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure					\
+		--prefix=/usr				\
+		--sysconfdir=/etc			\
+		--libexecdir=/usr/sbin			\
+		--localstatedir=/var/lib/$pkgname	\
+		--enable-cleartext			\
+		--enable-dynamic			\
+		--enable-crypt				\
+		--enable-local				\
+		--enable-spasswd
+	make depend || return 1
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ANNOUNCEMENT	\
+		CHANGES		\
+		COPYRIGHT	\
+		INSTALL		\
+		LICENSE		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	find $startdir/pkg/usr/doc -perm 664 -exec chmod 644 {} \;
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	chmod 644 $startdir/pkg/etc/$pkgname/schema/*
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/nss_ldap-$NSS
+
+	./configure				\
+		--with-ldap-lib=openldap	\
+		--mandir=/usr/man		\
+		--libdir=/lib			\
+		--enable-rfc2307bis		\
+		--enable-schema-mapping		\
+		--enable-paged-results
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/nss_ldap-$NSS
+	cp	-a			\
+		ANNOUNCE		\
+		AUTHORS			\
+		COPYING			\
+		CVSVersionInfo.txt	\
+		ChangeLog		\
+		INSTALL			\
+		NEWS			\
+		README			\
+	$startdir/pkg/usr/doc/nss_ldap-$NSS
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/migrate
+	cp -a $startdir/src/MigrationTools-$MT/migrate_* $startdir/pkg/usr/doc/$pkgname-$pkgver/migrate
+
+}

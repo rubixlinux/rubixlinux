@@ -1,0 +1,591 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+DUTILS=2.15.2
+EJECT=2.1.4
+FBSET=2.1
+LHA=114i
+ED=0.2
+FILE=4.16
+DOSFS=2.10
+PATCH=2.5.4
+SHAR=4.2.1
+SPLITVT=1.6.5
+TIME=1.7
+TREE=1.5.0
+UNARJ=2.63a
+WHICH=2.16
+ZOO=2.10
+
+pkgname=bin
+pkgver=1.0
+pkgrel=6
+pkgdesc="bin (some common system utilities) The \"bin\" package is a collection of utilities for handling various kinds of archives, identifying file types, and processing data. Several of these tools are used by system scripts, so this is a required package.  The bin package contains these programs: bban compress diskcopy dosfsck ed eject fbset file fiz fromdos lha mkdosfs mktemp patch rescan-scsi-bus rpmoffset run-parts savelog shar splitvt sysvbanner tempfile time todos tree unarj unshar uudecode uuencode volname which xx zoo"
+url="http://www.rubix-os.org"
+depends=('glibc' 'zlib' 'libtermcap')
+backup=(etc/file/magic.mime	\
+	etc/file/magic		)
+source=(http://archive.ubuntu.com/ubuntu/pool/main/d/debianutils/debianutils_$DUTILS.tar.gz	\
+	http://www.pobox.com/~tranter/eject-$EJECT.tar.gz					\
+	http://users.telenet.be/geertu/Linux/fbdev/fbset-$FBSET.tar.gz				\
+	http://www2m.biglobe.ne.jp/~dolphin/lha/prog/lha-$LHA.tar.gz				\
+	lha-$LHA-sec.patch									\
+	lha-$LHA-symlink.patch									\
+	ftp://ftp.gnu.org/gnu/ed/ed-$ED.tar.gz							\
+	ed-$ED.mkstemp.diff									\
+	compress.tar.gz										\
+	compress.diff										\
+	banners.tar.gz										\
+	ftp://ftp.astron.com/pub/file/file-$FILE.tar.gz						\
+	file.makefile.in.diff									\
+	file.quiet.diff										\
+	file.rzip.magic										\
+	file.short.diff										\
+	file.zisofs.diff									\
+	ftp://ftp.uni-erlangen.de/pub/Linux/LOCAL/dosfstools/dosfstools-$DOSFS.src.tar.gz	\
+	dosfstools-$DOSFS-kernel-2.6.diff							\
+	ftp://ftp.gnu.org/gnu/patch/patch-$PATCH.tar.gz						\
+	run-parts.8										\
+	run-parts										\
+	ftp://ftp.gnu.org/pub/gnu/sharutils/sharutils-$SHAR.tar.gz				\
+	shar.1											\
+	unshar.1										\
+	uuencode.1										\
+	uuencode.5										\
+	splitvt-$SPLITVT.tar.gz									\
+	splitvt.devpts.diff									\
+	ftp://ftp.gnu.org/pub/gnu/time/time-$TIME.tar.gz					\
+	todos.tar.gz										\
+	ftp://mama.indstate.edu/linux/tree/tree-$TREE.tgz					\
+	http://www.ibiblio.org/pub/Linux/utils/compress/unarj-$UNARJ.tar.gz			\
+	http://www.xs4all.nl/~carlo17/which/which-$WHICH.tar.gz					\
+	zoo-$ZOO.gcc33.patch									\
+	zoo-$ZOO.linux.diff									\
+	zoo-$ZOO.tar.gz										\
+	zoo_${ZOO}-17.diff									\
+	rescan-scsi-bus										\
+	diskcopy										\
+	xx											\
+	nologin.tar.gz										)
+md5sums=('fd3f169f00543a453ee3b4f65e4c5abb' \
+	 '6cb457857318f733177f0c3a780138da' \
+	 'e547cfcbb8c1a4f2a6b8ba4acb8b7164' \
+	 '5225884d557b91f04124693e2c5c9e94' \
+	 '7e585b8f0f1042da0753b8d47e9c0b88' \
+	 '414d7156c3bc01a95a10ee240e3e8535' \
+	 'ddd57463774cae9b50e70cd51221281b' \
+	 '5f8e61ac52aaa4fd724f1000737cc816' \
+	 '19f837a8edb177d87595c8fe930073d0' \
+	 '317dbcf5ea9062bc22cb9d359012b865' \
+	 'f7fddc6d2dba676c4f5e00ab16b0b181' \
+	 '9bc5a7017ab7bd544f288fd931ec741a' \
+	 '1e7af2b0db4fe7c0b7c4f421908a0da5' \
+	 'e26b8818bbc37930049485936f6d902a' \
+	 'de5a9f8c8a14bb5a21dd958d5e4fb692' \
+	 'c9a656c6a7d4f22f5db6a9fd829801ba' \
+	 '18bd68ee7810bbba42d16f0aaa2e411c' \
+	 '59a02f311a891af8787c4c9e28c6b89b' \
+	 'c73a56e19adceaac021096bd88ccf7f5' \
+	 'ee5ae84d115f051d87fcaaef3b4ae782' \
+	 'e70dc2126ae8747f1d8fbe7ce3510448' \
+	 '4c05a6e50446e4983c94b9d95cfcbe7a' \
+	 'b8ba1d409f07edcb335ff72a27bd9828' \
+	 '80b2a4901113cece1d4bdc7ab609a017' \
+	 'b6c5fe8e134bb519ac5fbb52e680a439' \
+	 'acc7849fb90d5f4f5c4a3d33f6784a23' \
+	 'f4cddbfeddefc9b7ec5b020e0a49b769' \
+	 'f93974daa4f39945b3d5b9cc39bb1b0f' \
+	 '9b7ee43fa3988e362120553b2668f651' \
+	 'e38d2b8b34b1ca259cf7b053caac32b3' \
+	 'cee3ce2d67755cf05b205e9368ca70e8' \
+	 'e0d090c564e7ea5afa16bac80620c7e0' \
+	 'a83d139c245f911f22cb1b611ec9768f' \
+	 '830b83af48347a9a3520f561e47cbc9b' \
+	 '212dc9017a173b7695ae707a8d879653' \
+	 '1138e13b830a64fc53f66fd97ed6e1b4' \
+	 'f5d3ffdd65cc8a511c83e3c3f108c27e' \
+	 '33184c723bf446e5cd9750449da712bd' \
+	 '5000c2cedc651de920b8588e1b4fc8ef' \
+	 '26fab629854b89709b0f108f19315691' \
+	 '5b13ec6841d1346ba6fceedfc4883e8c' \
+	 '556838975e2380a64cca6743f8bf20d1' )
+
+## Todo:
+##   None
+
+## Notes:
+##    None
+
+## Changelog:
+##   rel6: added security patch to zoo 2006.06.05 *security*
+##   rel5: upgraded debianutils to 2.15.2, eject to 2.1.4 2006.01.21
+##   rel4: upgraded file to 4.16, debian utils to 2.15.1 2005.11.10
+##   rel2: Added /sbin/nologin from openbsd 2005.04.14
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	mkdir -p $startdir/pkg/bin
+	mkdir -p $startdir/pkg/etc
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/usr/info
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/man/man5
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/doc/eject-$EJECT
+	mkdir -p $startdir/pkg/usr/doc/file-$FILE
+	mkdir -p $startdir/pkg/usr/doc/dosfstools-$DOSFS/mkdosfs
+	mkdir -p $startdir/pkg/usr/doc/dosfstools-$DOSFS/dosfsck
+	mkdir -p $startdir/pkg/usr/doc/patch-$PATCH
+	mkdir -p $startdir/pkg/usr/doc/sharutils-$SHAR
+	mkdir -p $startdir/pkg/usr/doc/splitvt-$SPLITVT
+	mkdir -p $startdir/pkg/usr/doc/tree-$TREE
+	mkdir -p $startdir/pkg/usr/doc/which-$WHICH
+
+	echo "+=============+"
+	echo "| debianutils |"
+	echo "+=============+"
+
+	cd $startdir/src/debianutils-$DUTILS
+
+	./configure --prefix=/usr
+	make || return 1
+
+	cp mktemp	$startdir/pkg/usr/bin
+	cp mktemp.1	$startdir/pkg/usr/man/man1
+	cp savelog	$startdir/pkg/usr/bin
+	cp savelog.8	$startdir/pkg/usr/man/man8
+	cp tempfile	$startdir/pkg/usr/bin
+	cp tempfile.1	$startdir/pkg/usr/man/man1
+
+	echo "+=======+"
+	echo "| eject |"
+	echo "+=======+"
+
+	cd $startdir/src/eject
+
+	./configure --prefix=/usr
+	make || return 1
+
+	cp eject	$startdir/pkg/usr/bin
+	cp eject.1	$startdir/pkg/usr/man/man1
+	cp volname	$startdir/pkg/usr/bin
+	cp volname.1	$startdir/pkg/usr/man/man1
+
+	cp	-a			\
+		AUTHORS			\
+		COPYING			\
+		ChangeLog		\
+		INSTALL			\
+		NEWS			\
+		PORTING			\
+		PROBLEMS		\
+		README			\
+		TODO			\
+		eject-$EJECT.lsm	\
+	$startdir/pkg/usr/doc/eject-$EJECT
+
+	chmod 644 $startdir/pkg/usr/doc/eject-$EJECT/*
+
+	echo "+===========+"
+	echo "| fbset-$FBSET |"
+	echo "+===========+"
+
+	cd $startdir/src/fbset-$FBSET
+
+	make || return 1
+
+	cp fbset		$startdir/pkg/usr/sbin
+	cp etc/fb.modes.ATI	$startdir/pkg/etc/fb.modes
+	cp fb.modes.5		$startdir/pkg/usr/man/man5
+	cp fbset.8		$startdir/pkg/usr/man/man8
+
+	chmod 755 $startdir/pkg/usr/sbin
+
+	echo "+===========+"
+	echo "| lha-$LHA |"
+	echo "+===========+"
+
+	cd $startdir/src/lha-$LHA
+
+	patch -p1 < $startdir/src/lha-114i-sec.patch		|| return 1
+	patch -p1 < $startdir/src/lha-114i-symlink.patch	|| return 1
+
+	make || return 1
+
+	cp src/lha $startdir/pkg/usr/bin
+
+	echo "+========+"
+	echo "| ed-$ED |"
+	echo "+========+"
+
+	cd $startdir/src/ed-$ED
+
+	patch -p1 < $startdir/src/ed-$ED.mkstemp.diff || return 1
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+
+	cp ed $startdir/pkg/bin
+
+	cp ed.1		$startdir/pkg/usr/man/man1
+	cp ed.info	$startdir/pkg/usr/info
+
+	echo "+==========+"
+	echo "| compress |"
+	echo "+==========+"
+
+	cd $startdir/src/compress
+
+	patch -p0 < $startdir/src/compress.diff || return 1
+
+	make || return 1
+
+	cp compress	$startdir/pkg/usr/bin
+	cp compress.1	$startdir/pkg/usr/man/man1
+
+	echo '.so man1/compress.1.gz' > $startdir/pkg/usr/man/man1/uncompress.1
+
+	echo "+=========+"
+	echo "| banners |"
+	echo "+=========+"
+
+	cd $startdir/src/banners
+
+	make || return 1
+
+	cp bban		$startdir/pkg/usr/bin
+	cp sysvbanner	$startdir/pkg/usr/bin
+
+	echo "+===========+"
+	echo "| file-$FILE |"
+	echo "+===========+"
+
+	cd $startdir/src/file-$FILE
+
+	patch -p1 < $startdir/src/file.makefile.in.diff || return 1
+	patch -p1 < $startdir/src/file.quiet.diff	|| return 1
+	patch -p1 < $startdir/src/file.zisofs.diff	|| return 1
+	patch -p1 < $startdir/src/file.short.diff	|| return 1
+
+	cat $startdir/src/file.rzip.magic >> magic/Magdir/debian-additions
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--datadir=/etc		\
+		--enable-fsect-man5	\
+		--enable-shared=no	\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	rm $startdir/pkg/etc/file/magic.mgc $startdir/pkg/etc/file/magic.mime.mgc
+
+	cp	-a		\
+		LEGAL.NOTICE	\
+		README		\
+	$startdir/pkg/usr/doc/file-$FILE
+
+	chmod 644 $startdir/pkg/usr/doc/file-$FILE/*
+
+	cd $startdir/pkg/etc
+	ln -sf file/magic magic
+
+	echo "+============+"
+	echo "| dosfstools |"
+	echo "+============+"
+
+	cd $startdir/src/dosfstools-$DOSFS
+
+	patch -p1 < $startdir/src/dosfstools-2.10-kernel-2.6.diff || return 1
+
+	cp	-a		\
+		CHANGES		\
+		README.Atari	\
+		TODO		\
+	$startdir/pkg/usr/doc/dosfstools-$DOSFS
+
+	cd mkdosfs
+
+	cp	-a			\
+		ANNOUNCE		\
+		COPYING			\
+		ChangeLog		\
+		README			\
+		mkdosfs-ygg-0.3b.lsm	\
+	$startdir/pkg/usr/doc/dosfstools-$DOSFS/mkdosfs
+
+	cd ../dosfsck
+
+	cp	-a	\
+		CHANGES	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/dosfstools-$DOSFS/dosfsck
+
+	cd ..
+
+	make || return 1
+
+	cd mkdosfs
+
+	cp mkdosfs	$startdir/pkg/sbin
+	cp mkdosfs.8	$startdir/pkg/usr/man/man8
+
+	cd ../dosfsck
+
+	cp dosfsck $startdir/pkg/sbin
+	cp dosfsck.8 $startdir/pkg/usr/man/man8
+
+	echo "+=============+"
+	echo "| patch-2.5.4 |"
+	echo "+=============+"
+
+	cd $startdir/src/patch-2.5.4
+
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+	$startdir/pkg/usr/doc/patch-$PATCH
+
+	chmod 644 $startdir/pkg/usr/doc/patch-$PATCH/*
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+
+	cp patch	$startdir/pkg/usr/bin
+	cp patch.man	$startdir/pkg/usr/man/man1
+
+	echo "+===========+"
+	echo "| run-parts |"
+	echo "+===========+"
+
+	cp $startdir/src/run-parts $startdir/pkg/usr/bin
+
+	chmod 755 $startdir/pkg/usr/bin/run-parts
+
+	cp $startdir/src/run-parts.8 $startdir/pkg/usr/man/man8
+
+	echo "+=================+"
+	echo "| sharutils-$SHAR |"
+	echo "+=================+"
+
+	cd $startdir/src/sharutils-$SHAR
+
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		BACKLOG		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		README.OLD	\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/sharutils-$SHAR
+
+	chmod 644 $startdir/pkg/usr/doc/sharutils-$SHAR/*
+
+	./configure --disable-nls --prefix=/usr $CHOST
+	make || return 1
+
+	cd src
+
+	cp shar		$startdir/pkg/usr/bin
+	cp unshar	$startdir/pkg/usr/bin
+	cp uuencode	$startdir/pkg/usr/bin
+	cp uudecode	$startdir/pkg/usr/bin
+
+	cd ../doc
+
+	cp sharutils.info $startdir/pkg/usr/info
+
+	for page in		\
+		shar.1		\
+		unshar.1	\
+		uuencode.1
+	do
+		cp $startdir/src/$page $startdir/pkg/usr/man/man1
+	done
+
+	echo '.so man1/uuencode.1.gz' > $startdir/pkg/usr/man/man1/uudecode.1
+
+	cp $startdir/src/uuencode.5 $startdir/pkg/usr/man/man5
+
+	echo "+===============+"
+	echo "| splitvt-$SPLITVT |"
+	echo "+===============+"
+
+	cd $startdir/src/splitvt-$SPLITVT
+
+	patch -p1 < $startdir/src/splitvt.devpts.diff || return 1
+
+	./configure
+	make || return 1
+
+	cp splitvt	$startdir/pkg/usr/bin
+	cp splitvt.1	$startdir/pkg/usr/man/man1/splitvt.1
+
+	cp	-a		\
+		examples	\
+		ANNOUNCE	\
+		CHANGES		\
+		NOTES		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/splitvt-$SPLITVT
+
+	cd $startdir/pkg/usr/doc/splitvt-$SPLITVT
+	find . -type d | xargs chmod 755
+	find . -type f | xargs chmod 644
+
+	echo "+==========+"
+	echo "| time-$TIME |"
+	echo "+==========+"
+
+	cd $startdir/src/time-1.7
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+
+	cp time		$startdir/pkg/usr/bin
+	cp time.info	$startdir/pkg/usr/info
+
+	echo "+===============+"
+	echo "| todos/fromdos |"
+	echo "+===============+"
+
+	cd $startdir/src/todos
+
+	make || return 1
+
+	cp todos	$startdir/pkg/usr/bin
+	cp fromdos	$startdir/pkg/usr/bin
+	cp todos.1.gz	$startdir/pkg/usr/man/man1
+	cp fromdos.1.gz	$startdir/pkg/usr/man/man1
+
+	echo "+============+"
+	echo "| tree-$TREE |"
+	echo "+============+"
+
+	cd $startdir/src/tree-$TREE
+
+	make clean
+
+	make || return 1
+
+	cp tree $startdir/pkg/usr/bin
+
+	chmod 755 $startdir/pkg/usr/bin/tree
+
+	cp tree.1 $startdir/pkg/usr/man/man1
+
+	cp	-a		\
+		CHANGES		\
+		LICENSE		\
+		README		\
+	$startdir/pkg/usr/doc/tree-$TREE
+
+	chmod 644 $startdir/pkg/usr/doc/tree-$TREE/*
+
+	echo "+=============+"
+	echo "| unarj-$UNARJ |"
+	echo "+=============+"
+
+	cd $startdir/src/unarj-$UNARJ
+
+	make || return 1
+
+	cp unarj $startdir/pkg/usr/bin
+
+	echo "+============+"
+	echo "| which-$WHICH |"
+	echo "+============+"
+
+	cd $startdir/src/which-$WHICH
+
+	./configure --prefix=/usr
+	make || return 1
+
+	cp which	$startdir/pkg/bin
+	cp which.1	$startdir/pkg/usr/man/man1
+	cp which.info	$startdir/pkg/usr/info
+
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		EXAMPLES	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		README.alias	\
+	$startdir/pkg/usr/doc/which-$WHICH
+
+	echo "+==========+"
+	echo "| zoo-$ZOO |"
+	echo "+==========+"
+
+	cd $startdir/src/zoo-$ZOO
+
+	patch -p1 < $startdir/src/zoo-$ZOO.gcc33.patch	|| return 1
+	patch -p1 < $startdir/src/zoo-$ZOO.linux.diff	|| return 1
+	patch -p1 < $startdir/src/zoo_${ZOO}-17.diff	|| return 1
+
+	make linux || return 1
+
+	cp fiz $startdir/pkg/usr/bin
+	cp zoo $startdir/pkg/usr/bin
+
+	for page in fiz.1 zoo.1 ; do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+
+	cp -a $startdir/src/rescan-scsi-bus $startdir/pkg/sbin
+
+	chmod 755 $startdir/pkg/sbin/rescan-scsi-bus
+
+	cd $startdir/pkg/bin
+	ln -sf ed red
+	ln -sf /usr/bin/compress compress
+
+	cd $startdir/pkg/etc
+	ln -sf file/magic.mime magic.mime
+
+	cd $startdir/pkg/sbin
+	ln -sf /bin/true fsck.hpfs
+	ln -sf /bin/true fsck.msdos
+	ln -sf /bin/true fsck.umsdos
+	ln -sf mkdosfs mkfs.msdos
+
+	cd $startdir/pkg/usr/bin
+	chmod 755 *
+	ln -sf compress uncompress
+	ln -sf ../../bin/which which
+
+	cd $startdir/pkg/usr/lib
+	ln -sf /usr/sbin/makewhatis makewhatis
+
+	chmod 0644 $startdir/pkg/usr/man/man1/*
+	chmod 0644 $startdir/pkg/usr/info/*
+
+	rmdir $startdir/pkg/usr/man/man4
+
+	cp $startdir/src/diskcopy	$startdir/pkg/usr/bin
+	cp $startdir/src/xx		$startdir/pkg/usr/bin
+
+	cd $startdir/src/nologin
+	gcc $CFLAGS -o nologin nologin.c || return 1
+	cp nologin $startdir/pkg/sbin
+	cp nologin.8 $startdir/pkg/usr/man/man8
+
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/usr/bin $startdir/pkg/sbin $startdir/pkg/usr/sbin
+
+}

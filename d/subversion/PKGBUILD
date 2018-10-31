@@ -1,0 +1,105 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+
+pkgname=subversion
+pkgver=1.3.0
+pkgrel=1
+pkgdesc="Subversion is version control software aimed at being a compelling replacement for the Concurrent Versions System (CVS)."
+source=(http://subversion.tigris.org/downloads/$pkgname-$pkgver.tar.bz2	\
+	svnserve							)
+backup=('etc/rc.d/svnserve')
+depends=('glibc' 'heimdal' 'db' 'gdbm' 'libxml2' 'e2fsprogs' 'expat' 'openssl' 'zlib')
+md5sums=('a9e69910f648028a159f3886b254261b' \
+	 '711f156518c3621bd8ed5631d6249fb8' )
+url="http://subversion.tigris.org"
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.3.0, updated rc script to new style 2006.01.10
+##   rel6: removed the .packlist file 2005.12.22
+##   rel5: enabled svnserve, svnlook and svnadmin to use wrapper to set umask 002 2005.10.23
+##   rel4: added perl and python bindings 2005.10.15
+##   rel3: added rc script 2005.10.14
+##   rel2: fixed some build flags and docs 2005.09.16
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-shared		\
+		--disable-static	\
+		--with-pic		\
+		--with-ssl		\
+		--with-zlib
+
+	make		|| return 1
+	make swig-pl	|| return 1
+	make swig-py	|| return 1
+
+	make DESTDIR=$startdir/pkg install
+	make DESTDIR=$startdir/pkg install-swig-pl
+	make DESTDIR=$startdir/pkg install-swig-py
+	make DESTDIR=$startdir/pkg install-docs
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		BUGS			\
+		CHANGES			\
+		COMMITTERS		\
+		COPYING			\
+		ChangeLog.CVS		\
+		HACKING			\
+		INSTALL			\
+		README			\
+		STATUS			\
+		TRANSLATING		\
+		doc/misc-docs		\
+		doc/programmer		\
+		doc/translations	\
+		doc/user		\
+		notes			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+	rm -r $startdir/pkg/usr/share/doc
+	rm -r $startdir/pkg/usr/build
+	rm -r $startdir/pkg/usr/info
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/svnserve $startdir/pkg/etc/rc.d
+
+	cp -a $startdir/pkg/usr/share/man $startdir/pkg/usr/man
+	rm -r $startdir/pkg/usr/share/man
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 775 -exec chmod 755 {} \;
+
+	mkdir -p $startdir/pkg/usr/lib/python2.4
+	mv $startdir/pkg/usr/lib/svn-python $startdir/pkg/usr/lib/python2.4/site-packages
+
+	cd $startdir/pkg/usr/bin
+	for prog in svnserve svnlook svnadmin ; do
+		mv $prog $prog-real
+		echo '#!/bin/sh'		 > $prog
+		echo umask 002			>> $prog
+		echo /usr/bin/$prog-real '"$@"'	>> $prog
+		chmod +x $prog
+	done
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	find $startdir/pkg -name '.packlist' -exec rm {} \;
+
+}

@@ -1,0 +1,90 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=groff
+pkgver=1.19.2
+pkgrel=1
+pkgdesc="groff (document formatting system) The GNU groff package provides versions of troff, nroff, eqn, tbl, and  other Unix text-formatting utilities.  Groff is used to 'compile' man pages stored in groff/nroff format into a form which can be printed or displayed on the screen.  These man pages are stored in compressed form in the /usr/man/man? directories."
+url="http://www.gnu.org/software/groff/groff.html"
+source=(ftp://ftp.gnu.org/gnu/groff/groff-$pkgver.tar.gz	\
+	groff.docdir.diff.gz					\
+	groff.man.mdoc.local.gz					)
+md5sums=('f7c9cf2e4b9967d3af167d7c9fadaae4' \
+	 'ba5e10fc2529faf6a217259d9a37c7b3' \
+	 '29a964cea4e047214704761c6bc4460b' )
+depends=('glibc' 'gcc')
+
+#Todo:
+#None
+
+#Notes:
+#Though this package has a lot of X11 stuff, I am not making it
+#  a dependency since it is required for even the most minimal
+#  installations.
+#This version changes some output for man pages so that less
+#  now needs the -R to properly display escaped characters in
+#  man pages, /etc/profile has been updated to the following:
+#  export LESS="-MR"
+#Let me know if there are any other problems
+
+#Changelog:
+#rel1: upgraded to 1.19.2 2005.09.16
+#rel2: added a few patches from slackware 2005.06.24
+#rel1: Initial Rubix Release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/groff.docdir.diff || return 1
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install prefix=$startdir/pkg/usr
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUG-REPORT	\
+		COPYING		\
+		FDL		\
+		INSTALL		\
+		INSTALL.gen	\
+		MORE.STUFF	\
+		NEWS		\
+		PROBLEMS	\
+		PROJECTS	\
+		README		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.root $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm -r	$startdir/pkg/usr/doc/$pkgname-$pkgver/*.ps
+	rm -r	$startdir/pkg/usr/doc/$pkgname-$pkgver/examples
+	rm -r	$startdir/pkg/usr/doc/$pkgname-$pkgver/html
+	rm	$startdir/pkg/usr/info/dir
+
+	cat $startdir/src/groff.man.mdoc.local >> $startdir/pkg/usr/share/groff/site-tmac/man.local
+	cat $startdir/src/groff.man.mdoc.local >> $startdir/pkg/usr/share/groff/site-tmac/mdoc.local
+
+	cd $startdir/pkg/usr/bin
+	ln -sf eqn geqn
+	ln -sf indxbib gindxbib
+	ln -sf pic gpic
+	ln -sf refer grefer
+	ln -sf soelim gsoelim
+	ln -sf soelim zsoelim
+	ln -sf tbl gtbl
+	ln -sf troff gtroff
+	ln -sf lookbib glookbib
+	ln -sf nroff gnroff
+	ln -sf neqn gneqn
+
+	chown -R   root.bin  $startdir/pkg/usr/bin
+	find $startdir/pkg/usr/share -type f ! -perm 0644 -exec chmod 0644 {} \;
+
+}

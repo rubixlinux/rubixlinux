@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=hpijs
+pkgver=1.7.1
+pkgrel=1
+pkgdesc="hpijs (Hewlett-Packard inkjet drivers for Ghostscript) The Hewlett-Packard Inkjet Driver Project (HPIJS) is an add-on printer driver for GNU Ghostscript.  There are two parts to the IJS interface: the IJS client that resides in GNU Ghostscript, and the IJS server (in this package).  HPIJS runs as a server or co-process to GNU Ghostscript. The server is spawned automatically by GNU Ghostscript. There are currently more than 80 HP inkjet printer models supported with HPIJS."
+depends=('gcc' 'cups' 'foomatic-filters' )
+source=(http://dl.sourceforge.net/sourceforge/hpinkjet/$pkgname-$pkgver.tar.gz)
+url="http://hpinkjet.sourceforge.net/"
+md5sums=('cba40858e27204db0211c559bd606aaa')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+
+	rm $startdir/pkg/usr/bin/foomatic-rip
+	rm -r $startdir/pkg/usr/lib
+
+}

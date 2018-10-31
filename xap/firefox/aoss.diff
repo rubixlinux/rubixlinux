@@ -1,0 +1,19 @@
+--- mozilla/build/unix/run-mozilla.sh.orig	2005-10-23 22:15:29.000000000 -0600
++++ mozilla/build/unix/run-mozilla.sh	2005-10-23 22:15:36.000000000 -0600
+@@ -69,6 +69,7 @@
+ MOZ_APPRUNNER_NAME="./mozilla-bin"
+ MOZ_VIEWER_NAME="./viewer"
+ MOZ_PROGRAM=""
++MOZ_DSP="/usr/bin/aoss"
+ 
+ exitcode=0
+ #
+@@ -191,7 +192,7 @@
+ 	##
+ 	## Run the program
+ 	##
+-	"$prog" ${1+"$@"}
++	${MOZ_DSP} "$prog" ${1+"$@"}
+ 	exitcode=$?
+ 	if [ "$DEBUG_CORE_FILES" ]
+ 	then

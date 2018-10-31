@@ -1,0 +1,10 @@
+--- linux-2.6.15.3/drivers/acpi/ibm_acpi.c.orig	2006-02-07 21:34:56.000000000 -0700
++++ linux-2.6.15.3/drivers/acpi/ibm_acpi.c	2006-02-07 21:35:08.000000000 -0700
+@@ -1915,7 +1915,6 @@
+ 	/* ec is required because many other handles are relative to it */
+ 	IBM_HANDLE_INIT(ec);
+ 	if (!ec_handle) {
+-		printk(IBM_ERR "ec object not found\n");
+ 		return -ENODEV;
+ 	}
+ 

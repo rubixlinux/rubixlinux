@@ -1,0 +1,34 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=a52dec
+pkgver=0.7.4
+pkgrel=1
+pkgdesc="liba52 is a free library for decoding ATSC A/52 streams. It is released under the terms of the GPL license. The A/52 standard is used in a variety of applications, including digital television and DVD. It is also known as AC-3."
+depends=('glibc')
+source=(http://liba52.sourceforge.net/files/$pkgname-$pkgver.tar.gz)
+url="http://liba52.sourceforge.net"
+md5sums=('caa9f5bc44232dc8aeea773fea56be80')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HISTORY		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,17 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=phpeclipse
+pkgver=1.1.8
+pkgrel=1
+pkgdesc="phpeclipse - php support for the eclipse ide framework. some features are php parser, debugger, code formatter, outline view, templates."
+url="http://www.phpeclipse.de"
+depends=('eclipse')
+source=(http://dl.sourceforge.net/sourceforge/phpeclipse/net.sourceforge.phpeclipse_$pkgver.CVS-20051108.bin.dist.a.zip)
+md5sums=('d9a7251a300b013ca188bbb1e0258a07')
+
+build() {
+
+	mkdir -p $startdir/pkg/opt/eclipse
+	mv $startdir/src/features $startdir/src/plugins $startdir/pkg/opt/eclipse
+
+}

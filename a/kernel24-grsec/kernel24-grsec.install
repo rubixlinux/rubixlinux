@@ -1,0 +1,13 @@
+post_install() {
+	depmod -a -e -F boot/System.map-2.4.32-grsec 2.4.32-grsec > /dev/null 2>&1
+	ln -sf vmlinuz-2.4.32-grsec boot/vmlinuz > /dev/null 2>&1
+	ln -sf vmlinuz-2.4.32-grsec boot/vmlinuz-2.4-grsec > /dev/null 2>&1
+}
+
+post_upgrade() {
+	post_install $1
+}
+
+op=$1
+shift
+$op $*

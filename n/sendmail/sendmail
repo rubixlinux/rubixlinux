@@ -1,0 +1,33 @@
+#!/bin/bash
+
+MTAOPTS="-L sm-mta -bd -q25m"
+MSPOPTS="-L sm-msp-queue -Ac -q25m"
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/sendmail
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG $MTAOPTS
+		if [ $? -eq 0 ]; then
+			stat_busy "$SCRIPT: starting msp queue runner"
+			$PROG $MSPOPTS
+			stat_done
+		fi
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+		;;
+esac

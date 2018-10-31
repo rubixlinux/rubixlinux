@@ -1,0 +1,11 @@
+--- asterisk-1.2.0/Makefile.orig	2005-11-21 21:18:43.000000000 -0700
++++ asterisk-1.2.0/Makefile	2005-11-21 21:19:38.000000000 -0700
+@@ -115,7 +115,7 @@
+   ASTCONFPATH=$(ASTETCDIR)/asterisk.conf
+   ASTBINDIR=$(INSTALL_PREFIX)/usr/bin
+   ASTSBINDIR=$(INSTALL_PREFIX)/usr/sbin
+-  ASTVARRUNDIR=$(INSTALL_PREFIX)/var/run
++  ASTVARRUNDIR=$(INSTALL_PREFIX)/var/run/asterisk
+   ASTMANDIR=$(INSTALL_PREFIX)/usr/share/man
+   MODULES_DIR=$(ASTLIBDIR)/modules
+   AGI_DIR=$(ASTVARLIBDIR)/agi-bin

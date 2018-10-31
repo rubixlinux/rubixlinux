@@ -1,0 +1,105 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+ARTS=0.7.1
+
+pkgname=xmms
+pkgver=1.2.10
+pkgrel=4
+pkgdesc="xmms (X Multimedia System) XMMS is the X Multimedia System.  It is used to play audio and other kinds of media files.  By default XMMS can play MPEG audio, Ogg Vorbis, RIFF wav, most module formats, and a few other formats.  XMMS can be extended through plugins to play a number of other audio and video formats."
+depends=('glibc' 'libmikmod' 'glib' 'audiofile' 'esound' 'libvorbis' 'arts' 'x11' 'glib2' 'libogg' 'zlib' 'gtk+' 'alsa-lib')
+url="http://www.xmms.org"
+source=(http://www.xmms.org/files/1.2.x/$pkgname-$pkgver.tar.bz2		\
+	http://havardk.xmms.org/plugins/arts_output/arts_output-$ARTS.tar.gz	\
+	alsa_pause_fix.diff.gz							)
+md5sums=('03a85cfc5e1877a2e1f7be4fa1d3f63c' \
+	 '6d028255ed86e37211bbda0122c14483' \
+	 'e83c68d1b30066764314c227ef75f950' )
+
+#Todo:
+#None
+
+#Notes:
+#This is a 2 step build:
+#  1. comment out build_arts_output, build, install
+#  2. uncomment build_arts_output, build, install
+
+#Changelog:
+#rel4: Added patch to fix alsa pause bug (from Slackware) 2005.08.19
+#rel3: Added patch to fix header 2005.02.19
+#rel2: Rebuild without reference to libGL.la 2005.02.19
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/alsa_pause_fix.diff || return 1
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure				\
+		--prefix=/usr			\
+		--localstatedir=/var/lib	\
+		--disable-static		\
+		--enable-simd			\
+		--with-ipv6			\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		FAQ		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	build_arts_output
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}
+
+build_arts_output() {
+
+	cd $startdir/src/arts_output-$ARTS
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/arts_output-$ARTS
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/arts_output-$ARTS
+
+}

@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=wget
+pkgver=1.10.2
+pkgrel=1
+pkgdesc="wget (a non-interactive network retriever) GNU Wget is a free network utility to retrieve files from the World Wide Web using HTTP and FTP, the two most widely used Internet protocols.  It works non-interactively, thus enabling work in the background after having logged off. The author of Wget is Hrvoje Niksic <hniksic@srce.hr>."
+url="http://www.gnu.org/software/wget/wget.html"
+depends=('glibc' 'openssl')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('795fefbb7099f93e2d346b026785c4b8')
+backup=('etc/wgetrc')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 1.10.2 2005.10.31
+#rel1: Upgraded to 1.10.1 2005.09.16
+#rel1: Upgraded to 1.10 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		MAILING-LIST	\
+		NEWS		\
+		PATCHES		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

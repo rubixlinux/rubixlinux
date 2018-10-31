@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=aspell
+pkgver=0.60.2
+pkgrel=1
+pkgdesc="aspell (spell checker) GNU Aspell is a spell checker designed to eventually replace Ispell. It can either be used as a library or as an independent spell checker."
+depends=('glibc' 'gpm' 'gcc' 'ncurses')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://www.aspell.net"
+md5sums=('d067596a1d9029d127d85e5040bab0ab')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

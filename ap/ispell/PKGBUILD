@@ -1,0 +1,68 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=ispell
+pkgver=3.2.06
+pkgrel=1
+pkgdesc="ispell (spelling checker) Ispell is a fast screen-oriented spelling checker that shows you your errors in the context of the original file, and suggests possible corrections when it can figure them out.  Compared to UNIX spell, it is faster and much easier to use.  Ispell can also handle languages other than English.  Ispell has a long history, and many people have contributed to the current version -- some of the major contributors include R. E. Gorin, Pace Willisson, Walt Buehring, and Geoff Kuenning."
+url="http://www.gnu.org/software/ispell/ispell.html"
+depends=('libtermcap')
+source=(http://fmg-www.cs.ucla.edu/geoff/tars/$pkgname-$pkgver.tar.gz	\
+	$pkgname.diff.gz						)
+md5sums=('d434e1aef1a815294d5012c60c4c414a' \
+	 '1fcb560641558d02b0a3c317530a2119' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+	patch -p1 < $startdir/src/$pkgname.diff
+
+	make
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp	-a				\
+		buildhash			\
+		deformatters/deformat-c		\
+		deformatters/deformat-sh	\
+		findaffix			\
+		icombine			\
+		ijoin				\
+		ispell				\
+		munchlist			\
+		tryaffix			\
+	$startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/lib/$pkgname
+	cp	-a					\
+		languages/american/americanmed.hash	\
+		languages/english/english.aff		\
+	$startdir/pkg/usr/lib/$pkgname
+	chmod 644 $startdir/pkg/usr/lib/$pkgname/*
+
+	ln -s americanmed.hash $startdir/pkg/usr/lib/$pkgname/american.hash
+	ln -s americanmed.hash $startdir/pkg/usr/lib/$pkgname/english.hash
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp -a ispell.1 $startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/man/man4
+	cp -a ispell.4				$startdir/pkg/usr/man/man4
+	cp -a languages/english/english.4l	$startdir/pkg/usr/man/man4/english.4
+	chmod 644 $startdir/pkg/usr/man/man4/*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		Contributors	\
+		Magiclines	\
+		README		\
+		WISHES		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	echo ".so man1/ispell.1" > $startdir/pkg/usr/man/man1/buildhash.1
+	echo ".so man1/ispell.1" > $startdir/pkg/usr/man/man1/findaffix.1
+	echo ".so man1/ispell.1" > $startdir/pkg/usr/man/man1/munchlist.1
+	echo ".so man1/ispell.1" > $startdir/pkg/usr/man/man1/tryaffix.1
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

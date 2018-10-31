@@ -1,0 +1,75 @@
+#!/bin/bash
+
+## set to 'yes' any of following if you want them to be started
+##
+## If you are the master server for the NIS domain, you must run ypserv to
+##   service clients on the domain.
+##
+## If you are the master server for the NIS domain, you must also run
+##   rpc.yppasswdd, which is the RPC server that lets users change their
+##   passwords. Change PASSWDFLAGS to add flags to yppasswd
+##
+## If you have NIS slave servers, you might also want to start up
+##   rpc.ypxfrd, which transfers changes in the NIS domain to slave servers.
+##   Alternatively, rpc.ypxfrd can be run out of inetd.
+##
+## If you are a NIS client, all you need to do is run ypbind, which will
+##   broadcast across the network to find a server.  Your NIS server might
+##   also be a client.
+
+YPSERV=yes
+YPPASSWD=yes
+YPXFRD=no
+YPBIND=yes
+
+#PASSWDFLAGS="-e chsh -e chfn"
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		if [ -r /etc/defaultdomain ]; then
+			stat_busy "setting nisdomainname"
+			nisdomainname `cat /etc/defaultdomain`
+			stat_done
+		fi
+		if [ "$YPSERV" == "yes" ]; then
+			start_daemon ypserv /usr/sbin/ypserv
+		fi
+		if [ "$YPPASSWD" == "yes" ]; then
+			start_daemon yppasswd /usr/sbin/rpc.yppasswdd $PASSWDFLAGS
+		fi
+		if [ "$YPXFRD" == "yes" ]; then
+			start_daemon ypxfrd /usr/sbin/rpc.ypxfrd
+		fi
+		if [ "$YPBIND" == "yes" -a -d /var/yp ]; then
+			start_daemon ypbind /usr/sbin/ypbind -broadcast
+		fi
+		;;
+	stop)
+		if [ "$YPBIND" == "yes" -a -d /var/yp ]; then
+			stop_daemon ypbind /usr/sbin/ypbind
+		fi
+		if [ "$YPXFRD" == "yes" -a -d /var/yp ]; then
+			stop_daemon ypxfrd /usr/sbin/rpc.ypxfrd
+		fi
+		if [ "$YPPASSWD" == "yes" ]; then
+			stop_daemon yppasswd /usr/sbin/rpc.yppasswdd
+		fi
+		if [ "$YPSERV" == "yes" ]; then
+			stop_daemon ypserv /usr/sbin/ypserv
+		fi
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status ypserv /usr/sbin/ypserv
+		daemon_status yppasswd /usr/sbin/rpc.yppasswdd
+		daemon_status ypxfrd /usr/sbin/rpc.ypxfrd
+		daemon_status ypbind /usr/sbin/ypbind
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

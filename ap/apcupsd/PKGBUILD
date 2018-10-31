@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=apcupsd
+pkgver=3.12.1
+pkgrel=1
+pkgdesc="Apcupsd is a program for monitoring UPSes and performing a graceful computer shutdown in the event of a power failure."
+url="http://www.apcupsd.com"
+depends=('nail')
+backup=('etc/apcupsd/apcupsd.conf'	\
+	'etc/apcupsd/hosts.conf'	\
+	'etc/apcupsd/multimon.conf'	)
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname								)
+md5sums=('d2e710176430a28d624500e145d9ffe3' \
+	 '2a3e9abbca7e59c3a7bd68d4842b46bb' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 3.12.1 2006.01.10
+##   rel1: Upgraded to 3.10.17a 2005.05.12
+##   rel1: Initial Rubix release 2004.04.14
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure					\
+		--mandir=/usr/man			\
+		--enable-cgi				\
+		--with-cgi-bin=/etc/$pkgname/cgi	\
+		--enable-usb				\
+		--enable-net				\
+		--enable-nis				\
+		--enable-powerflute			\
+		--enable-nls
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/sbin
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		COPYING		\
+		ChangeLog	\
+		ChangeLog.old	\
+		DISCLAIMER	\
+		Developers	\
+		INSTALL		\
+		ReleaseNotes	\
+		VERIFYING	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+}

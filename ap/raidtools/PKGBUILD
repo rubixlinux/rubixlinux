@@ -1,0 +1,40 @@
+# Maintainer: Joshua Rubin <joshau@rubix-os.org>
+
+pkgname=raidtools
+pkgver=1.00.3
+pkgrel=1
+pkgdesc="raidtools (software RAID tools) The raidtools package includes the system utilities you need to set up and maintain a software RAID device (using two or more disk drives in combination for fault tolerance and improved performance) on a Linux system."
+depends=('glibc')
+source=(http://people.redhat.com/mingo/$pkgname/$pkgname-$pkgver.tar.gz	\
+	gcc34.diff.gz							)
+md5sums=('cb41f8093cd7381ee07adb2951cc53fa' \
+	 '588976e5c0f30c158c9eb86a2dbe8834' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/gcc34.diff
+
+	./configure --prefix=/usr
+	make || return 1
+	make ROOTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		README			\
+		Software-RAID.HOWTO	\
+		*.sample		\
+		raidreconf-HOWTO	\
+		*.txt summary		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	rm -r $startdir/pkg/dev
+
+	chown -R root.bin $startdir/pkg/sbin
+
+}

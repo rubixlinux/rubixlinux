@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=device-mapper
+pkgver=1.01.05
+pkgrel=1
+pkgdesc="device-mapper (device-mapper for logical volume management) The goal of device-mapper is to support volume management.  The driver enables the definition of new block devices composed of ranges of sectors of existing devices.  This can be used to define disk partitions or logical volumes. device-mapper is required by LVM2, the Logical Volume Manager."
+url="http://www.sistina.com/products_lvm.htm"
+depends=('glibc')
+source=(ftp://sources.redhat.com/pub/dm/$pkgname.$pkgver.tgz)
+md5sums=('074cf116cc2c7194f2d100bc5f743833')
+
+## Todo:
+##   None
+
+## Notes:
+##   Only compiled for the 2.6 kernel
+
+## Changelog:
+##   rel1: upgraded to 1.01.05 2005.11.17
+##   rel1: initial rubix release 1.01.04 2005.09.19
+
+build() {
+
+	cd $startdir/src/$pkgname.$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --enable-static_link
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname.$pkgver
+	cp	-a		\
+		COPYING		\
+		COPYING.LIB	\
+		INSTALL		\
+		INTRO		\
+		README		\
+		VERSION		\
+		WHATS_NEW	\
+	$startdir/pkg/usr/doc/$pkgname.$pkgver
+
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+}

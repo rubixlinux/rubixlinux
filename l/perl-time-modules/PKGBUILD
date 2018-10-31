@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-time-modules
+pkgver=2003.1126
+pkgrel=3
+pkgdesc="This package contains the following perl modules: Time::CTime.pm ctime, strftime, and asctime ; Time::JulianDay.pm Julian Day conversions ; Time::ParseDate.pm Reverses strftime and also understands relative times ; Time::Timezone.pm ; Time::DaysInMonth.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/M/MU/MUIR/modules/Time-modules-$pkgver.tar.gz)
+md5sums=('b3bda3a2935c2d7d099c8001f583c4cb')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel3: fixed man page location 2005.08.29
+#rel2: Rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release 2005.05.20
+
+build() {
+
+	cd $startdir/src/Time-modules-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Time-modules-$pkgver
+	cp	-a		\
+		CHANGELOG	\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Time-modules-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/Time-modules-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

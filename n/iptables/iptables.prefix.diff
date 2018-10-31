@@ -1,0 +1,11 @@
+--- ./Makefile.orig	2002-08-29 12:37:47.000000000 -0700
++++ ./Makefile	2002-08-29 12:37:56.000000000 -0700
+@@ -14,7 +14,7 @@
+ IPTABLES_VERSION:=1.2.7a
+ OLD_IPTABLES_VERSION:=1.2.6a
+ 
+-PREFIX:=/usr/local
++PREFIX:=/usr
+ LIBDIR:=$(PREFIX)/lib
+ BINDIR:=$(PREFIX)/sbin
+ MANDIR:=$(PREFIX)/man

@@ -1,0 +1,124 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+LRZSZ=990823
+LRZSZV=0.12.21
+
+pkgname=minicom
+pkgver=2.1
+pkgrel=1
+pkgdesc="minicom (communications package) Minicom - a full featured menu-driven communications package similar to the DOS program 'Telix'.  Also includes sz/rz - utilities used to upload and download files using the Zmodem protocol"
+depends=('ncurses')
+backup=('etc/minicom.users'	\
+	'etc/minirc.dfl'	)
+source=(http://alioth.debian.org/download.php/123/$pkgname-$pkgver.tar.gz	\
+	lrzsz_0.12.21-4.diff.gz							\
+	lrzsz_0.12.21.orig.tar.gz						\
+	minicom.users.gz							\
+	minirc.dfl.gz								\
+	lrzsz.makefile.diff.gz							)
+url="http://alioth.debian.org/projects/minicom"
+md5sums=('1c8f3b247c38fb16c3c2170df9fc102a' \
+	 '65fc4a416e88e2356c76308019371b34' \
+	 '4213d6395af60768c8ba2627189cc356' \
+	 '09ed3fbb2dc320ccb23fee95b2173517' \
+	 '5b25dcfee568fa31f823e028f15d4506' \
+	 'c55a18f5fe69f507759558cf396d104c' )
+
+#Todo:
+#depends
+#makedepends
+#get lrzszv working
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/etc
+	cp $startdir/src/minicom.users	$startdir/pkg/etc
+	cp $startdir/src/minirc.dfl	$startdir/pkg/etc
+
+	chown -R root:bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		FILE_ID.DIZ	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+		doc		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/lrzsz-$LRZSZ
+	patch -p1 < $startdir/src/lrzsz_0.12.21-4.diff
+
+	./configure --prefix=/usr $CHOST
+	patch -p1 < $startdir/src/lrzsz.makefile.diff
+	make || return 1
+
+	cd src
+	cp lrz	$startdir/pkg/usr/bin
+	cp lsz	$startdir/pkg/usr/bin
+	chown -R root.bin $startdir/pkg/usr/bin
+	chmod 755 $startdir/pkg/usr/bin/l*z
+
+	cd ../man
+	for page in lrz.1 lsz.1 ; do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+	echo '.so man1/lrz.1' > $startdir/pkg/usr/man/man1/rz.1
+	echo '.so man1/lsz.1' > $startdir/pkg/usr/man/man1/sz.1
+
+	cd ../po
+	mkdir -p $startdir/pkg/usr/share/locale/de/LC_MESSAGES
+	cp de.gmo $startdir/pkg/usr/share/locale/de/LC_MESSAGES/lrzsz.mo
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/lrzsz-$LRZSZV
+	cp	-a			\
+		ABOUT-NLS		\
+		AUTHORS			\
+		COMPATABILITY		\
+		COPYING			\
+		INSTALL			\
+		NEWS			\
+		README-alpha 		\
+		README.cvs		\
+		README.gettext		\
+		README.isdn4linux	\
+		README.systems		\
+		README.tests		\
+		THANKS			\
+		TODO			\
+	$startdir/pkg/usr/doc/lrzsz-$LRZSZV
+
+	cd $startdir/pkg/usr/bin
+	ln -sf  rz rx
+	ln -sf  rz rb
+	ln -sf  sz sb
+	ln -sf  sz sx
+	ln -sf lrz rz
+	ln -sf lrz lrb
+	ln -sf lrz lrx
+	ln -sf lsz sz
+	ln -sf lsz lsb
+	ln -sf lsz lrx
+
+}

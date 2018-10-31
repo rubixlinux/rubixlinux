@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-http-cache-transparent
+pkgver=0.6
+pkgrel=1
+pkgdesc="HTTP::Cache::Transparent - Cache the result of http get-requests persistently."
+url="http://search.cpan.org/~mattiash/HTTP-Cache-Transparent-$pkgver/lib/HTTP/Cache/Transparent.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/M/MA/MATTIASH/HTTP-Cache-Transparent-$pkgver.tar.gz)
+md5sums=('49208c9cd61f8f687c5f5031845c5de2')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 0.6 and rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/HTTP-Cache-Transparent-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/HTTP-Cache-Transparent-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/HTTP-Cache-Transparent-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/HTTP-Cache-Transparent-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

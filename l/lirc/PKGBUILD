@@ -1,0 +1,109 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=lirc
+pkgver=0.8.0
+pkgrel=3
+pkgdesc="LIRC is a package that allows you to decode and send infra-red signals of many (but not all) commonly used remote controls."
+depends=('glibc' 'x11' 'libusb' 'alsa-lib')
+backup=('etc/rc.d/lircd'	\
+	'etc/rc.d/lircmd'	)
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	lircd									\
+	lircmd									)
+md5sums=('0bf28bf82c7766a462f90927b6bf3af1' \
+	 '95fee5481e37fd8fde0d6e412b6ee124' \
+	 'e4ad1e17411f71d2e1458c73130e954e' )
+url="http://www.lirc.org"
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##  None
+
+## Notes:
+##  The parallel driver is not SMP safe
+##  The mceusb2 driver only works for 2.6 kernels
+
+## Changelog:
+##   rel3: rebuilt for 2.6.15.5 2006.03.03
+##   rel2: rebuilt for 2.6.15.4 2006.02.12
+##   rel1: upgraded to 0.8.0, built for 2.6.15.3, 2.4.32, 2.4.32-grsec 2006.02.07
+##   rel2: rebuilt for 2.6.15.2 2006.01.31
+##   rel1: upgraded to 0.8.0pre4, built for 2.6.15.1 2006.01.20
+##   rel2: upgraded to 0.8.0pre3, built for kernel 2.6.15 (rel1 was only used internally) 2006.01.10
+##   rel1: upgraded to 0.8.0pre1, and built for kernel 2.6.14.2-Rubix 2005.11.12
+##   rel1: upgraded to 0.7.3pre1, and built for kernel 2.6.14 2005.10.27
+##         had to patch to get rid of urb_async_unlink since it is gone for kernel >= 2.6.14
+##         did not build parallel (not SMP safe) or bt829 (build problems)
+##   rel1: upgraded to 0.7.2 and kernel 2.6.13 (removed kernel 2.4 support) 2005.09.01
+##   rel5: rebuilt for ivtv and bttv compat 2005.07.27
+##   rel4: rebuilt for kernel 2.6.12.1 2005.06.23
+##   rel3: rebuilt for rebuilt kernel26 2006.06.22
+##   rel2: upgraded to kernels 2.4.31, 2.4.31-grsec, and 2.6.12
+##   rel1: Initial Rubix Release 2005.05.27
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	for kernel in	\
+		$vver24	\
+		$gver24	\
+		$vver26
+	do
+		makekernel $kernel || return 1
+	done
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/{lircd,lircmd} $startdir/pkg/etc/rc.d
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ANNOUNCE	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+		remotes		\
+		doc/html	\
+		doc/images	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type d -exec chmod 755 {} \;
+
+	find $startdir/pkg/lib/modules -type f -name *.o  -exec gzip {} \;
+	find $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	rm -r $startdir/pkg/dev
+
+}
+
+makekernel() {
+
+	./configure					\
+		--prefix=/usr				\
+		--with-driver=all			\
+		--with-kerneldir=/usr/src/linux-$1	\
+		--with-moduledir=/lib/modules/$1/misc	\
+		--with-irq=4				\
+		--with-port=0x3f8			\
+		$CHOST
+	sed -i s/lirc_parallel//g drivers/Makefile || return 1
+	if [ "$1" == "$vver24" -o "$1" == "$gver24" ]; then
+		sed -i s/lirc_mceusb2//g drivers/Makefile || return 1
+	fi
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	make clean
+
+}

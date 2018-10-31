@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=popt
+pkgver=1.7
+pkgrel=1
+pkgdesc="popt (command line parsing library) Popt is a C library for parsing command line parameters.  Popt was heavily influenced by the getopt() and getopt_long() functions, but it improves on them by allowing more powerful argument expansion.  Popt can parse arbitrary argv[] style arrays and automatically set variables based on command line arguments.  Popt allows command line arguments to be aliased via configuration files and includes utility functions for parsing arbitrary strings into argv[] arrays using shell-like rules."
+depends=('glibc' 'gettext')
+source=(ftp://ftp.rpm.org/pub/rpm/dist/rpm-4.1.x/$pkgname-$pkgver.tar.gz)
+md5sums=('5988e7aeb0ae4dac8d83561265984cc9')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

@@ -1,0 +1,36 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gnet
+pkgver=2.0.7
+pkgrel=1
+pkgdesc="GNet is a simple object-oriented network library.  It is written in C and built upon GLib.  It is intended to be small, fast, easy-to-use, and easy to port. The GNet library is used by gnomeicu and Pan."
+url="http://www.gnetlibrary.org"
+depends=('glib2')
+source=(http://gnetlibrary.org/src/$pkgname-$pkgver.tar.gz)
+md5sums=('3a7a40411775688fe4c42141ab007048')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		BUGS		\
+		COPYING		\
+		HACKING		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/share/gtk-doc/html/gnet $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+	rm -r $startdir/pkg/usr/share/gtk-doc
+
+}

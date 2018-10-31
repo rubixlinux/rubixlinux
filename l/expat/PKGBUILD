@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=expat
+pkgver=1.95.8
+pkgrel=1
+pkgdesc="expat This is Expat, a C library for parsing XML, written by James Clark. Expat is a stream-oriented XML parser used by Python, GNOME, Xft2, and other things."
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://expat.sourceforge.net"
+md5sums=('aff487543845a82fe262e6e2922b4c8e')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make
+	make prefix=$startdir/pkg/usr install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a 			\
+		COPYING			\
+		Changes			\
+		README			\
+		doc/reference.html	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

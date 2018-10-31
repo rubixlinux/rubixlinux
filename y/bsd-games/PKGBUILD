@@ -1,0 +1,113 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=bsd-games
+pkgver=2.13
+pkgrel=1
+pkgdesc="bsd-games (Classic BSD text games collection) Games that go in /usr/games:  adventure arithmetic atc backgammon banner battlestar bcd caesar canfield cfscores countmail cribbage factor fish fortune gomoku hangman hunt mille monop morse number phantasia pig pom ppt primes quiz rain random robots rot13 sail snake snscore teachgammon trek wargames worm worms wump Adds a call to 'fortune' to /etc/profile.d/ so that users will get a fortune message when they log in."
+depends=('ncurses')
+source=(http://stuff.mit.edu/afs/athena/contrib/games/src/$pkgname-$pkgver.tar.gz	\
+	$pkgname.config.params.diff.gz							\
+	$pkgname.fortlen.diff.gz							\
+	$pkgname.fortunepath.diff.gz							\
+	$pkgname.ospeed.diff.gz								\
+	$pkgname.phantasia.diff.gz							\
+	$pkgname.strfile.8.diff.gz							\
+	$pkgname-login-fortune.csh.gz							\
+	$pkgname-login-fortune.sh.gz							\
+	fortunes-linuxcookie.tar.gz							\
+	fortunes-o.tar.gz								\
+	hangman-words.gz								)
+md5sums=('cf33f61ce1f0c09a7473ac26a4a0a6ec' \
+	 '63fd9e017d8df54922d260b1be65aa5e' \
+	 '2425e322c5757f0610e6e431e867006c' \
+	 '17deafbaad3fa6c884c0fd45ac53bfb0' \
+	 '199366b10d5a885eedc7383af7012897' \
+	 '07e1d0e3a80ec54fc52a7e266828e3de' \
+	 '8a7871f68adc93e7e1908d1ca25408c0' \
+	 '2c55ac6036d2d06c0098eaba545ea001' \
+	 '12908ed35317f00e3d09518f5d95ed65' \
+	 'bfaa63ebf58a067b8b94a1bbea8b1084' \
+	 '0f8566cf0e1645b608767f3060272f0e' \
+	 '5e2a8277f56ed8fc404f4525e2bfe656' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.config.params.diff
+
+	./configure
+
+	patch -p1 < $startdir/src/$pkgname.ospeed.diff
+	patch -p1 < $startdir/src/$pkgname.fortunepath.diff
+	patch -p1 < $startdir/src/$pkgname.fortlen.diff
+	patch -p1 < $startdir/src/$pkgname.strfile.8.diff
+	patch -p1 < $startdir/src/$pkgname.phantasia.diff
+
+	cp fortune/datfiles/unamerican-o.real fortune/datfiles/unamerican-o.fake
+	cp fortune/datfiles/unamerican-o.real unamerican-o
+
+	cd fortune/datfiles
+	strfile unamerican-o unamerican-o.dat
+	cd ../..
+
+	make
+	make install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		BUGS		\
+		INSTALL		\
+		NEWS		\
+		PACKAGING	\
+		README		\
+		SECURITY	\
+		THANKS		\
+		TODO		\
+		YEAR2000	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a fortune/README	$startdir/pkg/usr/doc/$pkgname-$pkgver/README.fortune
+	cp -a hunt/README	$startdir/pkg/usr/doc/$pkgname-$pkgver/README.hunt
+	cp -a hunt/README.linux	$startdir/pkg/usr/doc/$pkgname-$pkgver/README.linux.hunt
+	cp -a phantasia/README	$startdir/pkg/usr/doc/$pkgname-$pkgver/README.phantasia
+	cp -a trek/README.linux $startdir/pkg/usr/doc/$pkgname-$pkgver/README.linux.trek
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/pkg
+
+	mkdir -p etc/profile.d
+	cp $startdir/src/$pkgname-login-fortune.sh  etc/profile.d
+	cp $startdir/src/$pkgname-login-fortune.csh etc/profile.d
+	chmod 755 etc/profile.d/$pkgname-login-fortune.*
+
+	tar xzf $startdir/src/fortunes-linuxcookie.tar.gz
+
+	rm $startdir/pkg/usr/share/games/fortunes/limerick
+	rm $startdir/pkg/usr/share/games/fortunes/limerick.dat
+
+	tar xzf $startdir/src/fortunes-o.tar.gz
+
+	cd $startdir/pkg/usr/share/games/fortunes
+	for file in *.dat ; do
+		$startdir/pkg/usr/bin/strfile -r `basename $file .dat`
+	done 
+	for file in *-o.dat ; do
+		$startdir/pkg/usr/bin/strfile -r -x `basename $file .dat`
+	done
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/share/dict
+	cp $startdir/src/hangman-words $startdir/pkg/usr/share/dict/words
+
+	chmod 644 $startdir/pkg/var/lib/bsdgames/phantasia/characs
+
+	for file in $startdir/pkg/var/lib/bsdgames/phantasia/*; do
+		rm $file
+		touch $file
+	done
+
+}

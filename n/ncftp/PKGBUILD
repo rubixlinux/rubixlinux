@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=ncftp
+pkgver=3.1.9
+pkgrel=1
+pkgdesc="ncftp NcFTP is a user interface to the Internet standard File Transfer Protocol.  This program allows a user to transfer files to and from a remote network site, and offers additional features that are not found in the standard interface for ftp."
+depends=('ncurses')
+source=(ftp://ftp.ncftp.com/ncftp/$pkgname-$pkgver-src.tar.bz2)
+url="http://www.ncftp.com"
+md5sums=('66cf8dacec848eb11a70632fe9f21807')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make
+
+	mkdir -p $startdir/pkg/usr/bin
+	cd bin
+	for file in		\
+		ncftp		\
+		ncftpbatch	\
+		ncftpbookmarks	\
+		ncftpget	\
+		ncftpls		\
+		ncftpput
+	do
+		cp $file $startdir/pkg/usr/bin
+	done
+
+	cd $startdir/pkg/usr/bin
+	ln -s ncftpbatch ncftpspooler
+	chmod 755 *
+	chown -R root.bin .
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cd $startdir/src/$pkgname-$pkgver/doc/man
+	for file in *.1 ; do
+		cp $file $startdir/pkg/usr/man/man1
+	done
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a doc/* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/doc/$pkgname-$pkgver/man $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+
+}

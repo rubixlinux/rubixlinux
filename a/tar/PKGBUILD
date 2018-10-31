@@ -1,0 +1,91 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=tar
+pkgver=1.15.1
+pkgrel=1
+pkgdesc="tar (archiving utility) This is the GNU version of tar, an archiving program designed to store and extract files from an archive file known as a tarfile.  A tarfile may be made on a tape drive, however, it is also common to write a tarfile to a normal file. Slackware's package system uses tarfiles compressed with GNU gzip."
+url="http://www.gnu.org/software/tar/tar.html"
+depends=('glibc' 'bash')
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz	\
+	tar.nolonezero.diff.gz						\
+	tar.1.gz							\
+	rmt.8.gz							)
+md5sums=('d87021366fe6488e9dc398fcdcb6ed7d' \
+	 'd3edb7960065cf2b228673f3440ec737' \
+	 '97f0b1760ff21477496c427d5070ad4b' \
+	 '633b08b59807f208a1ef6db5cf792828' )
+
+#Todo:
+#depends
+#makedepends
+#verify source
+
+#Notes:
+#tar 1.13 was needed by slackware package utils, but not by rubix so it is not included
+#the nolonezero patch disables a warningabout lone zero blocks, breaks POSIX compliance,
+#  but increases compatability with most tar implementations
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/bin
+	mkdir -p $startdir/pkg/etc
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/tar.nolonezero.diff
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-backup-scripts	\
+		$CHOST
+
+	make
+
+	make install DESTDIR=$startdir/pkg
+
+	mv $startdir/pkg/usr/bin/tar $startdir/pkg/bin
+
+	rm $startdir/pkg/usr/info/dir
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		NEWS		\
+		PORTS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp $startdir/src/tar.1 $startdir/pkg/usr/man/man1
+	cp $startdir/src/rmt.8 $startdir/pkg/usr/man/man8
+
+	cd $startdir/pkg/usr/bin
+
+	ln -sf /bin/$pkgname .
+
+	cd $startdir/pkg/bin
+
+	ln -sf $pkgname $pkgname-$pkgver
+
+	cd $startdir/pkg/sbin
+
+	ln -sf /usr/libexec/rmt .
+
+	cd $startdir/pkg/etc
+
+	ln -sf /usr/libexec/rmt .
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/bin $startdir/pkg/sbin $startdir/pkg/usr/sbin
+
+}

@@ -1,0 +1,11 @@
+--- ./src/readelf.h.orig	2003-03-23 13:16:26.000000000 -0800
++++ ./src/readelf.h	2004-02-25 15:03:12.000000000 -0800
+@@ -226,7 +226,7 @@
+ #define NT_FREEBSD_VERSION	1
+ #define NT_OPENBSD_VERSION	1
+ /* GNU executables (name = "GNU") */
+-#define NT_GNU_VERSION		1
++#define NT_GNU_VERSION		0
+ 
+ /* GNU OS tags */
+ #define GNU_OS_LINUX	0

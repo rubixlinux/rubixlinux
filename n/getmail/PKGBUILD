@@ -1,0 +1,27 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=getmail
+pkgver=4.3.11
+pkgrel=1
+pkgdesc="getmail (POP3 mail retriever) getmail is a POP3 mail retriever, with support for both ordinary and domain (or multidrop) POP3 mailboxes.  It is written in Python, and licensed under the GNU General Public License version 2. getmail was written by Charles Cazabon."
+url="http://pyropus.ca/software/getmail"
+depends=('python')
+source=(http://pyropus.ca/software/$pkgname/old-versions/$pkgname-$pkgver.tar.gz)
+md5sums=('9cc0ec519bd064d0d9945cc5323c6108')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	python setup.py build || return 1
+	python setup.py install --root=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/share
+	mv man ..
+	mv doc ..
+	cd ..
+	rmdir share
+
+}

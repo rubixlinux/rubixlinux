@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+
+pkgname=perl-ldap
+pkgver=0.33
+pkgrel=1
+pkgdesc="Net::LDAP - Lightweight Directory Access Protocol"
+depends=('perl' 'perl-convert-asn1' 'perl-authen-sasl' 'perl-io-socket-ssl' 'perl-xml-sax')
+source=(http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/$pkgname-$pkgver.tar.gz)
+md5sums=('7002aedb8bcaa7169a8f0a8e22d34b72')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: initial rubix release 2005.11.22
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/$pkgname-$pkgver
+	cp	-a		\
+		CREDITS		\
+		Changes		\
+		INSTALL		\
+		MANIFEST	\
+		README		\
+		SIGNATURE	\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

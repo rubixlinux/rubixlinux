@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=slrn
+pkgver=0.9.8.1
+pkgrel=1
+pkgdesc="slrn (s-lang read news) slrn is an easy to use but powerful newsreader.  It is highly customizable, supports scoring, free key bindings, and can be extended using the s-lang macro language. slrn was written by John E. Davis, and is maintained by Thomas Schultz."
+url="http://slrn.sourceforge.net"
+depends=('glibc' 'slang' 'openssl')
+source=(ftp://ftp.fu-berlin.de/pub/unix/news/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	slrn.slrnfeat.diff.gz							)
+md5sums=('9b613007df537444a5f8a4a2994fadb7' \
+	 '37e8592c49046f3174a1183a76267c99' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/slrn.slrnfeat.diff || return 1
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--with-ssl		\
+		--with-slrnpull		\
+		--enable-setgid-code	\
+		--with-server-file=/etc/nntpserver
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown root.news $startdir/pkg/usr/bin/slrnpull
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/usr/share/doc/slrn $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 2750 $startdir/pkg/usr/bin/slrnpull
+
+	mkdir -p $startdir/pkg/var/spool/slrnpull/data
+	mkdir -p $startdir/pkg/var/spool/slrnpull/news
+	mkdir -p $startdir/pkg/var/spool/slrnpull/out.going
+	mkdir -p $startdir/pkg/var/spool/slrnpull/out.going/rejects
+
+	cp -a $startdir/pkg/usr/doc/$pkgname-$pkgver/slrnpull/slrnpull.conf $startdir/pkg/var/spool/slrnpull
+
+	chown -R news.news $startdir/pkg/var/spool/slrnpull
+	chmod 3777 $startdir/pkg/var/spool/slrnpull/out.going $startdir/pkg/var/spool/slrnpull/out.going/rejects
+
+	mkdir -p $startdir/pkg/etc
+	cp -a $startdir/pkg/usr/doc/$pkgname-$pkgver/slrn.rc $startdir/pkg/etc/slrn.rc
+
+	rmdir $startdir/pkg/usr/share/doc
+
+	chown root.bin $startdir/pkg/usr/bin
+	chown root.bin $startdir/pkg/usr/bin/slrn
+
+}

@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=enscript
+pkgver=1.6.4
+pkgrel=1
+pkgdesc="enscript (converts text files to PostScript and other formats) Enscript converts text files to PostScript and spools the generated output to a printer or saves it to a file.  If no input files are given, enscript processes standard input.  Enscript can be extended to handle different output media and it has many options for customizing printouts."
+depends=('glibc')
+source=(http://www.iki.fi/mtr/genscript/$pkgname-$pkgver.tar.gz)
+url="http://people.ssh.fi/mtr/genscript/index.html"
+md5sums=('b5174b59e4a050fb462af5dbf28ebba3')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--with-media=Letter	\
+		--sysconfdir=/etc
+	make
+	make prefix=$startdir/pkg/usr sysconfdir=$startdir/pkg/etc install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		*.txt		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		docs/FAQ.html	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	rm $startdir/pkg/usr/info/dir
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

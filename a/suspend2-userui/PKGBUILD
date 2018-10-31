@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=suspend2-userui
+pkgver=0.6.3
+pkgrel=1
+pkgdesc="The user interface for Suspend 2, Suspend2-UserUI, is now a separate program that runs in userspace - it no longer exists in the kernel. This allows for greater flexibility in the user interface, and less potential for fatal issues to arise in kernel-space."
+url="http://www.suspend2.net"
+source=(http://www.suspend2.net/downloads/all/$pkgname-$pkgver.tar.gz)
+md5sums=('0d3a51d821da88149298ed4aa3118c3e')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   Initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make || return 1
+	mkdir -p $startdir/pkg/usr/sbin
+	make PREFIX=/usr DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		KERNEL_API	\
+		README		\
+		TODO		\
+		USERUI_API	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

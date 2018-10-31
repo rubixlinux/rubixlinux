@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-parse-yapp
+pkgver=1.05
+pkgrel=1
+pkgdesc="Parse::Yapp - Perl extension for generating and using LALR parsers."
+url="http://search.cpan.org/~fdesar/Parse-Yapp-1.05/lib/Parse/Yapp.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/F/FD/FDESAR/Parse-Yapp-$pkgver.tar.gz)
+md5sums=('7bfca736d6af36c51edf7a97111a8f3b')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix release 2005.09.19
+
+build() {
+
+	cd $startdir/src/Parse-Yapp-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Parse-Yapp-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/Parse-Yapp-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/Parse-Yapp-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

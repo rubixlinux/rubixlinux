@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=links
+pkgver=2.1pre20
+pkgrel=2
+pkgdesc="links (WWW browser for the console) Links is a console mode WWW browser, supporting colors, correct table rendering, background downloading, frames, Javascript, and a menu driven configuration interface.  The default is text output, but graphical output (using -g) is also supported using the Linux framebuffer console or SVGAlib. links was written by Mikulas Patocka."
+url="http://atrey.karlin.mff.cuni.cz/~clock/twibright/links"
+depends=('glibc' 'openssl' 'gpm' 'ncurses' 'pcre')
+source=(http://links.twibright.com/download/$pkgname-$pkgver.tar.bz2)
+md5sums=('5bdee0eb06cf3fb1cf2b6cd73def47bf')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt without --enable-graphics to remove the dependence on X 2005.12.21
+##   rel1: upgraded to 2.1pre20 2005.12.20
+##   rel1: upgraded to 2.1pre19 2005.10.17
+##   rel1: upgraded to 2.1pre18 2005.08.16
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--enable-javascript	\
+		--without-x		\
+		$CHOST
+	make || return 1
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp links		$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/links
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	mkdir -p		$startdir/pkg/usr/man/man1
+	cp links.1		$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+ 		AUTHORS		\
+		BUGS		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		SITES		\
+		TODO		\
+		doc/links_cal	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a mailcap.pl $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type d -exec chmod 755 {} \;
+
+	chmod 755 $startdir/pkg/usr/doc/$pkgname-$pkgver/mailcap.pl
+
+}

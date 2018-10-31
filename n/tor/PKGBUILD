@@ -1,0 +1,77 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+EVENT=1.1a
+
+pkgname=tor
+pkgver=0.1.0.17
+pkgrel=1
+pkgdesc="tor -- an anonymous internet communication system. Tor is a toolset for a wide range of organizations and people that want to improve their safety and security on the Internet. Using Tor can help you anonymize web browsing and publishing, instant messaging, IRC, SSH, and other applications that use the TCP protocol. Tor also provides a platform on which software developers can build new applications with built-in anonymity, safety, and privacy features."
+url="http://tor.eff.org"
+depends=('glibc' 'openssl' 'zlib')
+backup=('etc/tor/torrc'			\
+	'etc/tor/tor-tsocks.conf'	)
+source=(http://tor.eff.org/dist/$pkgname-$pkgver.tar.gz		\
+	http://monkey.org/~provos/libevent-$EVENT.tar.gz	\
+	$pkgname						)
+md5sums=('83c4afe29fa82473afcb2ec7e17771b9' \
+	 '6cc776458ecaf9247550863702a44d7c' \
+	 'f2991c9e09c11a308b4997afa079b221' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.1.0.17 2006.02.19
+##   rel1: upgraded to 0.1.0.16, rewrote rc script in new format 2006.01.11
+##   rel2: moved from community/ to n/, added rc script and tor user, group 2005.10.24
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/libevent-$EVENT
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/libevent-$EVENT
+	cp -a README $startdir/pkg/usr/doc/libevent-$EVENT
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a										\
+		AUTHORS										\
+		ChangeLog									\
+		INSTALL										\
+		LICENSE										\
+		README										\
+		doc/{CLIENTS,FAQ,HACKING,TODO}							\
+		doc/{control-spec.txt,rend-spec.txt,tor-doc.css,tor-doc.html,tor-spec.txt}	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 777 -exec chmod 755 {} \;
+
+	mv $startdir/pkg/etc/$pkgname/torrc.sample $startdir/pkg/etc/$pkgname/torrc
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	mkdir -p	$startdir/pkg/var/lib/tor
+	chmod 700	$startdir/pkg/var/lib/tor
+	chown tor.tor	$startdir/pkg/var/lib/tor
+
+	mkdir -p	$startdir/pkg/var/log/tor
+	chmod 700	$startdir/pkg/var/log/tor
+	chown tor.tor	$startdir/pkg/var/log/tor
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

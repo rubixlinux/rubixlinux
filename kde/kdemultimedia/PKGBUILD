@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdemultimedia
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdemultimedia (multimedia applications for KDE) Multimedia applications for KDE, such as: noatun (multimedia player) kaboodle (light media player) kaudiocreator (CD ripper and audio encoder) kmid (a midi/karaoke player) kmidi (a midi-to-wav player/converter) kmix (a mixer) kscd (an audio CD player) krec (an audio recorder)"
+url="http://www.kde.org"
+groups=('kde')
+depends=('qt' 'glibc' 'esound' 'fontconfig' 'xfsprogs' 'expat' 'zlib' 'alsa-lib' 'libtunepimp'	\
+	 'libjpeg' 'libidn' 'libxml2' 'audiofile' 'libvorbis' 'libmad' 'gstreamer' 'xine-lib'	\
+	 'libmng' 'libpng' 'lame' 'flac' 'x11' 'libogg' 'libart_lgpl' 'libmusicbrainz'		\
+	 'freetype2' 'taglib' 'cdparanoia' 'pcre' 'arts' 'glib2' 'gcc' 'kdelibs' 'popt'		)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('595f637c637987a92f6dac9d9cd6667d')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 3.5.1 2006.01.31
+##   rel1: Upgraded to 3.5.0 2005.12.18
+##   rel1: Upgraded to 3.4.3 2005.10.15
+##   rel1: Upgraded to 3.4.2 2005.07.31
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel2: Rebuild with lame and libtunepimp 2005.02.20
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

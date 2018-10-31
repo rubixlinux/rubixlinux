@@ -1,0 +1,144 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=heimdal
+pkgver=0.7.2
+pkgrel=1
+pkgdesc="Heimdal is an implementation of Kerberos 5, largely written in Sweden (which was important when we started writing it, less so now). It is freely available under a three clause BSD style license."
+url="http://www.pdc.kth.se/heimdal"
+depends=('glibc' 'db' 'e2fsprogs' 'cracklib' 'openssl' 'openldap' 'libtermcap' 'cyrus-sasl')
+backup=('etc/krb5.conf'			\
+	'etc/rc.d/heimdal-kdc'		\
+	'etc/rc.d/heimdal-kadmind'	\
+	'etc/rc.d/heimdal-kpasswdd'	)
+source=(ftp://ftp.pdc.kth.se/pub/$pkgname/src/$pkgname-$pkgver.tar.gz	\
+	system-libss.diff						\
+	heimdal-kdc							\
+	heimdal-kadmind							\
+	heimdal-kpasswdd						\
+	krb5.conf							\
+	cracklib.diff							)
+md5sums=('c937580d6f8b11bf7f0e540530e1dc18' \
+	 '6a73f1dbd50d516e71cac138ac6cfcbd' \
+	 'f16c05e43d6db16bcc57ec6933ece6f6' \
+	 '150e2eb089722e5f79aeba043f2fc8c4' \
+	 '80bac6ba7193a9ab528b3638c0d96960' \
+	 'fe10f76b1951e81d571184a92b3c7331' \
+	 '8f15dba6190dcde58c0dcf38e0bd24c7' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.7.2, security issue 2006.02.12
+##   rel5: updated rc script to new format 2006.01.16
+##   rel4: fixed permissions of setuid programs 2005.11.05
+##   rel3: fixed cracklib includes in sample password checker 2005.11.03
+##   rel2: fixed libcom_err issues in e2fsprogs and rebuilt heimdal
+##         pthreads were causing problems on some systems so they were disabled
+##         removed unnecessary patches 2005.10.15
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/system-libss.diff	|| return 1
+	patch -p1 < $startdir/src/cracklib.diff		|| return 1
+
+	libtoolize -f -c	|| return 1
+	aclocal -I cf		|| return 1  
+	autoheader		|| return 1
+	automake -a		|| return 1
+	autoconf		|| return 1
+	libtoolize -f -c	|| return 1
+
+	./configure					\
+		--prefix=/usr				\
+		--enable-shared				\
+		--includedir=/usr/include/heimdal	\
+		--with-openldap=/usr			\
+		--without-x				\
+		--disable-pthread-support
+	make || return 1
+
+	cd $startdir/src/$pkgname-$pkgver/lib/kadm5
+	gcc -shared -I$startdir/src/$pkgname-$pkgver/include -o sample_passwd_check.so sample_passwd_check.c -lcrack || return 1
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	KRB5_CONFIG=$startdir/src/krb5.conf make check || return 1
+
+	make DESTDIR=$startdir/pkg install
+	cp lib/kadm5/sample_passwd_check.so $startdir/pkg/usr/lib
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+		TODO*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/bin/rcp			$startdir/pkg/usr/bin/krcp
+	mv $startdir/pkg/usr/bin/rsh			$startdir/pkg/usr/bin/krsh
+	mv $startdir/pkg/usr/bin/telnet			$startdir/pkg/usr/bin/ktelnet
+	mv $startdir/pkg/usr/bin/ftp			$startdir/pkg/usr/bin/kftp
+	mv $startdir/pkg/usr/bin/su			$startdir/pkg/usr/bin/ksu
+	mv $startdir/pkg/usr/bin/login			$startdir/pkg/usr/bin/klogin
+
+	mv $startdir/pkg/usr/libexec/ftpd		$startdir/pkg/usr/libexec/kftpd
+	mv $startdir/pkg/usr/libexec/telnetd		$startdir/pkg/usr/libexec/ktelnetd
+	mv $startdir/pkg/usr/libexec/rshd		$startdir/pkg/usr/libexec/krshd
+
+	## Not sure why this did not get installed by default...
+	cp appl/rcp/rcp.1				$startdir/pkg/usr/man/man1/krcp.1
+
+	mv $startdir/pkg/usr/man/man1/rsh.1		$startdir/pkg/usr/man/man1/krsh.1
+	mv $startdir/pkg/usr/man/man1/telnet.1		$startdir/pkg/usr/man/man1/ktelnet.1
+	mv $startdir/pkg/usr/man/man1/ftp.1		$startdir/pkg/usr/man/man1/kftp.1
+	mv $startdir/pkg/usr/man/man1/su.1		$startdir/pkg/usr/man/man1/ksu.1
+	mv $startdir/pkg/usr/man/man1/login.1		$startdir/pkg/usr/man/man1/klogin.1
+
+	mv $startdir/pkg/usr/man/man8/ftpd.8		$startdir/pkg/usr/man/man8/kftpd.8
+	mv $startdir/pkg/usr/man/man8/telnetd.8		$startdir/pkg/usr/man/man8/ktelnetd.8
+	mv $startdir/pkg/usr/man/man8/rshd.8		$startdir/pkg/usr/man/man8/krshd.8
+
+	mkdir -p					$startdir/pkg/etc/rc.d
+	cp $startdir/src/krb5.conf			$startdir/pkg/etc
+	cp $startdir/src/heimdal-kadmind		$startdir/pkg/etc/rc.d
+	cp $startdir/src/heimdal-kdc			$startdir/pkg/etc/rc.d
+	cp $startdir/src/heimdal-kpasswdd		$startdir/pkg/etc/rc.d
+
+	mkdir -p					$startdir/pkg/etc/openldap/schema
+	cp lib/hdb/hdb.schema				$startdir/pkg/etc/openldap/schema/krb5-kdc.schema
+	cp lib/hdb/hdb.schema				$startdir/pkg/etc/openldap/schema/krb5-kdc.schema.default
+
+	cd $startdir/pkg/usr/include
+	ln -s heimdal			gssapi
+	ln -s heimdal/krb5-types.h	krb5-types.h
+	ln -s heimdal/krb5.h		krb5.h
+	ln -s heimdal/asn1_err.h	asn1_err.h
+	ln -s heimdal/krb5_asn1.h	krb5_asn1.h
+	ln -s heimdal/krb5_err.h	krb5_err.h
+	ln -s heimdal/heim_err.h	heim_err.h
+	ln -s heimdal/k524_err.h	k524_err.h
+	ln -s heimdal/krb5-protos.h	krb5-protos.h
+
+	mkdir -p $startdir/pkg/var/$pkgname
+
+	rm $startdir/pkg/usr/info/dir
+	rm -r $startdir/pkg/usr/man/cat?
+	rm $startdir/pkg/usr/man/man5/ftpusers.5
+	rm $startdir/pkg/usr/man/man5/login.access.5
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	chmod 4755 $startdir/pkg/usr/bin/ksu
+	chmod 4755 $startdir/pkg/usr/bin/otp
+
+}

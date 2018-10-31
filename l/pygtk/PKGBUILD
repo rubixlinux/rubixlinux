@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pygtk
+pkgver=2.8.4
+pkgrel=2
+pkgdesc="PyGTK provides a convenient wrapper for the GTK+ library for use in Python programs, taking care of many of the boring details such as managing memory and type casting."
+depends=('glibc' 'freetype2' 'libglade' 'gtk+2' 'cairo' 'pango' 'atk' 'libxml2' 'fontconfig' 'x11' 'expat' 'glib2' 'zlib' 'libpng')
+source=(http://ftp.gnome.org/pub/gnome/sources/pygtk/2.8/$pkgname-$pkgver.tar.gz)
+url="http://www.pygtk.org"
+md5sums=('738beeba4946113eb31a3516bd2b99dd')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: bumped the pkgrel for internal reasons 2006.02.01
+##   rel1: upgraded to 2.8.4 2006.02.01
+##   rel1: upgraded to 2.7.4 2005.09.04
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog*	\
+		INSTALL		\
+		MAPPING		\
+		NEWS		\
+		README		\
+		THREADS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

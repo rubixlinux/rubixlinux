@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=hibernate-script
+pkgver=1.12
+pkgrel=1
+pkgdesc="The hibernate-script package offers a utility that performs all the preparatory steps to suspending your machine, invoking the desired suspend method (either one of the suspend-to-disk variants, or suspend-to-RAM), and restoring your machine on resume."
+url="http://www.suspend2.net"
+source=(http://www.suspend2.net/downloads/all/$pkgname-$pkgver.tar.gz)
+md5sums=('0fb7c524a30daacf200f27de2e398646')
+backup=('etc/hibernate/ram.conf'		\
+	'etc/hibernate/blacklisted-modules'	\
+	'etc/hibernate/hibernate.conf'		)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	export BASE_DIR=$startdir/pkg
+	export PREFIX=/usr
+	./install.sh
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGELOG	\
+		COPYING		\
+		README		\
+		SCRIPTLET-API	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

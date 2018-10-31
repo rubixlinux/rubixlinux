@@ -1,0 +1,96 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+## UPDATE THE INSTALL SCRIPT
+
+pkgname=alsa-driver
+pkgver=1.0.10
+pkgrel=8
+groups=('alsa')
+pkgdesc="alsa-driver (Advanced Linux Sound Architecture drivers) The Advanced Linux Sound Architecture (ALSA) provides audio and MIDI functionality to the Linux operating system.  This package contains drivers in the form of kernel modules and include files for all of the sound cards supported by ALSA. For more information, see http://alsa-project.org"
+url="http://www.alsa-project.org"
+makedepends=('kernel24-source' 'kernel24-grsec-source')
+source=(ftp://ftp.alsa-project.org/pub/driver/$pkgname-$pkgver.tar.bz2	\
+	badpage.diff							)
+md5sums=('e9e7c1ca664a14275d67185049f933f9' \
+	 'aeadd49525a98b9f0127ca94d195d26c' )
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+##   This package builds the alsa driver kernel modules for each rubix kernel
+
+## Changelog:
+##   rel8: rebuilt for 2.6.15.5 2006.03.03
+##   rel7: rebuilt for 2.6.15.4 2006.02.12
+##   rel6: rebuilt for 2.6.15.3 2006.02.07
+##   rel5: rebuilt for 2.6.15.2 2006.01.31
+##   rel4: rebuilt for 2.6.15.1 2006.01.19
+##   rel3: rebuilt for official 2.6.15 2006.01.10
+##   rel2: fixed bad page state and upgraded to kernel 2.6.15 2005.12.20
+##   rel1: upgraded to 1.0.10, kernels 2.4.32 and 2.4.32-grsec
+##   rel8: rebuilt for config changes in 2.4 kernels 2005.11.13
+##   rel7: rebuilt for kernel 2.6.14.2-Rubix 2005.11.12
+##   rel6: rebuilt for kernel 2.6.14 2005.10.27
+##   rel5: rebuilt for kernel 2.6.13 2005.09.01
+##   rel4: rebuilt for kernel 2.6.12.1 2005.06.23
+##   rel3: rebuilt for rebuilt kernel26 2005.06.22
+##   rel2: upgraded to kernels 2.4.31, 2.4.31-grsec, 2.6.12 2005.06.18
+##   rel1: upgraded to 1.0.9b 2005.06.12
+##   rel7: upgraded to kernel26 2.6.11.9 2005.05.15
+##   rel6: upgraded to kernel26 2.6.11.7, kernel24 2.4.30, kernel24-grsec 2.4.30-grsec 2005.04.13
+##   rel5: upgraded to kernel26 2.6.11 2005.03.03
+##   rel4: gzip modules 2005.02.26
+##         added alsa group
+##   rel3: Redirect install script to /dev/null 2005.02.26
+##   rel2: Added 2.6.10 modules 2005.02.25
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	# Make 2.4 vanilla modules:
+		./configure --with-isapnp=yes --with-sequencer=yes --with-oss=yes --with-kernel=/usr/src/linux-$vver24 --with-build=/usr/src/linux-$vver24
+		make || return 1
+		make DESTDIR=$startdir/pkg install
+		make clean
+
+	# Make 2.4 grsec modules:
+		./configure --with-isapnp=yes --with-sequencer=yes --with-oss=yes --with-kernel=/usr/src/linux-$gver24 --with-build=/usr/src/linux-$gver24
+		make || return 1
+		make DESTDIR=$startdir/pkg install
+		make clean
+
+	# Make 2.6 vanilla modules:
+		patch -p1 < $startdir/src/badpage.diff || return 1
+		./configure --with-isapnp=yes --with-sequencer=yes --with-oss=yes --with-kernel=/usr/src/linux-$vver26 --with-build=/usr/src/linux-$vver26
+		make || return 1
+		make DESTDIR=$startdir/pkg install
+
+	rm $startdir/pkg/lib/modules/*/modules.*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/alsa-kernel
+	
+	cp	-a		\
+		CARDS-STATUS	\
+		COPYING		\
+		FAQ		\
+		INSTALL		\
+		README		\
+		TODO		\
+		WARNING		\
+		doc		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a alsa-kernel/Documentation $startdir/pkg/usr/doc/$pkgname-$pkgver/alsa-kernel
+
+	find $startdir/pkg/lib/modules -type f -name *.o -exec gzip {} \;
+	find $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
+
+}

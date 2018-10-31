@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=ocaml
+pkgver=3.08.4
+pkgrel=1
+pkgdesc=" The Objective Caml system is the main implementation of the Caml language. It features a powerful module system and a full-fledged object-oriented layer. It comes with a native-code compiler that supports numerous architectures, for high performance; a bytecode compiler, for increased portability; and an interactive loop, for experimentation and rapid development."
+url="http://caml.inria.fr"
+depends=('glibc' 'x11' 'tcl' 'gpm' 'ncurses' 'tk')
+source=(http://caml.inria.fr/pub/distrib/$pkgname-3.08/$pkgname-$pkgver.tar.bz2)
+md5sums=('96b8edeb6190d9f15c086c7decd277a9')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure -prefix /usr
+	make world	|| return 1
+	make opt	|| return 1
+	make PREFIX=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		Changes		\
+		INSTALL		\
+		LICENSE		\
+		README*		\
+		Upgrading	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

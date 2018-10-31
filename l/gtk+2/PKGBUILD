@@ -1,0 +1,71 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gtk+2
+pkgver=2.8.12
+pkgrel=1
+pkgdesc="GTK+ version 2 This is GTK+, a multi-platform toolkit for creating graphical user interfaces.  Offering a complete set of widgets, GTK+ is suitable for projects ranging from small one-off projects to complete application suites."
+url="http://www.gtk.org"
+install=gtk+2.install
+depends=('glibc' 'libtiff' 'freetype2' 'libjpeg' 'cairo' 'pango' 'atk' 'x11' 'fontconfig' 'expat' 'glib2' 'zlib' 'libpng')
+source=(ftp://ftp.gtk.org/pub/gtk/v2.8/gtk+-$pkgver.tar.bz2	\
+	gtk+.csh						\
+	gtk+.sh							)
+md5sums=('bdd3b950e4a3c65d61bceed9149888a9' \
+	 'b295255b8d835baddab930021e2046eb' \
+	 'a3b2169717ad260836baadf7b5a2c141' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.8.12 2006.02.15
+##   rel1: upgraded to 2.8.11 2006.01.31
+##   rel1: upgraded to 2.8.10 2006.01.13
+##   rel1: upgraded to 2.8.9 2005.12.19
+##   rel1: upgraded to 2.8.8 2005.12.05
+##   rel1: upgraded to 2.8.7 2005.11.17
+##   rel1: upgraded to 2.8.6 2005.10.17
+##   rel1: upgraded to 2.8.4 2005.09.30
+##   rel1: upgraded to 2.8.3 2005.08.30
+##   rel1: upgraded to 2.6.8 2005.06.24
+##   rel1: upgraded to 2.6.7 2005.05.12
+##   rel1: upgraded to 2.6.4 2005.03.03
+##   rel1: pgraded to gtk+2 2.6.2 2005.02.23
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+
+	cd $startdir/src/gtk+-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr	\
+		--sysconfdir=/etc	\
+		--with-xinput=yes
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/gtk+-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/gtk+-$pkgver
+
+	mkdir -p $startdir/pkg/etc/profile.d
+	cp	-a			\
+		$startdir/src/gtk+.csh	\
+		$startdir/src/gtk+.sh	\
+	$startdir/pkg/etc/profile.d
+	chmod 755 $startdir/pkg/etc/profile.d/*
+
+}

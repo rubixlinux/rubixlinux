@@ -1,0 +1,79 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mplayer
+pkgver=1.0pre7try2
+pkgrel=2
+pkgdesc="MPlayer is a movie player for Linux (runs on many other Unices, and non-x86 CPUs, see the documentation). It plays most MPEG, VOB, AVI, Ogg/OGM, VIVO, ASF/WMA/WMV, QT/MOV/MP4, FLI, RM, NuppelVideo, YUV4MPEG, FILM, RoQ, PVA files, supported by many native, XAnim, and Win32 DLL codecs. You can watch VideoCD, SVCD, DVD, 3ivx, DivX 3/4/5 and even WMV movies, too (without the avifile library)."
+url="http://www.mplayerhq.hu"
+source=(http://ftp5.mplayerhq.hu/mplayer/releases/MPlayer-$pkgver.tar.bz2		\
+	http://ftp5.mplayerhq.hu/mplayer/releases/fonts/font-arial-iso-8859-1.tar.bz2	\
+	http://ftp5.mplayerhq.hu/mplayer/Skin/Blue-1.5.tar.bz2				)
+md5sums=('aaca4fd327176c1afb463f0f047ef6f4' \
+	 '1ecd31d17b51f16332b1fcc7da36b312' \
+	 '371fa9457f0f23295ddaa93b57d862a0' )
+depends=('ncurses' 'sdl' 'glibc' 'lame' 'esound' 'faad2' 'x11' 'fontconfig' 'expat'	\
+	 'lirc' 'libogg' 'zlib' 'alsa-lib' 'libdv' 'freetype2' 'cdparanoia' 'gpm'	\
+	 'glib' 'libjpeg' 'libdvdread' 'audiofile' 'libvorbis' 'slang' 'libmad'		\
+	 'libungif' 'gcc' 'aalib' 'gtk+' 'libpng' 'libtermcap'				)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt without dependency on samba and arts 2006.01.24
+##   rel1: upgraded to 1.0pre7try2 2005.09.30
+##   rel4: added lirc support 2005.07.28
+##   rel3: rebuilt with MUCH better dependencies 2005.06.24
+##   rel2: added glib as a dep 2005.06.13
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/MPlayer-$pkgver
+
+	./configure						\
+		--prefix=/usr					\
+		--confdir=/etc/mplayer				\
+		--enable-gui					\
+		--enable-largefiles				\
+		--enable-menu					\
+		--enable-runtime-cpudetection			\
+		--enable-lirc					\
+		--enable-external-faad				\
+		--disable-arts					\
+		--disable-smb					\
+		--disable-mpdvdkit				\
+		--disable-internal-tremor			\
+		--with-win32libdir=/usr/lib/win32		\
+		--with-dvbincdir=/usr/src/linux26/include
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		ChangeLog	\
+		Copyright	\
+		LICENSE		\
+		Makefile	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a $startdir/src/font-arial-iso-8859-1/* $startdir/pkg/usr/share/mplayer/font
+	cp -a $startdir/pkg/usr/share/mplayer/font/font-arial-18-iso-8859-1/* $startdir/pkg/usr/share/mplayer/font
+
+	cp -a $startdir/src/Blue $startdir/pkg/usr/share/mplayer/Skin
+	ln -s Blue $startdir/pkg/usr/share/mplayer/Skin/default
+
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+	find $startdir/pkg -type d -exec chmod 755 {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,104 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+CDINTO=2.5.4
+
+pkgname=flex
+pkgver=2.5.4a
+pkgrel=2
+pkgdesc="flex (fast lexical analyzer generator) flex is a tool for generating programs that perform pattern matching on text.  flex is a rewrite of the AT&T Unix lex tool (the two implementations do not share any code, though), with some extensions (and incompatibilities)."
+url="http://www.gnu.org/software/flex"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/pub/non-gnu/flex/flex-2.5.4a.tar.gz	\
+	flex-2.5.4-glibc22.patch.gz				\
+	flex-2.5.4a-gcc3.patch.gz				\
+	flex-2.5.4a-gcc31.patch.gz				\
+	flex-2.5.4a-skel.patch.gz				\
+	flex-2.5.4a2.patch.gz					)
+md5sums=('bd8753d0b22e1f4ec87a553a73021adf' \
+	 'b6e5726fb5bcb87ea88d0465243b30e1' \
+	 'db15dd082b173b3e93cd47441e837e38' \
+	 '620e2c1e18c2bf2308789391b515f74c' \
+	 '73077b5a2d0a135b4b0afbe0bcbb5d72' \
+	 '5d0c940937bc42651683263660e51edc' )
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+# This is the Slackware note, I will follow the same logic for Rubix:
+#   before reporting this (old) version of flex should be
+#   updated to one of the newer unofficial versions, please explain
+#   why this version doesn't work.  I've read that newer versions
+#   of flex are not ready for prime time, and I'm going to be
+#   resistant to upgrading it for no reason.  This one has worked
+#   fine for a long time.  It's stable and reliable.
+
+#Changelog
+#rel2: removed lex script and made symlink to flex 2005.03.03
+#Initial Rubix Release
+
+build() {
+
+	LDFLAGS=-s
+
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/include
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/info
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/MISC
+
+	cd $startdir/src/$pkgname-$CDINTO
+
+	patch -p1 < $startdir/src/flex-2.5.4a-skel.patch
+	patch -p1 < $startdir/src/flex-2.5.4-glibc22.patch
+	patch -p1 < $startdir/src/flex-2.5.4a-gcc3.patch
+	patch -p1 < $startdir/src/flex-2.5.4a-gcc31.patch
+	patch -p1 < $startdir/src/flex-2.5.4a2.patch
+
+	cp	-a	\
+		INSTALL	\
+		NEWS	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd MISC
+	cp	-a		\
+		EBCDIC		\
+		README		\
+		alloca.c	\
+		debflex.awk	\
+		parse.c		\
+		parse.h		\
+		testxxLexer.l	\
+		fastwc		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/MISC
+	cd ..
+
+	./configure --prefix=/usr
+
+	make
+
+	cp flex		$startdir/pkg/usr/bin
+	cp FlexLexer.h	$startdir/pkg/usr/include
+	cp libfl.a	$startdir/pkg/usr/lib
+	cp flex.1	$startdir/pkg/usr/man/man1
+
+	cd MISC/texinfo
+	makeinfo flex.texi
+	cp flex.info	$startdir/pkg/usr/info
+
+	find $startdir/pkg/usr/doc     -type f -exec chmod 644 {} \;
+	find $startdir/pkg/usr/include -type f -exec chmod 644 {} \;
+	find $startdir/pkg/usr/man     -type f -exec chmod 644 {} \;
+
+	cd $startdir/pkg/usr/lib
+	ln -sf libfl.a libl.a
+	cd $startdir/pkg/usr/bin
+	ln -sf flex flex++
+	ln -sf flex lex
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

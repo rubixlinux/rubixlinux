@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libtunepimp
+pkgver=0.3.0
+pkgrel=2
+pkgdesc="The TunePimp library (also referred to as libtunepimp) is a development library geared towards developers who wish to create MusicBrainz enabled tagging applications."
+depends=('flac' 'libmad' 'libmusicbrainz' 'libtermcap' 'libvorbis' 'readline' 'zlib')
+url="http://www.musicbrainz.org/products/tunepimp"
+source=(ftp://ftp.musicbrainz.org/pub/musicbrainz/$pkgname-$pkgver.tar.gz)
+md5sums=('f1f506914150c4917ec730f847ad4709')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Rebuild against correct version of flac 2005.02.20
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		README		\
+		README.LGPL	\
+		README.macosx	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

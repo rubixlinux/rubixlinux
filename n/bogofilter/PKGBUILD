@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=bogofilter
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Bogofilter is a mail filter that classifies mail as spam or ham (non-spam) by a statistical analysis of the message's header and content (body). The program is able to learn from the user's classifications and corrections."
+url="http://bogofilter.sourceforge.net"
+depends=('glibc' 'db' 'sendmail')
+backup=('etc/mail/bogofilter.cf')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('1f3bff28f7d9cb7b0c3a28184c101b53')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.0.0 005.12.06
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --sysconfdir=/etc/mail
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		GETTING.STARTED	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		RELEASE.NOTES	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/etc/mail/bogofilter.cf.example $startdir/pkg/etc/mail/bogofilter.cf
+
+}

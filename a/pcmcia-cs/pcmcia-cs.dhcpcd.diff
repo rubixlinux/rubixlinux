@@ -1,0 +1,18 @@
+--- ./etc/network.orig	2003-03-05 15:21:37.000000000 -0800
++++ ./etc/network	2003-03-05 15:22:46.000000000 -0800
+@@ -177,13 +177,13 @@
+ 	    log pump -r -i $DEVICE
+ 	elif is_true $DHCP ; then
+ 	    if [ -x /sbin/dhcpcd ] ; then
+-		PID=`cat /var/run/dhcpcd-$DEVICE.pid 2>/dev/null`
++		PID=`cat /etc/dhcpc/dhcpcd-$DEVICE.pid 2>/dev/null`
+ 		if [ -n "$PID" ] ; then
+ 		    kill -TERM $PID
+ 		    sleep 2
+ 		fi
+ 		/sbin/dhcpcd -XYZZY 2>&1 | grep -q DHCP || \
+-		    rm -f /var/run/dhcpcd-$DEVICE.pid
++		    rm -f /etc/dhcpc/dhcpcd-$DEVICE.pid
+ 	    elif [ -x /sbin/dhclient ] ; then
+ 		PID=`cat /var/run/dhclient.pid 2>/dev/null`
+ 		if [ -n "$PID" ] ; then kill -TERM $PID ; fi

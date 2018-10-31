@@ -1,0 +1,88 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=hotplug
+pkgver=2004_09_23
+pkgrel=11
+pkgdesc="hotplug (scripts to detect and configure hardware devices) This package contains scripts used to initialize and configure hardware at boot time or when it is plugged into the machine (aka hotplugging).  The /sbin/hotplug script will be called by the kernel to load the appropriate support modules and set up the device."
+depends=('pciutils' 'usbutils')
+source=(ftp://ftp.kernel.org/pub/linux/utils/kernel/$pkgname/$pkgname-$pkgver.tar.gz	\
+	hotplug.inputrc.diff								\
+	hotplug.listerslop.diff								\
+	hotplug.logging.diff								\
+	hotplug.logstooverbose.diff							\
+	hotplug.netagent.diff								\
+	hotplug.quiet.modprobe.diff							\
+	blacklist									\
+	hotplug										)
+backup=('etc/hotplug/blacklist'		\
+	'etc/hotplug/usb.usermap'	)
+md5sums=('1542af9cbe1053cfde9421007f702cf2' \
+	 '02acf33b98096fd07bb0f5f18435f138' \
+	 'ea5e8f1b0e82e0eafb9509869f4632ac' \
+	 '78093f6a3e9420e6c6e5f949d77b3f7b' \
+	 'ba79f6724fafb630e821b1a504ee4889' \
+	 'e1a29cc6887e9eab09d2ae5554878c72' \
+	 'c6f832d0ba457f08c68644c118bc6560' \
+	 '0e6a1e7198964e6bd62bfbd25bf6b1fd' \
+	 'a166b562bf241fcf2ac4fa5f7113c235' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel11: updated rc script to new format 2006.01.16
+##   rel10: changed rc script so that hotplug no longer starts for 2.6 kernels (udev takes care of it now) 2005.12.17
+##   rel9: fixed network so that disabled adaptors are not automatically brought up 2005.11.11
+##   rel8: fixed inputrc to properly bring up network interface in rubix 2005.10.28
+##   rel7: fixed rc script type 2005.09.16
+##   rel6: updated the blacklist 2005.08.15
+##   rel5: added a few more modules to blacklist 2005.05.12
+##   rel4: added a few more modules to default blacklist 2005.03.08
+##   rel3: added check for nohotplug in kernel cmdline 2005.02.26
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 775 | xargs chmod 755
+	find . -perm 664 | xargs chmod 644
+
+	patch -p1 < $startdir/src/hotplug.netagent.diff		|| return 1
+	patch -p1 < $startdir/src/hotplug.inputrc.diff		|| return 1
+	patch -p1 < $startdir/src/hotplug.logging.diff		|| return 1
+	patch -p1 < $startdir/src/hotplug.logstooverbose.diff	|| return 1
+	patch -p1 < $startdir/src/hotplug.quiet.modprobe.diff	|| return 1
+	patch -p1 < $startdir/src/hotplug.listerslop.diff	|| return 1
+
+	find . -name "*~" | xargs rm -f
+	find . -name "*.orig" | xargs rm -f
+	find . -name "*.rej" | xargs rm -f
+
+	mkdir -p $startdir/pkg/lib/firmware
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/etc/hotplug/pci
+	mkdir -p $startdir/pkg/etc/hotplug/usb
+
+	cp sbin/hotplug $startdir/pkg/sbin/hotplug
+
+	chmod 755 $startdir/pkg/sbin/hotplug
+	chown -R root.bin $startdir/pkg/sbin
+
+	cp -a etc $startdir/pkg
+	cp $startdir/src/hotplug $startdir/pkg/etc/rc.d
+	rm -r $startdir/pkg/etc/rc.d/init.d
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	cp hotplug.8 $startdir/pkg/usr/man/man8/hotplug.8
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a ChangeLog README* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cp $startdir/src/blacklist $startdir/pkg/etc/hotplug/blacklist
+
+}

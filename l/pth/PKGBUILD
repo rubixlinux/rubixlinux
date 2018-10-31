@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pth
+pkgver=2.0.5
+pkgrel=1
+pkgdesc="Pth is a very portable POSIX/ANSI-C based library for Unix platforms which provides non-preemptive priority-based scheduling for multiple threads of execution (aka ``multithreading'') inside event-driven applications. All threads run in the same address space of the server application, but each thread has it's own individual program-counter, run-time stack, signal mask and errno variable."
+url="http://www.gnu.org/software/pth"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('75be42b032480ad2c532a55a28c1ec38')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make		|| return 1
+	make test	|| return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ANNOUNCE	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		HISTORY		\
+		INSTALL		\
+		NEWS		\
+		PORTING		\
+		README		\
+		SUPPORT		\
+		TESTS		\
+		THANKS		\
+		USERS		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,151 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+IMAGE=1.2.4
+MIXER=1.2.6
+NET=1.2.5
+TTF=2.0.7
+
+pkgname=sdl
+pkgver=1.2.9
+pkgrel=1
+pkgdesc="sdl (Simple DirectMedia Layer library) This is the Simple DirectMedia Layer, a generic API that provides low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL, and 2D framebuffer across multiple platforms. SDL links against alsa-lib, arts, audiofile, esound, and the X11 libraries.  Make sure all of these are installed if you're planning to use SDL (a full installation will cover all of the prerequisites)."
+depends=('glibc' 'freetype2' 'libjpeg' 'libmikmod' 'libvorbis' 'x11' 'libogg' 'gcc' 'zlib' 'libpng')
+url="http://www.libsdl.org"
+source=("http://www.libsdl.org/release/SDL-$pkgver.tar.gz"				\
+	"http://www.libsdl.org/projects/SDL_image/release/SDL_image-$IMAGE.tar.gz"	\
+	"http://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-$MIXER.tar.gz"	\
+	"http://www.libsdl.org/projects/SDL_net/release/SDL_net-$NET.tar.gz"		\
+	"http://www.libsdl.org/projects/SDL_ttf/release/SDL_ttf-$TTF.tar.gz"		)
+md5sums=('80919ef556425ff82a8555ff40a579a0' \
+	 '70bf617f99e51a2c94550fc79d542f0b' \
+	 '2b8beffad9179d80e598c22c80efb135' \
+	 'e45b1048d2747480dcc65ece4130a920' \
+	 '0f6ee1a502e6913a412aac353dc75bbc' )
+
+#Todo:
+#None
+
+#Notes:
+#This is a two step build
+#  1. comment build_extras, build, install
+#  2. uncomment build_extras, build, install
+
+#Changelog:
+#rel1: Upgraded to 1.2.9, image 1.2.4, mixer 1.2.6, ttf 2.0.7 2005.09.16
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/SDL-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-shared=yes	\
+		--enable-static=no
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/SDL-$pkgver/html
+	cp -a docs/index.html $startdir/pkg/usr/doc/SDL-$pkgver
+	cp -a docs/html/*.html $startdir/pkg/usr/doc/SDL-$pkgver/html
+	cp 	-a		\
+		BUGS		\
+		COPYING		\
+		CREDITS		\
+		INSTALL		\
+		README*		\
+		TODO		\
+		WhatsNew	\
+	$startdir/pkg/usr/doc/SDL-$pkgver
+
+	build_extras
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}
+
+build_extras() {
+
+	cd $startdir/src/SDL_image-$IMAGE
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-shared=yes	\
+		--enable-static=no
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/SDL_image-$IMAGE
+
+	cp	-a	\
+		CHANGES	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/SDL_image-$IMAGE
+
+	cd $startdir/src/SDL_mixer-$MIXER
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-shared=yes	\
+		--enable-static=no
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/SDL_mixer-$MIXER
+	cp	-a	\
+		CHANGES \
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/SDL_mixer-$MIXER
+
+	cd $startdir/src/SDL_net-$NET
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-shared=yes	\
+		--enable-static=no
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/SDL_net-$NET
+
+	cp	-a	\
+		CHANGES	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/SDL_net-$NET
+
+	cd $startdir/src/SDL_ttf-$TTF
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-shared=yes	\
+		--enable-static=no
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/SDL_ttf-$TTF
+
+	cp	-a	\
+		CHANGES	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/SDL_ttf-$TTF
+
+}

@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libtiff
+pkgver=3.7.4
+pkgrel=1
+pkgdesc="libtiff (a library for reading and writing TIFF files) This package provides support for the Tag Image File Format (TIFF), a widely used format for storing image data.  Included is the libtiff library (for reading and writing TIFF files), and a collection of tools for working with TIFF images."
+depends=('glibc' 'gcc' 'zlib')
+url="http://www.remotesensing.org/libtiff"
+source=(ftp://ftp.remotesensing.org/pub/libtiff/tiff-$pkgver.tar.gz)
+md5sums=('f37a7907bca4e235da85eb0126caa2b0')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 3.7.4, and built --without-x 2005.12.21
+##   rel1: upgraded to 3.7.3 2005.08.16
+##   rel1: upgraded to 3.7.2 2005.06.13
+##   rel2: moved docs to /usr/doc
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/tiff-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--disable-jpeg		\
+		--without-x
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	chmod 755 $startdir/pkg/usr/lib/libtiff.so.*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mv $startdir/pkg/usr/share/doc/*/* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/share
+
+}

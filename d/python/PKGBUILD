@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=python
+pkgver=2.4.2
+pkgrel=1
+pkgdesc="python (object-oriented interpreted programming language) Python is an interpreted, interactive, object-oriented programming language that combines remarkable power with very clear syntax.   Python's basic power can be extended with your own modules written in C or C++.  Python is also adaptable as an extension language for existing applications."
+url="http://www.python.org"
+depends=('glibc' 'db' 'gpm' 'gdbm' 'ncurses' 'x11' 'openssl' 'bzip2' 'tcl' 'gcc' 'zlib' 'readline' 'tk')
+source=(http://www.python.org/ftp/$pkgname/$pkgver/Python-$pkgver.tgz		\
+	http://www.python.org/ftp/$pkgname/doc/$pkgver/html-$pkgver.tar.bz2	)
+md5sums=('07cfc759546f6723bb367be5b1ce9875' \
+	 '4e3f177f32e15713130d9d9cf35f991f' )
+
+#Todo:
+#None
+
+#Notes:
+#python does not like pie
+
+#Changelog:
+#rel1: upgraded to 2.4.2 2005.09.30
+#rel1: Upgraded to python 2.4.1 2005.05.12
+#rel2: Rebuilt against new db 2005.02.23
+#rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-Os -march=i486 -mtune=i686 -fstack-protector-all"
+	export CXXFLAGS="-Os -march=i486 -mtune=i686 -fstack-protector-all"
+	export OPT="$CFLAGS"
+
+	cd $startdir/src/Python-$pkgver
+
+	find . -type d -exec chmod 755 {} \;
+	find . -type f -perm 775 -exec chmod 755 {} \;
+	find . -type f -perm 664 -exec chmod 644 {} \;
+	find . -type d -name CVS -exec rm -r {} \;
+
+	./configure		\
+		--prefix=/usr	\
+		--with-ncurses	\
+		--with-threads	\
+		--enable-shared
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a README	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a Misc	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mkdir html
+
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+	tar xjf $startdir/src/html-$pkgver.tar.bz2
+	chown -R root.root .
+
+	chmod 0755 $startdir/pkg/usr/lib/libpython2.4.so.1.0
+
+	cd $startdir/pkg/usr/bin
+	ln -sf python2.4 python
+	chown -R root.bin .
+
+}

@@ -1,0 +1,81 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+GRSEC=2.1.8
+SUBVER=200601081803
+
+pkgname=kernel24-grsec-source
+pkgver=2.4.32
+pkgrel=2
+url="http://www.kernel.org"
+pkgdesc="kernel24-grsec-source (Linux kernel source) Source code for Linus Torvalds' Linux kernel. This is the complete and unmodified source code for the Linux kernel."
+source=(http://www.kernel.org/pub/linux/kernel/v2.4/linux-$pkgver.tar.bz2	\
+	http://grsecurity.net/grsecurity-$GRSEC-$pkgver-$SUBVER.patch.gz	\
+	build.diff								\
+	config									)
+md5sums=('38f4d0830e95a20f4bfed17622d5557c' \
+	 'fe6d319b6622e1c0ed94b6d6705cc140' \
+	 'a07907eea88d58a64c7acca3bb2ff9cd' \
+	 'dfca7c1789fb152759c843a24c6618cd' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: upgraded grsec to 2.1.8 2006.01.17
+##   rel1: upgraded to 2.4.32, grsec 2.1.7 2005.11.17
+##   rel2: rebuilt with new config 2005.11.13
+##   rel1: upgraded to 2.4.31 and grsec 2.1.6 2005.06.18
+##   rel1: upgraded to grsec 2.1.5 kernel 2.4.30 2005.04.13
+##   rel4: rebuilt with new config without i2c 2005.03.08
+##   rel3: upgraded to grsec 2.1.3 2005.03.08
+##   rel2: upgraded to grsec 2.1.2 2005.03.04
+##   rel1: Initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/linux-$pkgver
+
+	patch -p1 < $startdir/src/build.diff					|| return 1
+	patch -p1 < $startdir/src/grsecurity-$GRSEC-$pkgver-$SUBVER.patch	|| return 1
+
+	cd ..
+
+	mv linux-$pkgver linux-$pkgver-grsec
+
+	cp -a linux-$pkgver-grsec linux-$pkgver-grsec.orig
+
+	cp config linux-$pkgver-grsec/.config
+
+	cd linux-$pkgver-grsec
+
+	make oldconfig	|| return 1
+	make dep	|| return 1
+	make bzImage	|| return 1
+	make clean	|| return 1
+
+	cd drivers/net/hamradio/soundmodem
+	rm *
+	cp -a $startdir/src/linux-$pkgver-grsec.orig/drivers/net/hamradio/soundmodem/* .
+
+	cd $startdir/src/linux-$pkgver-grsec/scripts
+	rm -r *
+	cp -a $startdir/src/linux-$pkgver-grsec.orig/scripts/* .
+
+	cd $startdir/src/linux-$pkgver-grsec
+	rm .version .config.old .hdepend
+
+	find . -name ".depend" | xargs rm
+
+	mkdir -p $startdir/pkg/usr/src
+	cd $startdir/pkg/usr/src
+	cp -a $startdir/src/linux-$pkgver-grsec .
+
+	find $startdir/pkg -perm 0664 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0775 -exec chmod 0755 {} \;
+
+}

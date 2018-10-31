@@ -1,0 +1,86 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pciutils
+pkgver=2.1.11
+pkgrel=3
+pkgdesc="pciutils (PCI utilities) lspci displays detailed information about all PCI buses and devices in the system, replacing the original /proc/pci interface. setpci allows reading from and writing to PCI device configuration registers. For example, you can adjust the latency timers with it. pcimodules lists the kernel modules for all plugged in PCI devices. See the manual pages for more details."
+url="http://atrey.karlin.mff.cuni.cz/~mj/pciutils.html"
+depends=('glibc')
+source=(ftp://ftp.kernel.org/pub/software/utils/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	pcimodules-pciutils-$pkgver.diff						\
+	pcimodules.overflow.diff							\
+	pciutils.prefix.diff								)
+md5sums=('2b3b2147b7bc91f362be55cb49fa1c4e' \
+	 'c6135ce795940ebf3777592d4e6f8049' \
+	 '751621815dd1195dd85efcd9e3c6313f' \
+	 'deb53e123b7168c3589e41533570944b' )
+
+## Todo:
+##   None
+
+## Notes:
+##   The pcimodules-pciutils patch adds pcimodules to this package
+##   The pcimodules.overflow patch fixes memory allocation and strcpy bugs that cause pcimodules
+##     to hang on systems using libsafe
+##   The pciutils.prefix patch changes the prefix from /usr/local to /usr
+
+## Changelog:
+##   rel3: updated the pci.ids 2006.01.21
+##   rel2: updated the pci.ids 2005.09.25
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/pcimodules-$pkgname-$pkgver.diff	|| return 1
+	patch -p1 < $startdir/src/pcimodules.overflow.diff		|| return 1
+	patch -p1 < $startdir/src/$pkgname.prefix.diff			|| return 1
+
+	rm -f pci.ids
+	# Fetch the latest pci.ids:
+	wget http://pciids.sourceforge.net/pci.ids
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/share
+	mkdir -p $startdir/pkg/usr/include/pci
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp lspci	$startdir/pkg/sbin/lspci
+	cp setpci	$startdir/pkg/sbin/setpci
+	cp pcimodules	$startdir/pkg/sbin/pcimodules
+
+	chmod 755 $startdir/pkg/sbin/*
+	chown -R root.bin $startdir/pkg/sbin
+
+	cp pci.ids $startdir/pkg/usr/share/pci.ids
+
+	for file in		\
+		config.h	\
+		header.h	\
+		pci.h
+	do
+		cp -a lib/$file $startdir/pkg/usr/include/pci
+	done
+
+	cp lib/libpci.a $startdir/pkg/usr/lib/libpci.a
+
+	cp lspci.8	$startdir/pkg/usr/man/man8/lspci.8
+	cp setpci.8	$startdir/pkg/usr/man/man8/setpci.8
+	cp pcimodules.8	$startdir/pkg/usr/man/man8/pcimodules.8
+
+	cp	-a		\
+		README		\
+		ChangeLog	\
+		TODO 		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

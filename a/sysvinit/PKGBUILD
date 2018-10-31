@@ -1,0 +1,153 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=sysvinit
+pkgver=2.86
+pkgrel=30
+url="ftp://ftp.cistron.nl/pub/people/miquels/$pkgname"
+pkgdesc="sysvinit (init, the parent of all processes) System V style init programs by Miquel van Smoorenburg that control the booting and shutdown of your system.  These support a number of system runlevels, each with a specific set of utilities spawned. For example, the normal system runlevel is 3, which starts agetty on virtual consoles tty1 - tty6.  Runlevel 4 starts xdm. Runlevel 0 shuts the system down."
+depends=('glibc')
+backup=(etc/inittab		\
+	etc/rc.4		\
+	etc/rc.6		\
+	etc/rc.K		\
+	etc/rc.M		\
+	etc/rc.S		\
+	etc/rc.conf		\
+	etc/rc.local		\
+	etc/rc.shutdown		\
+	etc/rc.d/sysvinit	\
+	etc/rc.mythtv		)
+source=(ftp://ftp.cistron.nl/pub/people/miquels/$pkgname/$pkgname-$pkgver.tar.gz	\
+	inittab										\
+	rc.4										\
+	rc.6										\
+	rc.K										\
+	rc.M										\
+	rc.S										\
+	rc.conf										\
+	rc.local									\
+	rc.shutdown									\
+	sysvinit.diff									\
+	rubixlib									\
+	rc.mythtv									)
+md5sums=('7d5d61c026122ab791ac04c8a84db967' \
+	 'cec5aac051616283fd2b6cf2ec6c90a4' \
+	 '1086ab27e8433ff065ddc39893eb0415' \
+	 '3d44ddbca893ee5bc83c33f3d1de7a9c' \
+	 '945b04c5a0f594c1837c57d70021229d' \
+	 'c0f76dfb07262de4db2db873790984db' \
+	 'd5299ff6bace5bdfa9e5de24876f9223' \
+	 'f2b81d5ba31542b945b5b0ac0c6bfb05' \
+	 '10d015f35686314cd37f24683dfd1f79' \
+	 'e16cf8c97f212f0ead36099d9d9513eb' \
+	 '49684189c0ba1540d30af208af772093' \
+	 '8b7f353566092c719673993736482da4' \
+	 '1417ff0934c2230587e3a21e7298da0a' )
+
+## Todo:
+##   None
+
+## Notes:
+##   The sysvinit.diff patch changes the default location of the fastboot and forcefsck files
+##     it also changes the default location initscript
+
+## Changelog:
+##   rel30: fixed myth runlevel id that was too long 2006.02.07
+##   rel29: added rc.mythtv, updated inittab for mythtv at runlevel 5 2006.02.06
+##   rel28: added banged out alsa to default DAEMONS array in rc.conf 2006.02.06
+##   rel27: add LANG, NUMLOCK and CONSOLEMAP options to rc.conf and rc.S
+##   rel26: remove /etc/resolv.conf on boot just in case... 2006.01.23
+##   rel25: remove the serial script from default DAEMONS list, add a few notes to rc.conf 2006.01.22
+##   rel24: fixed bugs in rc.K 2006.01.21
+##   rel23: fixed another bug in rubixlib that caused the alsa rc script to hang 2006.01.17
+##   rel22: fixed a few bugs in rubixlib, updated rc.S for new daemon log style 2006.01.17
+##   rel21: updated copyright year, delete /var/log/daemon on boot 2006.01.13
+##   rel20: fixed a small color bug with printed errors during "busy" 2006.01.10
+##   rel19: updated rc.M for better aesthetics and removed ttys (except 6) in runlevel 4
+##   rel18: colorized the boot scripts 2005.12.26
+##   rel17: added support for backgrounding daemons 2005.12.23
+##   rel16: updated rc.S so that starting udev... is not seen on 2.4 kernels
+##          fixed typos in rc.conf, thanks ptah 2005.12.21
+##   rel15: updated rc.M so that ldconfig and fc-cache are forked 2005.12.18
+##   rel14: updated rc.S to find the new location of start_udev 2005.12.07
+##   rel13: updated the rc.conf bridge example to reflect changes in the bridge code 2005.12.02
+##   rel12: fixed rc.S so that loop is loaded on 2.4 kernels 2005.11.15
+##   rel11: added bridge configuration to the default rc.conf 2005.10.29
+##   rel10: fixed lvm problems in rc.S 2005.10.14
+##   rel9:  moved the dmesg command in rc.S to the beginning 2005.09.27
+##   rel8:  ok... I think this is good to go now, found a test that always answered true 2005.09.25
+##   rel7:  one more small typo, and added sendmail to default boot list 2005.09.25
+##   rel6:  fixed some VERY minor typos in boot scripts 2005.09.24
+##   rel5:  cleaned up the scripts in preparation for 1.0 2005.09.23
+##   rel4:  Fixed some rc.K stuff, removed udev restart in single user mode 2005.03.01
+##   rel3:  Added rc.shutdown and another second to sleep after modprobe loop 2005.02.25
+##          also removed all references to devfs
+##   rel2:  Upgraded to 2.86, made lots of changes to scripts 2005.02.22
+##   rel1:  Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/sysvinit.diff || return 1
+
+	cd doc
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a Install Propaganda $pkgname-$pkgver.lsm $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod -R 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+	chmod 755 $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd ../src
+	make clobber
+	make || return 1
+
+	mkdir -p $startdir/pkg/sbin
+	for program in halt init killall5 shutdown runlevel ; do
+		cp $program $startdir/pkg/sbin/$program
+	done
+	cp initscript.sample $startdir/pkg/sbin/initscript.sample
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp last $startdir/pkg/usr/bin/last
+
+	cd ../man
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp last.1 $startdir/pkg/usr/man/man1/last.1
+	mkdir -p $startdir/pkg/usr/man/man5
+	for page in inittab.5 initscript.5 ; do
+		cp $page $startdir/pkg/usr/man/man5/$page
+	done
+	mkdir -p $startdir/pkg/usr/man/man8
+	for page in halt.8 init.8 killall5.8 pidof.8 poweroff.8 reboot.8 runlevel.8 shutdown.8 telinit.8 ; do
+		cp $page $startdir/pkg/usr/man/man8/$page
+	done
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	for file in		\
+		rc.4		\
+		rc.6		\
+		rc.K		\
+		rc.M		\
+		rc.S		\
+		rc.mythtv	\
+		rc.local	\
+		rc.shutdown
+	do
+		install -m0755 $startdir/src/$file $startdir/pkg/etc
+	done
+	install -m0644 $startdir/src/rubixlib	$startdir/pkg/etc
+	install -m0644 $startdir/src/inittab	$startdir/pkg/etc
+	install -m0644 $startdir/src/rc.conf	$startdir/pkg/etc
+
+	cd $startdir/pkg/sbin
+	ln -s init telinit
+	ln -s halt reboot
+	ln -s killall5 pidof
+	ln -s halt poweroff
+
+	cd $startdir/pkg/etc
+	ln -s rc.6 rc.0
+
+	chown -R root.bin $startdir/pkg/sbin $startdir/pkg/usr/bin
+
+}

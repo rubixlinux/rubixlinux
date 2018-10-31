@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libxslt
+pkgver=1.1.15
+pkgrel=1
+pkgdesc="libxslt (XML transformation library) XSLT support for libxml2.  (XSLT is a language used for transforming XML documents) libxslt is required by GNOME and KDE."
+depends=('glibc' 'libgcrypt' 'libgpg-error' 'zlib')
+source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.1/$pkgname-$pkgver.tar.gz)
+url="http://xmlsoft.org/XSLT"
+md5sums=('238de9eda71b570ff7b78aaf65308fc6')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 1.1.15 2005.09.18
+#rel1: Upgraded to 1.1.14 2005.05.12
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+	mv $startdir/pkg/usr/doc/$pkgname-python-$pkgver $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		Copyright	\
+		FEATURES	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+		libxslt.spec	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f | xargs chmod 644
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

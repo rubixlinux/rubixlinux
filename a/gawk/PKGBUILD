@@ -1,0 +1,73 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gawk
+pkgver=3.1.5
+pkgrel=1
+pkgdesc="gawk (pattern scanning and processing language) Gawk is the GNU Project's implementation of the AWK programming language.  It conforms to the definition of the language in the POSIX 1003.2 Command Language And Utilities Standard.  This version in turn is based on the description in The AWK Programming Language, by Aho, Kernighan, and Weinberger, with the additional features found in the System V Release 4 version of UNIX awk.  Gawk also provides more recent Bell Labs awk extensions, and some GNU-specific extensions."
+depends=('glibc')
+provides=('awk')
+url="http://www.gnu.org/software/$pkgname/$pkgname.html"
+source=(http://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('5703f72d0eea1d463f735aad8222655f')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 3.1.5 2005.09.16
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cd $startdir/pkg/usr/bin
+	ln -sf $pkgname-$pkgver $pkgname
+	ln -sf p$pkgname-$pkgver p$pkgname
+
+	mkdir -p $startdir/pkg/bin
+	mv $startdir/pkg/usr/bin/$pkgname*	$startdir/pkg/bin
+	mv $startdir/pkg/usr/bin/awk		$startdir/pkg/bin
+
+	cd $startdir/pkg/usr/bin
+	ln -sf ../../bin/awk .
+	ln -sf ../../bin/$pkgname .
+	ln -sf ../../bin/$pkgname-$pkgver .
+
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/usr/bin
+
+	rm $startdir/pkg/usr/info/dir
+
+	cd $startdir/pkg/usr/man/man1
+	rm -f p$pkgname.1
+	ln -sf $pkgname.1 awk.1
+	ln -sf $pkgname.1 p$pkgname.1
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		FUTURES		\
+		INSTALL		\
+		LIMITATIONS	\
+		NEWS		\
+		POSIX.STD	\
+		PROBLEMS	\
+		README		\
+		README_d	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type d -exec chmod 755 {} \;
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+}

@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pmount
+pkgver=0.9.7
+pkgrel=1
+pkgdesc="pmount is a wrapper around the standard mount program which permits normal users to mount removable devices without a matching /etc/fstab entry."
+url="http://www.piware.de/projects.shtml"
+depends=('glibc' 'sysfsutils' 'hal' 'dbus')
+source=(http://www.piware.de/projects/$pkgname-$pkgver.tar.gz)
+md5sums=('29c955ff520cea32ab3e0316306d0ac1')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.9.7 2005.12.18
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver  
+
+	./configure --prefix=/usr
+	make || return 1 
+	make DESTDIR=$startdir/pkg install 
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	chmod 4755 $startdir/pkg/usr/bin/pmount
+	chmod 4755 $startdir/pkg/usr/bin/pumount
+
+	mkdir -p $startdir/pkg/media
+
+}

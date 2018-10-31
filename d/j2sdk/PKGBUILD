@@ -1,0 +1,56 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=j2sdk
+pkgver=1_5_0_06
+pkgrel=2
+pkgdesc="Java(TM) 2 Software Development Kit Standard Edition, Version $pkgver The Java 2 SDK software includes tools for developing, testing, and running programs written in the Java programming language.  This package contains everything you need to run Java(TM). For additional information, refer to this Sun Microsystems web page: http://java.sun.com"
+url="http://java.sun.com/j2se"
+depends=('glibc' 'x11' 'alsa-lib')
+install=$pkgname.install
+source=(jdk-$pkgver-linux-i586.bin	\
+	$pkgname.csh			\
+	$pkgname.sh			)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: fixed broken symlink 2006.02.18
+##   rel1: upgraded to 1.5.0-06 2006.02.15
+##   rel1: Upgraded to 1.5.0-04 2005.06.24
+##   rel2: Added install script for the /usr/lib/java symlink 2005.05.04
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/pkg
+
+	mkdir -p usr/lib
+	cd usr/lib
+
+	sh $startdir/src/jdk-$pkgver-linux-i586.bin
+
+	mkdir -p $startdir/pkg/etc/profile.d
+	cp -a $startdir/src/$pkgname.csh $startdir/pkg/etc/profile.d
+	cp -a $startdir/src/$pkgname.sh $startdir/pkg/etc/profile.d
+
+	chown -R root.root $startdir/pkg
+
+	cd $startdir/pkg
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	chmod 755 $startdir/pkg/etc/profile.d/*
+
+}

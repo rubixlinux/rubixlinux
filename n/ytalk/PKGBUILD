@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=ytalk
+pkgver=3.1.1
+pkgrel=1
+pkgdesc="ytalk (multi-user chat program) YTalk is a multi-user chat program.  It works almost exactly like the UNIX talk program and even communicates with the same talk daemon, but YTalk allows for multiple connections."
+depends=('ncurses')
+source=(http://www.iagora.com/~espel/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('e678401ab48be6728ec700458ad8ace0')
+url="http://www.iagora.com/~espel/ytalk/ytalk.html"
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		BUGS			\
+		ChangeLog		\
+		INSTALL			\
+		README			\
+		README.old		\
+		$pkgname-$pkgver.lsm	\
+		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--with-x=no		\
+		$CHOST
+	make
+
+	mkdir -p	$startdir/pkg/usr/bin
+	cp ytalk	$startdir/pkg/usr/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+	cp ytalk.1	$startdir/pkg/usr/man/man1
+
+	mkdir -p	$startdir/pkg/etc
+	cp ytalkrc	$startdir/pkg/etc
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

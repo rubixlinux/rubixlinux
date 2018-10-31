@@ -1,0 +1,67 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+DVER=1.5.0_06
+
+pkgname=jre
+pkgver=1_5_0_06
+pkgrel=2
+pkgdesc="Java(TM) 2 Platform Standard Edition Runtime Environment, Version 5.0 The J2SE(TM) Runtime Environment (JRE) is intended for software developers and vendors to redistribute with their applications. It contains the Java virtual machine, runtime class libraries, and Java application launcher that are necessary to run programs written in the Java programming language. If you need development tools, obtain the j2sdk from Sun Microsystems web page: http://java.sun.com"
+url="http://java.sun.com"
+depends=('glibc' 'x11' 'alsa-lib')
+install=$pkgname.install
+source=($pkgname-$pkgver-linux-i586.bin	\
+	$pkgname.csh			\
+	$pkgname.sh			)
+md5sums=('e0a88dbec9bfe3195794bb652bfc6516' \
+	 '286f49c487547fe18b4ef52d665fc05b' \
+	 '9fa40e9fef6b330858a470db14b78ddd' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: fixed broken symlink 2006.02.18
+##   rel1: upgraded to 1.5.0-06
+##   rel4: moved java plugin to generic plugin dir 2005.11.01
+##   rel3: fixed jre symlink for firefox 1.0.7 2006.10.06
+##   rel2: added jre symlink for firefox 2005.09.16
+##   rel1: upgraded to 1.5.0-04 2005.06.24
+##   rel1: Initial Rubix Release
+
+build() {
+
+	cd $startdir/pkg
+
+	mkdir -p usr/lib
+	cd usr/lib
+
+	sh $startdir/src/$pkgname-$pkgver-linux-i586.bin
+
+	mkdir -p $startdir/pkg/etc/profile.d
+	cp -a $startdir/src/$pkgname.*sh $startdir/pkg/etc/profile.d
+
+	chown -R root.root $startdir/pkg
+
+	cd $startdir/pkg
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	chmod 755 $startdir/pkg/etc/profile.d/*
+
+	mkdir -p $startdir/pkg/usr/lib/mozilla/plugins
+
+	cd $startdir/pkg/usr/lib/mozilla/plugins
+	ln -s /usr/lib/$pkgname$DVER/plugin/i386/ns7/libjavaplugin_oji.so
+
+}

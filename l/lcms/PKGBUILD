@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=lcms
+pkgver=1.14
+pkgrel=1
+pkgdesc="lcms (little cms engine) Little cms is a small, speed optimized color management engine. lcms was written by Marti Maria <marti@littlecms.com>."
+depends=('libjpeg' 'libtiff')
+url="http://www.littlecms.com"
+source=(http://littlecms.com/$pkgname-$pkgver.tar.gz)
+md5sums=('5a803460aeb10e762d97e11a37462a69')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	chown -R root.root .
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		NEWS	\
+		README*	\
+		doc	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f -exec chmod 644 {} \;
+
+}

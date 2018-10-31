@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# To disallow outside connections to the database (if you don't need them, this
+# is recommended to increase security), uncomment the next line:
+#SKIP="--skip-networking"
+
+MYSQLD_ROOT="/var/lib/mysql"
+SCRIPT=`basename $0`
+START=/usr/bin/mysqld_safe
+PROG=/usr/bin/mysqld
+
+. /etc/rubixlib
+
+init_mysql() {
+	if [ ! -d $MYSQLD_ROOT ]; then
+		stat_busy "initializing mysql databse"
+		mkdir $MYSQLD_ROOT
+		chmod 750 $MYSQLD_ROOT
+		/usr/bin/mysql_install_db --datadir=$MYSQLD_ROOT --user=mysql > /dev/null 2>&1
+		chown -R mysql.mysql $MYSQLD_ROOT
+		stat_done
+	fi
+}
+
+case "$1" in
+	start)
+		init_mysql
+		start_daemon $SCRIPT @$START --datadir=/var/lib/mysql --pid-file=/var/run/mysql/mysql.pid $SKIP
+		;;
+        stop)
+		stop_daemon $SCRIPT $PROG
+		if [ -r /var/run/mysql/mysql.pid ]; then
+			stat_busy "waiting for mysql to stop"
+			# Wait at least one minute for it to exit, as we don't know how big the DB is...
+			for second in 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 \
+				0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 60 ; do
+				if [ ! -r /var/run/mysql/mysql.pid ]; then
+					break;
+				fi
+				sleep 1
+			done
+			if [ "$second" = "60" ]; then
+				stat_fail
+			else
+				stat_done
+			fi
+		fi
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+	stat_err "usage: $0 {start|stop|restart|status}"
+esac

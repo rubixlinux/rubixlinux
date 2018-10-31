@@ -1,0 +1,61 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=logrotate
+pkgver=3.6.8
+pkgrel=1
+pkgdesc="logrotate (system log rotation tool) The logrotate utility is designed to simplify the administration of log files on a system which generates a lot of log files. Logrotate allows for the automatic rotation compression, removal and mailing of log files.  Logrotate can be set to handle a log file daily, weekly, monthly or when the log file gets to a certain size.  Normally, logrotate runs as a daily cron job."
+backup=(etc/logrotate.conf)
+depends=('popt')
+source=($pkgname-$pkgver.tar.gz		\
+	$pkgname.slackware.diff.gz	\
+	$pkgname.gz			\
+	$pkgname.conf.gz		)
+md5sums=('77f853ccebb01a3c8e80b371480f50e0' \
+	 '593a7b0b90be8167d75d3b5aea96bfc1' \
+	 '4ced482fe3acee54b7ae705edf43562f' \
+	 '8cb3e9caa8b917874339a17be0d32958' )
+
+#Todo:
+#md5sums
+#depends
+#makedepends
+#explain patch
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/etc/cron.daily
+	mkdir -p $startdir/pkg/etc/logrotate.d
+	mkdir -p $startdir/pkg/var/lib/logrotate
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/logrotate.slackware.diff
+
+	make clean
+	make
+
+	cp logrotate	$startdir/pkg/usr/sbin
+	cp logrotate.8	$startdir/pkg/usr/man/man8
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		CHANGES	\
+		COPYING	\
+		READM*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cp $startdir/src/$pkgname	$startdir/pkg/etc/cron.daily
+	cp $startdir/src/$pkgname.conf	$startdir/pkg/etc
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

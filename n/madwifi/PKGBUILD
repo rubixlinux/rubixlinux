@@ -1,0 +1,87 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=madwifi
+pkgver=20060303
+pkgrel=1
+pkgdesc="MADWiFi is short for Multiband Atheros Driver for WiFi. In other words: this project provides a Linux kernel driver for Atheros-based Wireless LAN devices. The driver works such that your WLAN card will appear as normal network interface in the system. Additionally there is support for the Wireless Extensions API. This allows you to configure the device using the usual tools (ifconfig, iwconfig and friends)."
+url="http://madwifi.sourceforge.net"
+depends=('glibc')
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to latest cvs, built for 2.6.15.5 2006.03.03
+##   rel1: upgraded to latest cvs, built for 2.6.15.4 2006.02.12
+##   rel1: upgraded to latest cvs, built for 2.6.15.3 2006.02.07
+##   rel1: upgraded to latest cvs, built for 2.6.15.2 2006.01.31
+##   rel1: upgraded to latest cvs, built for 2.6.15.1 2006.01.20
+##   rel1: upgraded to latest cvs, built for kernel 2.6.15 2006.01.10
+##   rel1: upgraded to latest cvs, built for kernels 2.4.32, 2.4.32-grsec 2005.11.17
+##   rel1: upgraded to latest cvs, built for config changes in 2.4 kernels 2005.11.14
+##   rel1: upgraded to latest cvs, built for 2.6.14.2-Rubix 2005.11.12
+##   rel1: upgraded to latest cvs, built for 2.6.14 2005.10.28
+##   rel1: initial rubix release, 20050926, 2005.09.26
+
+build() {
+
+	export COPTS="-DSOFTLED"
+
+	cd $startdir/src
+
+	svn checkout http://svn.madwifi.org/branches/$pkgname-old $pkgname-old
+
+	cd $pkgname-old
+
+	make clean
+	make KERNELPATH=/lib/modules/$vver24/build KERNELRELEASE=$vver24 || return 1
+	make KERNELPATH=/lib/modules/$vver24/build KERNELRELEASE=$vver24 DESTDIR=$startdir/pkg install
+
+	make clean
+	make KERNELPATH=/lib/modules/$gver24/build KERNELRELEASE=$gver24 || return 1
+	make KERNELPATH=/lib/modules/$gver24/build KERNELRELEASE=$gver24 DESTDIR=$startdir/pkg install
+
+	make clean
+	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 || return 1
+	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 DESTDIR=$startdir/pkg install
+
+	cd tools
+	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 || return 1
+	mkdir -p $startdir/pkg/usr/bin
+	make KERNELPATH=/lib/modules/$vver26/build KERNELRELEASE=$vver26 DESTDIR=$startdir/pkg BINDIR=/usr/bin install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/include/madwifi
+	for i in include net80211
+	do
+		find $i -type f -name "*.h" -exec cp -a --parent {} $startdir/pkg/usr/include/madwifi \; 
+	done
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYRIGHT	\
+		INSTALL		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a hal/COPYRIGHT $startdir/pkg/usr/doc/$pkgname-$pkgver/COPYRIGHT.hal
+	cp -a hal/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.hal
+	cp -a patches/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.patches
+
+	cd $startdir/pkg
+	find lib/modules -type f -name *.o -exec gzip {} \;
+	find lib/modules -type f -name *.ko -exec gzip {} \;
+
+}

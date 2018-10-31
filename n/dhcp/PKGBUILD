@@ -1,0 +1,78 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=dhcp
+pkgver=3.0.3
+pkgrel=2
+pkgdesc="dhcp (DHCP server and client utilities) This package provides the ISC's DHCP utilities, including both a server and client.  The DHCP protocol allows a host to contact a central server which maintains a list of IP addresses which may be assigned on one or more subnets.   A DHCP client may request an address from this pool, and then use it temporarily for communication on the network.   The DHCP protocol also provides a mechanism whereby a client can learn important details about the network to which it is attached, such as the location of a default router or name server."
+url="http://www.isc.org/sw/dhcp"
+depends=('glibc')
+backup=('etc/dhcpd.conf' 		\
+	'etc/dhclient.conf'		\
+	'var/state/dhcp/dhcpd.leases'	\
+	'etc/rc.d/dhcp'			)
+source=(ftp://ftp.isc.org/isc/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname						)
+md5sums=('f91416a0b8ed3fd0601688cf0b7df58f' \
+	 '2c4c44a8beb4ec658647aa6a5dfc8b25' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.15
+##   rel1: upgraded to 3.0.3 2005.08.19
+##   rel2: Added etc/rc.d/dhcp to backup files 2005.04.02
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure linux-2.2
+	make DEBUG="$CFLAGS" || return 1
+	make DEBUG="$CFLAGS" install DESTDIR=$startdir/pkg
+
+	rm -r $startdir/pkg/usr/local
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		LICENSE		\
+		README		\
+		RELNOTES	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/examples
+
+	cp	-a			\
+		client/dhclient.conf	\
+		server/dhcpd.conf	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/examples
+
+	cat << EOF > $startdir/pkg/etc/dhcpd.conf
+# dhcpd.conf
+#
+# Configuration file for ISC dhcpd (see 'man dhcpd.conf')
+#
+EOF
+
+	cat << EOF > $startdir/pkg/etc/dhclient.conf
+# dhclient.conf
+#
+# Configuration file for ISC dhclient (see 'man dhclient.conf')
+#
+EOF
+
+	cp client/scripts/linux $startdir/pkg/sbin/dhclient-script
+	chmod 700 $startdir/pkg/sbin/dhclient-script
+	chmod 644 $startdir/pkg/usr/man/man?/*
+	chown -R root:bin $startdir/pkg/sbin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	touch $startdir/pkg/var/state/dhcp/dhcpd.leases
+
+}

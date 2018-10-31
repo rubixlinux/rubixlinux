@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=trn
+pkgver=3.6
+pkgrel=1
+pkgdesc="trn (a threaded newsreader) A threaded news reader for reading a remote NNTP server.  Compiled to use Overviews or mthreads, and to read news through your NNTP server. Be sure to set NNTPSERVER in your /etc/profile or /etc/csh.login."
+depends=('glibc' 'gpm' 'ncurses')
+source=($pkgname-$pkgver.tar.gz	\
+	config.sh.gz		\
+	trn.tar.gz		)
+md5sums=('0337ebc89f64825bc4ce2fb12e5b96a7' \
+	 'a2c598063cac966185c0ecba12a0147a' \
+	 '372a30ca2376da14089f91aaa273e013' )
+
+build() {
+
+	cd $startdir/pkg
+
+	tar zxfv $startdir/src/trn.tar.gz
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	cp $startdir/src/config.sh .
+
+	./Configure -f config.sh
+	make clean
+	make || return 1
+
+	mkdir -p	$startdir/pkg/usr/bin
+	cp Pnews	$startdir/pkg/usr/bin
+	cp Rnmail	$startdir/pkg/usr/bin
+	cp newsetup	$startdir/pkg/usr/bin
+	cp newsgroups	$startdir/pkg/usr/bin
+	cp nntplist	$startdir/pkg/usr/bin
+	cp trn		$startdir/pkg/usr/bin
+	cp trn-artchk	$startdir/pkg/usr/bin
+	cp trn		$startdir/pkg/usr/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+	cp Pnews.1	$startdir/pkg/usr/man/man1
+	cp Rnmail.1	$startdir/pkg/usr/man/man1
+	cp newsetup.1	$startdir/pkg/usr/man/man1
+	cp newsgroups.1	$startdir/pkg/usr/man/man1
+	cp trn.1	$startdir/pkg/usr/man/man1
+
+	ln -s trn $startdir/pkg/usr/bin/rn
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

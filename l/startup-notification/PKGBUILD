@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=startup-notification
+pkgver=0.8
+pkgrel=1
+pkgdesc="startup-notification Adds support for applications to use "busy" cursors while starting up."
+depends=('x11')
+url="http://www.gnome.org"
+source=(ftp://ftp.gnome.org/pub/gnome/sources/$pkgname/$pkgver/$pkgname-$pkgver.tar.bz2)
+md5sums=('d9b2e9fba18843314ae42334ceb4336d')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 0.8 2005.05.12
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc		\
+		--localstatedir=/var/lib	\
+		$CHOST
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

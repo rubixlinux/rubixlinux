@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@ruix-os.org>
+
+pkgname=xine-ui
+pkgver=0.99.4
+pkgrel=1
+pkgdesc="xine-ui (xine multimedia playback engine user interface) Xine is a free multimedia player.  It plays back CDs, DVDs, and VCDs, multimedia files, and multimedia streamed over a network. The xine-ui package contains the graphical user interface for the xine multimedia player."
+depends=('glibc' 'freetype2' 'gpm' 'ncurses' 'slang' 'x11' 'fontconfig' 'expat' 'xine-lib' 'openssl' 'curl' 'aalib' 'zlib' 'readline' 'libpng')
+source=(http://dl.sourceforge.net/sourceforge/xine/$pkgname-$pkgver.tar.gz	\
+	xine.desktop.gz								)
+url="http://www.xinehq.de"
+md5sums=('90ea1f76747e9788a30a73e7f4a76cf6' \
+	 'e6d5a3b1afb35ba1b7d9cdff68108ae7' )
+
+#Todo:
+#none
+
+#Notes:
+#none
+
+#Changelog:
+#rel1: upgraded to 0.99.4 2005.07.29
+#rel3: rebuilt because of corrupted package 2005.06.18
+
+build() {
+
+	export CFLAGS="-fstack-protector-all"
+	export CXXFLAGS="-fstack-protector-all"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+
+	XINE_BUILD=i686-pc-linux-gnu ./configure --prefix=/usr
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/share/applications
+	cp $startdir/src/xine.desktop $startdir/pkg/usr/share/applications/xine.desktop
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		NEWS		\
+		README		\
+		doc/README*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a src/xitk/xine-toolkit/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.xitk
+
+	rm -rf $startdir/pkg/usr/share/doc
+
+}

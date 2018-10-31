@@ -1,0 +1,36 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libtar
+pkgver=1.2.11
+pkgrel=1
+pkgdesc="libtar is a C library for manipulating POSIX tar files. It handles adding and extracting files to/from a tar archive."
+url="http://www.feep.net/libtar"
+depends=('zlib')
+source=(ftp://ftp.feep.net/pub/software/$pkgname/$pkgname-$pkgver.tar.gz	\
+	libtar-$pkgver.patch.gz							)
+md5sums=('604238e8734ce6e25347a58c4f1a1d7e' \
+	 'bd0c20bf622e859792db35fabf5e9a19' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver.patch
+
+	./configure --prefix=/usr
+	make
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYRIGHT	\
+		ChangeLog	\
+		ChangeLog-1.0.x	\
+		INSTALL		\
+		README		\
+		TODO		\
+	 $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

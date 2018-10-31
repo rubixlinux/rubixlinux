@@ -1,0 +1,40 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gtk+
+pkgver=1.2.10
+pkgrel=1
+pkgdesc="gtk+ (graphical user interface toolkit) GTK+, which stands for the Gimp ToolKit, is a library for creating graphical user interfaces for the X Window System.  This library is needed for GIMP (the GNU Image Manipulation Program), Mozilla, and many other X programs, including most of the programs from the GNOME project."
+depends=('x11')
+source=(ftp://ftp.gtk.org/pub/gtk/v1.2/$pkgname-$pkgver.tar.gz)
+md5sums=('4d5cb2fc7fb7830e4af9747a36bfce20')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--with-glib-prefix=/usr	\
+		$CHOST
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		ABOUT-NLS		\
+		AUTHORS			\
+		COPYING			\
+		HACKING			\
+		INSTALL			\
+		NEWS			\
+		README			\
+		README.cvs-commits	\
+		TODO			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+	chmod 0644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+	rm $startdir/pkg/usr/info/dir
+
+}

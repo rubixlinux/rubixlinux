@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=synaptics
+pkgver=0.14.4
+pkgrel=1
+pkgdesc="synaptics driver for notebook touchpads"
+url="http://w1.894.telia.com/~u89404340/touchpad"
+depends=('gcc' 'x11')
+source=(http://w1.894.telia.com/~u89404340/touchpad/files/$pkgname-$pkgver.tar.bz2)
+md5sums=('ae9aef7a146346fbfc7edfdd63cdd273')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.14.4 2005.11.19
+##   rel2: moved doc location 2005.02.26
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+	make || return 1
+	make DESTDIR=$startdir/pkg BINDIR=$startdir/pkg/usr/X11R6/bin MANDIR=$startdir/pkg/usr/X11R6/man install
+
+#	chmod 0644 $startdir/pkg/usr/X11R6/lib/modules/input/synaptics_drv.o
+#	chmod 0755 $startdir/pkg/usr/X11R6/man/man1
+#	chmod 0755 $startdir/pkg/usr/X11R6/man/man5
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COMPATIBILITY	\
+		FILES		\
+		INSTALL		\
+		INSTALL.DE	\
+		INSTALL.FR	\
+		LICENSE		\
+		NEWS		\
+		README		\
+		README.alps	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

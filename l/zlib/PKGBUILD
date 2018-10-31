@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=zlib
+pkgver=1.2.3
+pkgrel=1
+pkgdesc="zlib (compression library) zlib is a general purpose thread safe data compression library.  The data format used by the zlib library is described by RFCs 1950 to 1952 in the files ftp://ds.internic.net/rfc/rfc1950.txt (zlib format) rfc1951.txt (deflate format) and rfc1952.txt (gzip format)."
+url="http://www.gzip.org/zlib"
+source=(http://www.zlib.net/$pkgname-$pkgver.tar.gz)
+md5sums=('debc62758716a169df9f62e6ab2bc634')
+depends=('glibc')
+
+#Todo:
+#None
+
+#Notes:
+#Would not compile shared libraries with mcpu set
+  
+#Changelog:
+#rel1: upgraded to 1.2.3 2005.07.29
+#rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make clean
+	make || return 1
+
+	./configure --prefix=/usr --shared
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/include
+	cp -a $pkgname.h zconf.h $startdir/pkg/usr/include
+	chmod 644 $startdir/pkg/usr/include/*
+
+	mkdir -p $startdir/pkg/usr/lib
+	cp -a libz.a libz.so.$pkgver $startdir/pkg/usr/lib
+	chmod 755 $startdir/pkg/usr/lib/libz.so.$pkgver
+	chmod 644 $startdir/pkg/usr/lib/libz.a
+
+	mkdir -p $startdir/pkg/usr/man/man3
+	cp $pkgname.3 $startdir/pkg/usr/man/man3/$pkgname.3
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a ChangeLog FAQ INDEX README $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/lib
+	ln -sf libz.so.$pkgver libz.so.1
+	ln -sf libz.so.$pkgver libz.so
+}

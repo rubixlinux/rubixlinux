@@ -1,0 +1,93 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+ZIP=2.31
+
+pkgname=infozip
+pkgver=5.52
+pkgrel=1
+pkgdesc=""
+depends=('glibc')
+url="http://www.info-zip.org"
+source=(http://ftp.info-zip.org/pub/infozip/src/zip231.tar.gz	\
+	http://ftp.info-zip.org/pub/infozip/src/unzip552.tar.gz	)
+md5sums=('6bfc076664416251d7624ab3538d1cb9' \
+	 '9d23919999d6eac9217d1f41472034a9' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to zip 2.31 and unzip 5.52 2005.05.12
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/zip-$ZIP
+
+	mkdir -p $startdir/pkg/usr/doc/zip-$ZIP
+	cp	-a		\
+		BUGS		\
+		CHANGES		\
+		INSTALL		\
+		MANUAL		\
+		README		\
+		TODO		\
+		WHATSNEW	\
+		WHERE		\
+	$startdir/pkg/usr/doc/zip-$ZIP
+	chmod 644 $startdir/pkg/usr/doc/zip-$ZIP/*
+
+	make -f unix/Makefile generic_gcc
+
+	mkdir -p $startdir/pkg/usr/bin
+
+	cp zip		$startdir/pkg/usr/bin
+	cp zipnote	$startdir/pkg/usr/bin
+	cp zipsplit	$startdir/pkg/usr/bin
+	cp zipcloak	$startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp man/zip.1 $startdir/pkg/usr/man/man1
+
+	cd $startdir/src/unzip-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/unzip-$pkgver
+	cp	-a					\
+		BUGS					\
+		COPYING					\
+		Contents				\
+		INSTALL					\
+		README					\
+		ToDo					\
+		WHERE					\
+	$startdir/pkg/usr/doc/unzip-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/unzip-$pkgver/*
+
+	make -f unix/Makefile linux
+
+	cp unzip	$startdir/pkg/usr/bin
+	cp unzipsfx	$startdir/pkg/usr/bin
+	cp funzip	$startdir/pkg/usr/bin
+	cp unix/zipgrep	$startdir/pkg/usr/bin
+
+	cd man
+	for page in		\
+		funzip.1	\
+		unzip.1		\
+		unzipsfx.1	\
+		zipgrep.1	\
+		zipinfo.1
+	do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+
+	cd $startdir/pkg/usr/bin
+	ln -sf unzip zipinfo
+
+	chmod 755 $startdir/pkg/usr/bin/*
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

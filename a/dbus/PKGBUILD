@@ -1,0 +1,68 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=dbus
+pkgver=0.60
+pkgrel=2
+pkgdesc="D-BUS is a message bus system, a simple way for applications to talk to one another."
+url="http://www.freedesktop.org/Software/dbus"
+depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'libxml2' 'fontconfig' 'x11' 'expat' 'glib2' 'gcc' 'zlib' 'libpng')
+source=(http://dbus.freedesktop.org/releases/$pkgname-$pkgver.tar.gz	\
+	dbus								)
+md5sums=('da9561b5e579cedddc34f53427e99a93' \
+	 'd846470dc1d78224e3f8dc9a58d72f7b' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.15
+##   rel1: Upgraded to 0.60 2005.12.18
+##   rel1: initial rubix release
+
+build() {
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure							\
+		--prefix=/usr						\
+		--sysconfdir=/etc					\
+		--localstatedir=/var					\
+		--with-xml=libxml					\
+		--enable-gtk						\
+		--enable-qt3						\
+		--enable-dnotify					\
+		--enable-glib						\
+		--enable-verbose-mode					\
+		--enable-checks						\
+		--enable-asserts					\
+		--with-system-pid-file=/var/run/dbus.pid		\
+		--with-system-socket=/var/run/dbus/system_bus_socket	\
+		--with-session-socket-dir=/tmp				\
+		--with-dbus-user=messagebus				\
+		--disable-xml-docs
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/dbus $startdir/pkg/etc/rc.d
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		HACKING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

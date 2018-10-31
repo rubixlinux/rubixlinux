@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=bash-completion
+pkgver=20050721
+pkgrel=2
+pkgdesc="bash-completion Adds programmable completion to the bash shell.  A new file called /etc/bash_completion will be sourced for interactive bash shells adding all sorts of enhanced command completion features.  Once installed, you may get a list of all commands that have associated completions with 'complete -p', and examine the code for the shell functions with 'declare -f'. bash-completion was written by Ian Macdonald <ian@caliban.org>."
+url='http://www.caliban.org/bash'
+depends=('bash')
+source=(http://www.caliban.org/files/bash/$pkgname-$pkgver.tar.gz	\
+	bash_completion.sh						\
+	ssh.diff							)
+md5sums=('08e5321ead7079c84822368d7a41deda' \
+	 'b5a2a37abb0adcbf4c55857d8a6776ee' \
+	 'c6e628d162ea6ccec0079818d91b1cd8' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: fixed bug with ssh 2006.02.15
+##   rel1: upgraded to 20050721 and removed pacman mod 2005.09.16
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/bash_completion
+
+	patch -p1 < $startdir/src/ssh.diff || return 1
+
+	mkdir -p $startdir/pkg/etc/bash_completion.d
+	mkdir -p $startdir/pkg/etc/profile.d
+
+	cp -a $startdir/src/bash_completion.sh $startdir/pkg/etc/profile.d
+	chmod 755 $startdir/pkg/etc/profile.d/bash_completion.sh
+
+	cp -a bash_completion $startdir/pkg/etc
+	chmod 644 $startdir/pkg/etc/bash_completion
+
+	cp -a contrib/* $startdir/pkg/etc/bash_completion.d
+	chmod 755 $startdir/pkg/etc/bash_completion.d/*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		BUGS	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

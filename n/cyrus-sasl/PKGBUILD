@@ -1,0 +1,73 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=cyrus-sasl
+pkgver=2.1.21
+pkgrel=7
+pkgdesc="SASL is the Simple Authentication and Security Layer, a method for adding authentication support to connection-based protocols. To use SASL, a protocol includes a command for identifying and authenticating a user to a server and for optionally negotiating protection of subsequent protocol interactions. If its use is negotiated, a security layer is inserted between the protocol and the connection."
+url="http://asg.web.cmu.edu/sasl"
+depends=('e2fsprogs' 'glibc' 'db' 'openssl' 'heimdal' 'openldap')
+backup=('etc/rc.d/cyrus-sasl')
+source=(http://ftp.andrew.cmu.edu/pub/cyrus-mail/$pkgname-$pkgver.tar.gz	\
+	$pkgname								)
+md5sums=('dde02db234dea892bee298390890502e' \
+	 'f428fe7087edf8db5f550ab3f0eaf917' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel7: rebuilt with /etc as the sysconfdir 2005.12.31
+##   rel6: changed some build options 2005.11.04
+##   rel5: rebuilt against heimdal 2005.10.13
+##   rel4: rebuilt against new openldap 2005.09.04
+##   rel3: fixed man page location 2005.08.29
+##   rel2: fixed some incompatible options 2005.06.03
+##   rel1: upgraded to 2.1.21 2005.06.03
+##   rel3: enabled login support for windows clients 2005.04.10
+##   rel2: added rc script 2005.04.03
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--enable-login		\
+		--enable-gssapi		\
+		--with-ldap
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	cd saslauthd
+	make testsaslauthd || return 1
+	cp testsaslauthd $startdir/pkg/usr/sbin
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a				\
+		AUTHORS				\
+		COPYING				\
+		ChangeLog			\
+		INSTALL				\
+		NEWS				\
+		README*				\
+		saslauthd/LDAP_SASLAUTHD	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/var/state/saslauthd
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	mv $startdir/pkg/usr/man/cat8/saslauthd.8 $startdir/pkg/usr/man/man8
+	rmdir $startdir/pkg/usr/man/cat8
+
+}

@@ -1,0 +1,75 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+## REMEMBER: Update versions in the install script!!!
+
+pkgname=loop-aes
+pkgver=v3.1c
+pkgrel=5
+pkgdesc="This package provides loadable Linux kernel module (loop.o or loop.ko on 2.6 kernels) that has AES cipher built-in. The AES cipher can be used to encrypt local file systems and disk partitions."
+url="http://loop-aes.sourceforge.net"
+source=(http://loop-aes.sourceforge.net/loop-AES/loop-AES-$pkgver.tar.bz2)
+md5sums=('3e54b8e66142fe58282e58075f73e58c')
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+#   This package builds the loop-aes kernel modules for each rubix kernel
+
+## Changelog:
+##   rel5: rebuilt for kernel 2.6.15.5 2006.03.03
+##   rel4: rebuilt for kernel 2.6.15.4 2006.02.12
+##   rel3: rebuilt for kernel 2.6.15.3 2006.02.07
+##   rel2: rebuilt for kernel 2.6.15.2 2006.01.31
+##   rel1: upgraded to 3.1c, built for 2.6.15.1 2006.01.19
+##   rel7: rebuilt for kernel 2.6.15 (rel6 was only used internally) 2006.01.10
+##   rel5: rebuilt for kernels 2.4.32 and 2.4.32-grsec 2005.11.17
+##   rel4: rebuilt for config changes in 2.4 kernels 2005.11.14
+##   rel3: rebuilt for kernel 2.6.14.2-Rubix 2005.11.12
+##   rel2: rebuilt for kernel 2.6.14 2005.10.27
+##   rel1: upgraded to 3.1b 2005.09.30
+##   rel4: rebuilt for kernel 2.6.13 2005.09.01
+##   rel3: rebuilt for kernel 2.6.12.1 2005.06.23
+##   rel2: rebuilt for rebuilt kernel26 2005.06.22
+##   rel1: upgraded to 3.0d and kernels 2.4.31, 2.4.31-grsec and 2.6.12 2005.06.18
+##   rel3: upgraded to 2.6.11.9 2005.05.15
+##   rel2: removed dependence on kernel, for installer 2005.04.24
+##   rel1: upgraded to v3.0c, kernel24 2.4.30, kernel24-grsec 2.4.30-grsec, kernel26 2.6.11.7 2005.04.13
+##   rel5: upgraded to kernel26 2.6.11 2005.03.03
+##   rel4: gzip modules 2005.02.26
+##   rel3: Redirect install script to /dev/null 2005.02.26
+##   rel2: Added 2.6.10 kernel 2005.02.25
+##         Added install script to run depmod for each kernel
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/loop-AES-$pkgver
+
+	# Make 2.4 vanilla module:
+		make LINUX_SOURCE=/usr/src/linux-$vver24 INSTALL_MOD_PATH=$startdir/pkg || return 1
+		make clean
+
+	# Make 2.4 grsec module:
+		make LINUX_SOURCE=/usr/src/linux-$gver24 INSTALL_MOD_PATH=$startdir/pkg || return 1
+		make clean
+
+	# Make 2.6 vanilla module:
+		make LINUX_SOURCE=/usr/src/linux-$vver26 INSTALL_MOD_PATH=$startdir/pkg || return 1
+		make clean
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/lib/modules -type f -name *.o -exec gzip {} \;
+	find $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
+
+}

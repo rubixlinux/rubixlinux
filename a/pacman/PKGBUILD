@@ -1,0 +1,108 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pacman
+if [ "$CARCH" == "i486" ]; then
+	pkgver=2.9.8
+	pkgrel=1
+fi
+pkgdesc="A .tar.gz based package manager with dependency support"
+url="http://www.archlinux.org/pacman"
+backup=('etc/pacman.conf'						\
+	'etc/makepkg.conf'						\
+	 etc/pacman.d/{a,ap,community,d,e,k,kde,kdei,l,n,t,tcl,x,xap,y}	)
+makedepends=('libtar')
+source=(ftp://ftp.archlinux.org/other/pacman/$pkgname-$pkgver.tar.gz	\
+	http://www.archlinux.org/pacman/sortmirrors.pl			\
+	makepkg.conf-$CARCH						\
+	pacman.conf							\
+	makepkg-$CARCH							\
+	repos-$CARCH.tar.bz2						\
+	gensync								\
+	rubix-$CARCH.diff						)
+if [ "$CARCH" == "i486" ]; then
+	md5sums=('5d5e19c159d1fba7c7a6bb93b5bc14bd' \
+		 '005d82a4832b5273450e556f30010414' \
+		 '1498dadd61eb0e916e4a71a70ed49a10' \
+		 'aba0a4ee8dad37c373f44f96a0788046' \
+		 '32ef7e7725d310cb37c7f440b3b92122' \
+		 '520987d70ad12d401ca439eb13490f1d' \
+		 '8cfe9dab8fd9ae169389350c320f580e' \
+		 '126b7772a7e418331a10114a996883fa' )
+
+fi
+
+## Todo:
+##   None
+
+## Notes:
+##   makepkg patch makes the following changes:
+##    it removes the section that deletes info and doc pages
+##    it adds a section to compress info pages
+##   pacman.conf patch makes the following changes:
+##    cleans up some syntax (I am anal)
+##    puts in the correct testing repo
+##    removes the unstable repo
+##    adds some usefull comments about the repos
+##   makepkg.conf makes the following changes:
+##    changes CARCH to i486
+##    changes CHOST to i486-rubix-linux
+##    changes CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -fstack-protector-all -z execstack"
+##    changes CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fPIE -pie -fstack-protector-all -z execstack"
+##    changes CXXFLAGS to"-mcpu=i686 -O2 -pipe"
+##    changes USE_COLOR to y (let me know if there are issues with this)
+##   The dynamic pacman executable does depend on glibc and zlib, but since there is a 
+##    static binary (pacman.static), and this package needs to be installed
+##    before anything else, no dependencies are set
+##    depends=('glibc' 'zlib')
+##   Also, the sortmirrors.pl script depends on perl and netselect
+
+## Changelog:
+##   rel1:  upgraded to 2.9.8 2006.02.02
+##   rel11: removed references to fakeroot and sudosync in makepkg 2006.01.31
+##   rel10: updated the community repo to not be in a release directory 2006.01.24
+##   rel9:  added Italian mirror to default repos list 2006.01.10
+##   rel8:  updated makepkg so that the md5 generation is easier to adapt to Rubix standards 2005.12.21
+##   rel7:  fixed corrupt package 2005.10.22
+##   rel6:  forgot to source /etc/makepkg.conf in gensync to set the proper CARCH 2005.10.22
+##   rel5:  rewrote gensync so that it builds repos from the number of .rub files not PKGBUILDs 2005.10.22
+##   rel4:  fixed repos and arch name for new rubix directory scheme 2005.10.22
+##   rel3:  bumped version in repos from -current to 1.0 2005.09.21
+##   rel2:  added f repo 2005.09.19
+##   rel1:  upgraded to 2.9.7 2005.09.18
+##   rel4:  fixed the repo locations so that the new arch naming will work 2005.08.28
+##   rel3:  fixed some more naming issues, changed package name to pkgname-pkgver-pkgrel-x86.rub 2005.08.28
+##   rel2:  changed the default package name to pkgname-pkgver-host-rubix-pkgrel.pkg.tar.gz 2005.08.28
+##   rel1:  upgraded to 2.9.6, removed extra repo 2005.08.21
+##   rel11: added community repo 2005.05.19
+##   rel10: added kdei repo 2005.04.20
+##   rel9:  added execstack to default build flags for better pax compatability
+##          without compromising security
+##   rel8:  fixed makepkg patch 2005.02.28
+##   rel7:  Added y repo 2005.02.17
+##   rel1:  Initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/rubix-i486.diff || return 1
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	install -D -m0755 ../sortmirrors.pl $startdir/pkg/usr/bin/sortmirrors.pl
+
+	cd $startdir/pkg
+	tar jxpf $startdir/src/repos-$CARCH.tar.bz2
+
+	cp $startdir/src/makepkg.conf-$CARCH	$startdir/pkg/etc/makepkg.conf
+	cp $startdir/src/pacman.conf		$startdir/pkg/etc
+	cp $startdir/src/makepkg-$CARCH		$startdir/pkg/usr/bin/makepkg
+	cp $startdir/src/gensync		$startdir/pkg/usr/bin
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

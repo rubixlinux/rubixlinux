@@ -1,0 +1,62 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=alsa-utils
+pkgver=1.0.10
+pkgrel=3
+groups=('alsa')
+pkgdesc="alsa-utils (Advanced Linux Sound Architecture utilities)  The Advanced Linux Sound Architecture (ALSA) provides audio and MIDI functionality to the Linux operating system.  This package contains command line audio utilities for use with ALSA: alsactl (manage soundcard settings) arecord/aplay (capture and play audio) amixer (adjust mixer settings from the command line) alsamixer (an ncurses-based console mixer) For more information, see http://alsa-project.org"
+url="http://www.alsa-project.org"
+depends=('glibc' 'ncurses' 'alsa-lib' 'pciutils' 'dialog')
+source=(ftp://ftp.alsa-project.org/pub/utils/$pkgname-$pkgver.tar.bz2	\
+	alsa								)
+md5sums=('94bdec65e9c3fd02f7ef8ceb8f918afe' \
+	 '97b08cc7df82eb168d42a7123aeeef2f' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: removed stat_info from rc scripts 2006.01.17
+##   rel2: updated rc script to new format 2006.01.14
+##   rel1: upgraded to 1.0.10 2005.11.17
+##   rel3: fixed one more bug in the rc file 2005.08.17
+##   rel2: added better module loading to rc file 2050.08.15
+##   rel1: upgraded to 1.0.9a 2005.06.12
+##   rel3: reubilt with new execstack flag 2005.03.04
+##   rel2: added rc script and alsa group 2005.02.26
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cd $startdir/pkg/usr/man/man1
+	ln -s aplay.1.gz arecord.1.gz
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a				\
+		COPYING				\
+		ChangeLog			\
+		INSTALL				\
+		TODO				\
+		seq/aconnect/README.aconnect	\
+		seq/aseqnet/README.aseqnet	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a alsamixer/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.alsamixer
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/alsa $startdir/pkg/etc/rc.d
+
+}

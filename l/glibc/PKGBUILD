@@ -1,0 +1,252 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=glibc
+pkgver=2.3.6
+pkgrel=8
+backup=(etc/nscd.conf)
+pkgdesc="glibc (GNU C libraries) This package contains the GNU C libraries and header files.  The GNU C library was written originally by Roland McGrath, and is currently maintained by Ulrich Drepper.  Some parts of the library were contributed or worked on by other people. You'll need this package to compile programs."
+url="http://www.gnu.org/software/libc"
+## depends=('freetype2' 'libjpeg' 'gd' 'x11' 'fontconfig' 'expat' 'zlib' 'libpng')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.bz2			\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-libidn-$pkgver.tar.bz2		\
+	ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-linuxthreads-$pkgver.tar.bz2	\
+	glibc.locale.no-archive.diff						\
+	glibc.tls.crashfix.diff							\
+	libc.so									\
+	libpthread.so								\
+	glibc.nis-netgroups.diff						\
+	ru_RU.CP1251.diff							)
+md5sums=('bfdce99f82d6dbcb64b7f11c05d6bc96' \
+	 '49dbe06ce830fc73874d6b38bdc5b4db' \
+	 'd4eeda37472666a15cc1f407e9c987a9' \
+	 '38cab0b1083b7ad61f77b20d500cade8' \
+	 'de875ea21d1ca574ae3ef8c9028ba595' \
+	 'b3c7ab994b51d5a48a0a055dc123609e' \
+	 'fa1b5cf91c739b422913016af47247f8' \
+	 '2aa5d99f1387bd11721a8271c09cfbcd' \
+	 'ae83dbcf67dec9949e3efeddbf58c9f5' )
+
+## Todo:
+##   None
+
+## Notes:
+##   Because glibc is so fundamental I have put no dependencies though there are
+##    some programs that do in fact have dependencies. See the commented out dependencies
+##    line above for glibc's true dependencies.
+##   NPTL is now included by default for kernels that support it
+##     This means that glibc MUST be built while running a 2.6 or newer kernel
+##   /usr/lib/debug is not included, let me know if this is a problem
+##     if so, I will work on something...
+##   glibc, like gcc, is now one package, I may change both of these
+
+## Changelog:
+##   rel8: rebuilt against kernel 2.6.15.5 headers 2006.03.03
+##   rel7: rebuilt against kernel 2.6.15.4 headers 2006.02.12
+##   rel6: rebuilt against kernel 2.6.15.3 headers 2006.02.07
+##   rel5: added support for ru_RU.cp1251 2006.02.04
+##   rel4: rebuilt against kernel 2.6.15.2 headers 2006.02.01
+##   rel3: rebuilt against kernel 2.6.15.1 headers 2006.01.21
+##   rel2: rebuilt against kernel 2.6.15 headers 2006.01.11
+##   rel1: upgraded to 2.3.6 2005.11.10
+##   rel5: rebuilt for kernel-headers 2.6.14 2005.10.28
+##   rel4: added the nis netgroup patch from slackware 2005.008.19
+##   rel3: rebuilt for kernel-headers 2.6.12 2005.06.18
+##   rel2: Added tls patch following suit with Slackware with nptl and nvidia driver issues 2005.05.16
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+	
+	#Use known working flags
+	CFLAGS="-O3 -march=i486 -mtune=i686"
+	CXXFLAGS="-O3 -march=i486 -mtune=i686"
+
+	find $startdir/src -type d -name CVS -exec rm -r {} \;
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	tar xjf $startdir/src/$pkgname-libidn-$pkgver.tar.bz2
+	tar xjf $startdir/src/$pkgname-linuxthreads-$pkgver.tar.bz2
+
+	chown -R root.root .
+
+	mkdir -p $startdir/pkg/lib
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/usr/include
+	mkdir -p $startdir/pkg/usr/doc
+	mkdir -p $startdir/pkg/usr/man
+	mkdir -p $startdir/pkg/usr/share
+
+	mkdir -p $startdir/pkg_nptl/lib
+	mkdir -p $startdir/pkg_nptl/sbin
+	mkdir -p $startdir/pkg_nptl/usr/bin
+	mkdir -p $startdir/pkg_nptl/usr/lib
+	mkdir -p $startdir/pkg_nptl/usr/sbin
+	mkdir -p $startdir/pkg_nptl/usr/include
+	mkdir -p $startdir/pkg_nptl/usr/doc
+	mkdir -p $startdir/pkg_nptl/usr/man
+	mkdir -p $startdir/pkg_nptl/usr/share
+
+	patch -p1 < $startdir/src/glibc.locale.no-archive.diff	|| return 1
+	patch -p1 < $startdir/src/glibc.tls.crashfix.diff	|| return 1
+	patch -p1 < $startdir/src/glibc.nis-netgroups.diff	|| return 1
+	patch -p1 < $startdir/src/ru_RU.CP1251.diff		|| return 1
+
+	mkdir build-$pkgname-$pkgver
+	cd build-$pkgname-$pkgver
+
+	../configure					\
+		--prefix=/usr				\
+		--enable-kernel=2.4.1			\
+		--with-headers=/usr/src/linux24/include	\
+		--enable-add-ons=libidn,linuxthreads	\
+		--with-tls				\
+		--without-__thread			\
+		--without-cvs				\
+		$CHOST
+	make || return 1
+#	make check || return 1
+	make install install_root=$startdir/pkg
+	make localedata/install-locales install_root=$startdir/pkg
+
+	cd $startdir/src
+	rm -r $pkgname-$pkgver
+	tar xjf $pkgname-$pkgver.tar.bz2
+
+	cd $pkgname-$pkgver
+
+	tar xjf $startdir/src/$pkgname-libidn-$pkgver.tar.bz2
+	tar xjf $startdir/src/$pkgname-linuxthreads-$pkgver.tar.bz2
+
+	chown -R root.root .
+
+	find $startdir/src -type d -name CVS -exec rm -r {} \;
+
+	patch -p1 < $startdir/src/glibc.locale.no-archive.diff	|| return 1
+	patch -p1 < $startdir/src/glibc.tls.crashfix.diff	|| return 1
+	patch -p1 < $startdir/src/glibc.nis-netgroups.diff	|| return 1
+	patch -p1 < $startdir/src/ru_RU.CP1251.diff		|| return 1
+
+	mkdir build-$pkgname-$pkgver
+	cd build-$pkgname-$pkgver
+
+	../configure \
+		--prefix=/usr				\
+		--enable-kernel=2.6.4			\
+		--with-headers=/usr/src/linux26/include	\
+		--enable-add-ons=libidn,nptl		\
+		--with-tls				\
+		--with-__thread				\
+		--without-cvs				\
+		$CHOST
+	make || return 1
+#	make check || return 1
+	make install install_root=$startdir/pkg_nptl
+	make localedata/install-locales install_root=$startdir/pkg_nptl
+
+	cd $startdir/pkg_nptl/lib
+
+	mkdir -p	$startdir/pkg/lib/tls
+	mv *		$startdir/pkg/lib/tls
+
+	cd $startdir/pkg_nptl/usr/lib
+
+	mkdir -p $startdir/pkg/usr/lib/nptl
+	cp	-a			\
+		libc.a			\
+		libpthread.a		\
+		libpthread_nonshared.a	\
+		librt.a			\
+	$startdir/pkg/usr/lib/nptl
+
+	cp -a $startdir/src/libc.so $startdir/src/libpthread.so $startdir/pkg/usr/lib/nptl
+
+	cd $startdir/pkg/usr/lib/nptl
+	ln -s /lib/tls/librt-$pkgver.so librt.so
+
+	cd $startdir/pkg_nptl
+	find usr/include -type f >> $startdir/src/nptl-includelist
+
+	mkdir -p $startdir/src/nptl-includes
+	for file in `cat $startdir/src/nptl-includelist` ; do
+		if [ ! -r $startdir/pkg/$file ] ; then
+			cd $startdir/pkg_nptl
+			echo $file uniq
+			cp -a --parent $file $startdir/src/nptl-includes
+		elif ! diff --brief $startdir/pkg/$file $startdir/pkg_nptl/$file 1> /dev/null 2> /dev/null ; then
+			cd $startdir/pkg_nptl
+			echo $file diff
+			cp -a --parent $file $startdir/src/nptl-includes
+		fi
+	done
+
+	mkdir $startdir/pkg/usr/include/nptl
+	cp -a $startdir/src/nptl-includes/usr/include/* $startdir/pkg/usr/include/nptl
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc
+	cp nscd/nscd.conf $startdir/pkg/etc/nscd.conf
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		BUGS		\
+		CONFORMANCE	\
+		COPYING		\
+		COPYING.LIB	\
+		FAQ		\
+		INSTALL		\
+		INTERFACE	\
+		LICENSES	\
+		NAMESPACE	\
+		NEWS		\
+		NOTES		\
+		PROJECTS	\
+		README		\
+		README.libm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd linuxthreads
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/linuxthreads
+
+	cp	-a			\
+		Banner			\
+		FAQ.html		\
+		LICENSE			\
+		README			\
+		README.Xfree3.2		\
+		linuxthreads.texi	\
+		Examples		\
+	 $startdir/pkg/usr/doc/$pkgname-$pkgver/linuxthreads
+
+	cd man
+
+	mkdir $startdir/pkg/usr/man/man3
+	for file in *.man ; do
+		cp $file $startdir/pkg/usr/man/man3/`basename $file .man`.3
+	done
+
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type d | xargs chmod 755
+	find $startdir/pkg/usr/doc/$pkgname-$pkgver -type f | xargs chmod 644
+
+	cd $startdir/pkg/usr/share/zoneinfo
+	ln -sf /etc/localtime .
+
+	rm $startdir/pkg/usr/info/dir
+	rm $startdir/pkg/etc/ld.so.cache
+	rm $startdir/pkg/etc/localtime
+	rm $startdir/pkg/sbin/sln
+
+	cd $startdir/pkg/sbin
+	ln -sf /bin/sln sln
+
+	chown -R root.bin  $startdir/pkg/sbin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+	chown -R root.root $startdir/pkg/usr/doc
+
+}

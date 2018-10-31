@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mpeg_lib
+pkgver=1.3.1
+pkgrel=1
+pkgdesc="mpeg_lib (MPEG-1 video decoding library) The MPEG Library is a collection of C routines to decode MPEG-1 video."
+url="http://starship.python.net/~gward/mpeglib"
+source=(http://starship.python.net/~gward/mpeglib/$pkgname-$pkgver.tar.gz)
+md5sums=('9d803be0073f42acf87d5fbb339a183b')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		$CHOST
+	make
+
+	mkdir -p	$startdir/pkg/usr/lib
+	cp libmpeg.a	$startdir/pkg/usr/lib
+
+	mkdir -p	$startdir/pkg/usr/include
+	cp -a mpeg.h	$startdir/pkg/usr/include
+	chmod 644	$startdir/pkg/usr/include/mpeg.h
+
+	mkdir -p $startdir/pkg/usr/doc/libmpeg-$pkgver
+	cp	-a		\
+		CHANGES		\
+		README		\
+		test.mpg	\
+		doc		\
+	$startdir/pkg/usr/doc/libmpeg-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/libmpeg-$pkgver/* $startdir/pkg/usr/doc/libmpeg-$pkgver/doc/*
+	chmod 755 $startdir/pkg/usr/doc/libmpeg-$pkgver/doc
+
+}

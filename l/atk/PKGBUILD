@@ -1,0 +1,42 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=atk
+pkgver=1.10.3
+pkgrel=1
+pkgdesc="atk is a library of accessability functions used by GNOME."
+depends=('glibc' 'glib2')
+source=(ftp://ftp.gnome.org/pub/gnome/sources/$pkgname/1.10/$pkgname-$pkgver.tar.bz2)
+url='http://www.gtk.org'
+md5sums=('c84a01fea567b365c0d44b227fead948')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.10.3 2005.12.05
+##   rel1: upgarded to 1.10.1 2005.08.30
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

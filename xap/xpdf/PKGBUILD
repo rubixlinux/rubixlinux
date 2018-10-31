@@ -1,0 +1,94 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+SHORTVER=3.01
+
+pkgname=xpdf
+pkgver=3.01pl2
+pkgrel=2
+pkgdesc="xpdf (PDF viewer for X) Xpdf is a viewer for Portable Document Format (PDF) files.  The package also contains some command-line PDF manipulation utilities. xpdf was written by Derek B. Noonburg. The xpdf package requires the t1lib package to render Type 1 fonts."
+depends=('glibc' 'freetype2' 'x11' 'fontconfig' 'expat' 'lesstif' 'gcc' 'zlib' 't1lib')
+url="http://www.foolabs.com/xpdf"
+source=(ftp://ftp.foolabs.com/pub/$pkgname/$pkgname-$SHORTVER.tar.gz		\
+	ftp://ftp.foolabs.com/pub/$pkgname/$pkgname-cyrillic-2003-jun-28.tar.gz	\
+	ftp://ftp.foolabs.com/pub/$pkgname/$pkgname-greek-2003-jun-28.tar.gz	\
+	ftp://ftp.foolabs.com/pub/$pkgname/$pkgname-latin2-2002-oct-22.tar.gz	\
+	ftp://ftp.foolabs.com/pub/$pkgname/$pkgname-$pkgver.patch		\
+	$pkgname-cyrillic.diff							\
+	$pkgname-greek.diff							\
+	$pkgname-latin2.diff							\
+	xpdfrc.diff								)
+md5sums=('e004c69c7dddef165d768b1362b44268' \
+	 '7b22f31289ce0812d2ec77014e7b0cdf' \
+	 'dacacda02b84b1184235a5fab072fbd8' \
+	 'ac19ef990cd63afd2837c10dc7e1c3ab' \
+	 '8f1f5d37153c7e98f794f18d0b80fc25' \
+	 '0b8365b96b6e3ad21e900e5ea48e0a1c' \
+	 '470642886547d8da8eaa53a7938c278b' \
+	 '1798dab91ba6a2bb86f8548ee1177744' \
+	 'afce43b3cb66fcc6bcb10fd391fb91a2' )
+
+## Todo:
+##   None
+
+## Notes:
+##   PIE/SSP cause some pdfs to segfault xpdf
+
+## Changelog:
+##   rel1: added pl2 patch for security 2006.02.15
+##   rel2: added bulgarian 2005.09.18
+##   rel1: upgraded to 3.01 2005.09.04
+##   rel1: initial rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -O2 -pipe -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-$SHORTVER
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver.patch	|| return 1
+	patch -p1 < $startdir/src/xpdfrc.diff			|| return 1
+
+	./configure			\
+		--prefix=/usr/X11R6	\
+		--with-gzip		\
+		--with-freetype2-includes=/usr/include/freetype2
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chmod 755 $startdir/pkg/usr/X11R6/bin/*
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	cp doc/sample-xpdfrc $startdir/pkg/usr/X11R6/etc/xpdfrc
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ANNOUNCE	\
+		CHANGES		\
+		COPYING		\
+		INSTALL		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/src/$pkgname-cyrillic
+	patch -p1 < $startdir/src/$pkgname-cyrillic.diff || return 1
+	mkdir -p $startdir/pkg/usr/X11R6/share/xpdf/cyrillic
+	cp Bulgarian.nameToUnicode	$startdir/pkg/usr/X11R6/share/xpdf/cyrillic
+	cp KOI8-R.unicodeMap		$startdir/pkg/usr/X11R6/share/xpdf/cyrillic
+	cat add-to-xpdfrc >> $startdir/pkg/usr/X11R6/etc/xpdfrc
+
+	cd $startdir/src/$pkgname-latin2
+	patch -p1 < $startdir/src/$pkgname-latin2.diff || return 1
+	mkdir -p $startdir/pkg/usr/X11R6/share/xpdf/latin2
+	cp Latin2.unicodeMap $startdir/pkg/usr/X11R6/share/xpdf/latin2
+	cat add-to-xpdfrc >> $startdir/pkg/usr/X11R6/etc/xpdfrc
+
+	cd $startdir/src/xpdf-greek
+	patch -p1 < $startdir/src/xpdf-greek.diff || return 1
+	mkdir -p $startdir/pkg/usr/X11R6/share/xpdf/greek
+	cp ISO-8859-7.unicodeMap $startdir/pkg/usr/X11R6/share/xpdf/greek
+	cp Greek.nameToUnicode   $startdir/pkg/usr/X11R6/share/xpdf/greek
+	cat add-to-xpdfrc >> $startdir/pkg/usr/X11R6/etc/xpdfrc
+
+}

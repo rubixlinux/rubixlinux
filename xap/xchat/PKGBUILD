@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=xchat
+pkgver=2.6.1
+pkgrel=1
+pkgdesc="X-Chat is a GTK+-based IRC (Internet Relay Chat) client."
+url="http://www.xchat.org"
+depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'dbus' 'fontconfig' 'x11' 'expat' 'openssl' 'glib2' 'tcl' 'zlib' 'libpng')
+source=(http://www.xchat.org/files/source/2.6/$pkgname-$pkgver.tar.bz2)
+md5sums=('50fbc65bf9c051029ea081cf497493f3')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.6.1 2006.01.18
+##   rel1: upgraded to 2.6.0 2005.12.06
+##   rel1: upgraded to 2.4.5 2005.09.18
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure				\
+		--prefix=/usr			\
+		--localstatedir=/var/lib	\
+		--enable-ipv6			\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		HACKING	\
+		INSTALL	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

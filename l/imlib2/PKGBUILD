@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=imlib2
+pkgver=20060124
+pkgrel=1
+url="http://www.enlightenment.org/pages/imlib2.html"
+pkgdesc="Imlib 2 is the successor to Imlib. It is not just a newer version - it is a completely new library. Imlib2 can be installed alongside Imlib 1.x without any problems since they are effectively different libraries - but they Have very similar functionality."
+depends=('glibc' 'libtiff' 'freetype2' 'libjpeg' 'libid3tag' 'x11' 'bzip2' 'libungif' 'zlib' 'libpng')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to latest cvs 2006.01.24
+##   rel1: upgraded to cvs 2005.10.06
+##   rel2: rebuilt with noexecstack 2005.03.05
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src
+
+	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/enlightenment login
+	cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/enlightenment co e17/libs/$pkgname
+
+	cd e17/libs/$pkgname
+
+	./autogen.sh
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYING-PLAIN	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

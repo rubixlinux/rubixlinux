@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=syslinux
+pkgver=3.07
+pkgrel=1
+pkgdesc="syslinux (SYSLINUX/PXELINUX/ISOLINUX boot loaders) SYSLINUX is a boot loader for the Linux operating system which operates off an MS-DOS/Windows FAT filesystem.  Also included are PXELINUX and ISOLINUX, boot loaders for booting from a network server or CD-ROM. SYSLINUX, PXELINUX, and ISOLINUX were written by H. Peter Anvin."
+url="http://syslinux.zytor.com"
+depends=('glibc')
+source=(http://www.kernel.org/pub/linux/utils/boot/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('595ac26834a50c35e825a5377c02b3db')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix release 2005.04.22
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -type d -exec chmod 755 {} \;
+
+	make clean
+	make || return 1
+	make INSTALLROOT=$startdir/pkg install
+
+	cp unix/syslinux-nomtools $startdir/pkg/usr/bin
+	mv $startdir/pkg/usr/lib $startdir/pkg/usr/share
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		NEWS			\
+		README			\
+		TODO			\
+		distrib.doc		\
+		isolinux.doc		\
+		pxelinux.doc		\
+		syslinux.doc		\
+		memdisk/memdisk.doc	\
+		menu			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/sbin $startdir/pkg/usr/bin
+
+}

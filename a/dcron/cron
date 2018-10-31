@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Start crond (Dillon's crond):
+# If you want cron to actually log activity to /var/log/cron, then change
+# LOG=-l10 to LOG-l8 to increase the logging level.
+
+LOG=-l10
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/crond
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG $LOG
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

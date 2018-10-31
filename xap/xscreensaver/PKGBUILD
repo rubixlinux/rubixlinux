@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=xscreensaver
+pkgver=4.22
+pkgrel=1
+pkgdesc="xscreensaver (a screen saver and locker for X) A modular screen saver and locker for the X Window System.  Highly customizable:  allows the use of any program that can draw on the root window as a display mode.  More than 100 display modes are included in this package."
+depends=('glibc' 'freetype2' 'libglade' 'gtk+2' 'pango' 'atk' 'libjpeg' 'libxml2' 'fontconfig' 'x11' 'expat' 'glib2' 'gcc' 'zlib')
+source=(http://www.jwz.org/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname.setuid.diff.gz					)
+url="http://www.jwz.org/$pkgname"
+md5sums=('9f37c428f034e581026e243445378195' \
+	 '3ebeb3cd83f3f81e7c195472842d231e' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 4.22 2005.08.16
+#rel1: Upgraded to 4.21 2005.05.12
+#rel1: Upgraded to 4.20 2005.02.23
+#rel1: Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/opt/kde/bin
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.setuid.diff || return 1
+
+	./configure			\
+		--prefix=/usr/X11R6	\
+		--with-shadow		\
+		--with-jpeg		\
+		--with-gl		\
+		$CHOST
+	make -i || return 1
+	make -i install_prefix=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/X11R6/bin
+
+	chown root.shadow $startdir/pkg/usr/X11R6/bin/xscreensaver
+	chmod 2751 $startdir/pkg/usr/X11R6/bin/xscreensaver
+
+	mkdir -p $startdir/pkg/etc
+
+	mv $startdir/pkg/usr/X11R6/lib/X11 $startdir/pkg/etc
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		README			\
+		README.debugging	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

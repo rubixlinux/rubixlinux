@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-xml-twig
+pkgver=3.17
+pkgrel=2
+pkgdesc="XML::Twig - A perl module for processing huge XML documents in tree mode."
+url="http://search.cpan.org/~mirod/XML-Twig-$pkgver/Twig.pm"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/M/MI/MIROD/XML-Twig-$pkgver.tar.gz)
+md5sums=('70be541c68247b1394138eb2e1dc109a')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/XML-Twig-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/XML-Twig-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/XML-Twig-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/XML-Twig-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

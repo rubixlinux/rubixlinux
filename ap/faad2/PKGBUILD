@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=faad2
+pkgver=2.0
+pkgrel=2
+pkgdesc="Freeware Advanced Audio (AAC) Decoder including SBR decoding http://www.audiocoding.com FAAD2 is a HE, LC, MAIN and LTP profile, MPEG2 and MPEG-4 AAC decoder. FAAD2 includes code for SBR (HE AAC) decoding. FAAD2 is licensed under the GPL."
+url="http://www.audiocoding.com"
+depends=('gcc')
+source=(http://dl.sourceforge.net/sourceforge/faac/$pkgname-$pkgver.tar.gz	\
+	faad2-makefile.diff.gz							)
+md5sums=('1a6f79365f2934a4888b210ef47a3a07' \
+	 '527e3150744d6157b4821480af71186b' )
+
+# Todo:
+#  None
+
+# Notes:
+#  None
+
+# Changelog:
+#  rel2: added some missing includes 2005.05.28
+#  rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname
+
+	patch -p1 < ../faad2-makefile.diff
+
+	chmod +x bootstrap
+	./bootstrap
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+		README.linux	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	cp $startdir/src/$pkgname/common/mp4ff/mp4ff_int_types.h $startdir/pkg/usr/include
+
+}

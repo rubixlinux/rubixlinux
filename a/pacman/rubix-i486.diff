@@ -1,0 +1,11 @@
+--- ./src/pacconf.h.orig	2005-08-28 13:37:34.000000000 -0600
++++ ./src/pacconf.h	2005-08-28 13:38:21.000000000 -0600
+@@ -30,7 +30,7 @@
+ #endif
+ 
+ #ifndef PKGEXT
+-#define PKGEXT    ".pkg.tar.gz"
++#define PKGEXT    "-i486.rub"
+ #endif
+ 
+ #ifndef PACCONF

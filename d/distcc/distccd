@@ -1,0 +1,26 @@
+#!/bin/bash
+
+## You must say which computers are allowed access to this daemon
+ALLOW="127.0.0.1"
+SCRIPT=`basename $0`
+PROG=/usr/bin/distccd
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG --daemon --allow $ALLOW
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"  
+esac

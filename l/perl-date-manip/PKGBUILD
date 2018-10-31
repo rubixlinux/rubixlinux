@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-date-manip
+pkgver=5.44
+pkgrel=1
+pkgdesc="Date::Manip - date manipulation routines"
+url="http://cpan.uwinnipeg.ca/htdocs/DateManip/Date/Manip.html"
+depends=('perl')
+source=(http://cpan.uwinnipeg.ca/cpan/authors/id/S/SB/SBECK/DateManip-$pkgver.tar.gz)
+md5sums=('ebb1e17639fc4260b72690c1de2f5fdc')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 5.44 and rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/DateManip-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/DateManip-$pkgver
+	cp	-a		\
+		HISTORY		\
+		INSTALL		\
+		MANIFEST	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/DateManip-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/DateManip-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+}

@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=strace
+pkgver=4.5.7
+pkgrel=1
+pkgdesc="strace (trace system calls and signals) Strace allows you to trace the execution of a command.  It runs the specified command until it exits, intercepting signals and system calls and dumping the information to the standard error.  System administrators, diagnosticians and trouble-shooters will find it invaluable for solving problems with programs for which the source is not readily available since they do not need to be recompiled in order to trace them."
+url="http://www.liacs.nl/~wichert/strace"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('b1829d858b6cd7072f9b2fa9c17a2346')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYRIGHT	\
+		CREDITS		\
+		NEWS		\
+		PORTING		\
+		README		\
+		README-CVS	\
+		README-freebsd	\
+		README-linux	\
+		README-sunos4	\
+		README-svr4	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	./configure --prefix=/usr
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

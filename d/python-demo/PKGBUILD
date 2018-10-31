@@ -1,0 +1,36 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=python-demo
+pkgver=2.4.2
+pkgrel=1
+pkgdesc="python-demo (Sample Python programs) This package installs a library of sample Python programs into your Python documentation directory (under /usr/doc/Python*)."
+url="http://www.python.org"
+depends=('python')
+source=(http://www.python.org/ftp/python/$pkgver/Python-$pkgver.tgz)
+md5sums=('07cfc759546f6723bb367be5b1ce9875')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 2.4.2 2005.09.30
+#rel1: Initial Rubix release 2005.05.12
+
+build() {
+
+	cd $startdir/src/Python-$pkgver
+
+	find . -type d -exec chmod 755 {} \;
+	find . -type f -perm 775 -exec chmod 755 {} \;
+	find . -type f -perm 664 -exec chmod 644 {} \;
+	find . -type d -name CVS -exec rm -r {} \;
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		Demo	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

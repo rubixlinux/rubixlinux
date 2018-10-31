@@ -1,0 +1,76 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdelibs
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdelibs (KDE libraries) System libraries and other resources required by KDE: kdecore (KDE core library), kdeui (user interface), kimgio (image formats), kfile (file dialog), kspell (spelling checker), khtml (HTML widget), kab (addressbook), arts (sound, mixing and animation), kstyles, kparts, kjs (JavaScript), kio (URL fetcher), kdesu, dcop (desktop communication program), kssl (OpenSSL integration), kinit, libkmid, interfaces, libtldl, mimetypes, pics, and ksgmltools."
+url="http://www.kde.org"
+groups=('kde')
+depends=('glibc' 'qt' 'aspell' 'db' 'heimdal' 'libtiff' 'esound' 'e2fsprogs' 'xfsprogs' 'x11' 'fontconfig' 'openssl'	\
+	 'expat' 'libogg' 'zlib' 'libart_lgpl' 'alsa-lib' 'libxslt' 'freetype2' 'libjpeg' 'libidn' 'libxml2'		\
+	 'libvorbis' 'audiofile' 'pcre' 'arts' 'libmad' 'bzip2' 'glib2' 'libmng' 'cups' 'gcc' 'libpng'			)
+install="$pkgname.install"
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('2a22193ae7c23f3759b02723dab02d30')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 3.5.1 2006.01.31
+##   rel2: fixed kjs security flaw 2006.01.21
+##   rel1: upgraded to 3.5.0 2005.12.18
+##   rel1: upgraded to 3.4.3 2005.10.14
+##   rel3: Rebuilt 2005.10.01
+##   rel2: Rebuilt against new openssl 2005.09.04
+##   rel1: Upgraded to 3.4.2 2005.07.29
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel3: Added security patch 2005.05.19
+##   rel2: Rebuilt against QT with STL 2005.03.27
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel4: fixed install script 2005.03.04
+##   rel3: Rebuild without reference to libGL.la 2005.02.19
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure					\
+		--prefix=/opt/kde			\
+		--with-alsa				\
+		--with-distribution="Rubix Linux"	\
+		--disable-debug				\
+		--disable-libfam			\
+		--enable-dnotify			\
+		--enable-sendfile			\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		AUTHORS			\
+		COMPILING*		\
+		COPYING*		\
+		DEBUG			\
+		INSTALL			\
+		KDE2PORTING.html	\
+		KDE3PORTING.html	\
+		NAMING			\
+		README			\
+		TODO			\
+		kdelibs.lsm		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

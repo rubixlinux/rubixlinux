@@ -1,0 +1,174 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+APACHE_VER=1.3.36
+
+pkgname=mod_ssl
+pkgver=2.8.27
+pkgrel=1
+url="http://www.modssl.org"
+pkgdesc="mod_ssl (Apache module for SSL) mod_ssl provides provides strong cryptography for the Apache web server via the Secure Sockets Layer (SSL v2/v3) and Transport Layer Security (TLS v1).  It is based on OpenSSL and provides support for all major security needs through HTTP. mod_ssl is written by Ralf S. Engelschall."
+backup=('etc/apache/mod_ssl.conf'	\
+	'etc/apache/ssl.crt/server.crt'	\
+	'etc/apache/ssl.csr/server.csr'	\
+	'etc/apache/ssl.key/server.key'	)
+depends=('glibc' 'openssl' 'apache')
+install=$pkgname.install
+source=(http://www.apache.org/dist/httpd/apache_$APACHE_VER.tar.gz	\
+	http://www.modssl.org/source/mod_ssl-$pkgver-$APACHE_VER.tar.gz	\
+	mod_ssl.conf.example						\
+	apache.dbm.diff							)
+md5sums=('d6c0709fc1f20d6d93d30435fcfc4843' \
+	 'c67357fa4104079a6e981b9ec3f42bf4' \
+	 '2e6d017758b83839ab3bc0b168d9b397' \
+	 'dc81e4649cb268f2cde323b567295b14' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.8.27 2006.05.19
+##   rel1: upgraded to 2.8.26 2006.05.09
+##   rel1: upgraded to 2.8.25 2005.10.18
+##   rel1: upgraded to 2.8.24 2005.09.04
+##   rel1: initial rubix release
+
+build() {                              
+
+	mkdir -p $startdir/pkg/etc/apache/ssl.crl
+	mkdir -p $startdir/pkg/etc/apache/ssl.crt
+	mkdir -p $startdir/pkg/etc/apache/ssl.csr
+	mkdir -p $startdir/pkg/etc/apache/ssl.key
+	mkdir -p $startdir/pkg/etc/apache/ssl.prm
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver-$APACHE_VER
+	mkdir -p $startdir/pkg/usr/libexec/apache
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/var/www/htdocs/manual/images
+	mkdir -p $startdir/pkg/var/www/htdocs/manual/mod/mod_ssl
+
+	cp $startdir/src/mod_ssl.conf.example $startdir/pkg/etc/apache/mod_ssl.conf
+
+	cd $startdir/src/$pkgname-$pkgver-$APACHE_VER
+
+	./configure						\
+		--with-apxs=/usr/sbin/apxs			\
+		--with-crt=/etc/apache/mod_ssl/server.crt	\
+		--with-key=/etc/apache/mod_ssl/server.key	\
+		--with-patch=/usr/bin/patch
+	echo "SSL_CFLAGS= -DSSL_ENGINE -DSSL_USE_SDBM" >> pkg.sslmod/Makefile
+	make || return 1
+
+	cd $startdir/src/apache_$APACHE_VER
+	patch -p0 < $startdir/src/$pkgname-$pkgver-$APACHE_VER/pkg.sslcfg/sslcfg.patch	|| return 1
+	patch -p0 < $startdir/src/$pkgname-$pkgver-$APACHE_VER/pkg.ssldoc/ssldoc.patch	|| return 1
+	patch -p0 < $startdir/src/$pkgname-$pkgver-$APACHE_VER/pkg.sslsup/sslsup.patch	|| return 1
+	patch -p1 < $startdir/src/apache.dbm.diff					|| return 1
+
+	cd $startdir/src/apache_$APACHE_VER/src/support
+	cat apachectl | sed -e "s|PIDFILE=/usr/local/apache/logs/httpd.pid|PIDFILE=/var/run/httpd.pid|g" | sed -e "s|HTTPD='/usr/local/apache/src/httpd'|HTTPD=/usr/sbin/httpd|g" > apachectl.new
+	mv apachectl.new apachectl
+
+	cd $startdir/src/$pkgname-$pkgver-$APACHE_VER
+	make || return 1
+
+	cp	-a		\
+		ANNOUNCE	\
+		CREDITS		\
+		INSTALL		\
+		LICENSE		\
+		NEWS		\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver-$APACHE_VER
+
+	cd $startdir/src/$pkgname-$pkgver-$APACHE_VER
+
+	cd pkg.sslcfg
+	cp	-a			\
+		README.CRT		\
+		Makefile.crt		\
+		ca-bundle.crt		\
+		snakeoil-ca-rsa.crt	\
+		snakeoil-ca-dsa.crt	\
+		snakeoil-rsa.crt	\
+		snakeoil-dsa.crt	\
+		server.crt		\
+	$startdir/pkg/etc/apache/ssl.crt
+
+	cd ../pkg.sslcfg
+	cp	-a		\
+		README.CSR	\
+		server.csr	\
+	$startdir/pkg/etc/apache/ssl.csr
+
+	cd ../pkg.sslcfg
+	cp	-a			\
+		README.PRM		\
+		snakeoil-ca-dsa.prm	\
+		snakeoil-dsa.prm	\
+	$startdir/pkg/etc/apache/ssl.prm
+
+	cd ../pkg.sslcfg
+	cp	-a		\
+		Makefile.crl	\
+		README.CRL	\
+	$startdir/pkg/etc/apache/ssl.crl
+
+	cd ../pkg.sslcfg
+	cp	-a			\
+		README.KEY		\
+		snakeoil-ca-rsa.key	\
+		snakeoil-ca-dsa.key	\
+		snakeoil-rsa.key	\
+		snakeoil-dsa.key	\
+		server.key		\
+	$startdir/pkg/etc/apache/ssl.key
+
+	cd ../pkg.ssldoc
+	cp	-a		\
+		index.html	\
+		ssl_*		\
+	$startdir/pkg/var/www/htdocs/manual/mod/mod_ssl
+
+	cd ../pkg.ssldoc
+	cp	-a		\
+		apache_pb.gif	\
+		feather.jpg	\
+		mod_ssl_sb.gif	\
+		openssl_ics.gif	\
+	$startdir/pkg/var/www/htdocs/manual/images
+
+	cd $startdir/src/apache_$APACHE_VER
+	cd htdocs
+	cp -a index.html.en $startdir/pkg/var/www/htdocs
+
+	cd manual/mod
+	cp	-a			\
+		index.html.en		\
+		index-bytype.html.en	\
+		directives.html.en	\
+	$startdir/pkg/var/www/htdocs/manual/mod
+
+	cd ../../../src/support
+	cp -a apachectl $startdir/pkg/usr/sbin
+
+	cd $startdir/pkg/usr/sbin
+	mv apachectl apachectl-mod_ssl
+
+	cp $startdir/src/$pkgname-$pkgver-$APACHE_VER/pkg.sslmod/libssl.so $startdir/pkg/usr/libexec/apache
+
+	chmod 700 $startdir/pkg/etc/apache/ssl.key
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+	chmod 755 $startdir/pkg/usr/sbin/*
+
+	cd $startdir/pkg/var/www/htdocs
+	mv index.html.en index-mod_ssl.html.en
+
+	cd manual/mod
+	mv directives.html.en	directives-mod_ssl.html.en
+	mv index-bytype.html.en	index-bytype-mod_ssl.html.en
+	mv index.html.en	index.html-mod_ssl.en
+
+}

@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=usbutils
+pkgver=0.71
+pkgrel=1
+pkgdesc="usbutils (USB utilities) lsusb displays detailed information about all USB buses and devices in the system. usbmodules lists the kernel modules for a plugged in USB device. See the manual pages for more details."
+depends=('glibc' 'libusb')
+url="http://linux-usb.sourceforge.net"
+source=(http://dl.sourceforge.net/sourceforge/linux-usb/$pkgname-$pkgver.tar.gz)
+md5sums=('479d7c7098ef44cc95e7978fd71c712c')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.71 2006.01.01
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver$CVSV
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --enable-usbmodules $CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	mv $startdir/pkg/usr/sbin $startdir/pkg/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

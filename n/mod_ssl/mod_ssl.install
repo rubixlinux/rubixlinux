@@ -1,0 +1,12 @@
+post_install() {
+	cd usr/sbin
+	ln -sf apachectl-mod_ssl apachectl
+}
+
+post_upgrade() {
+	post_install
+}
+
+op=$1
+shift
+$op $*

@@ -1,0 +1,42 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gnokii
+pkgver=0.6.8
+pkgrel=1
+pkgdesc="gnokii provides tools and a user space driver for use with mobile phones."
+depends=('glibc' 'x11' 'glib' 'bluez-libs' 'gtk+')
+backup=(etc/gnokiirc)
+source=(ftp://ftp.gnokii.org/pub/gnokii/$pkgname-$pkgver.tar.bz2)
+md5sums=('8109a8c3eb8ac0ee3e6ef3314bd2ce82')
+url="http://www.gnokii.org"
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr --enable-security
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/etc
+	cp Docs/sample/gnokiirc $startdir/pkg/etc/gnokiirc
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		COPYING		\
+		COPYRIGHT	\
+		ChangeLog	\
+		Docs		\
+		INSTALL		\
+		MAINTAINERS	\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mv $startdir/pkg/usr/share/doc/gnokii/gnapplet.sis $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/share/doc
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

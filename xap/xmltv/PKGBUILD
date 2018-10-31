@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=xmltv
+pkgver=0.5.39
+pkgrel=2
+pkgdesc="XMLTV is a set of programs to process TV (tvguide) listings and manage your TV viewing, storing listings in an XML format. There are backends to download TV listings for several countries, filter programs and Perl libraries to process listings."
+url="http://membled.com/work/apps/xmltv"
+depends=('perl-term-readkey' 'perl-date-manip' 'perl-lwp' 'perl-xml-twig' 'perl-xml-writer' 'perl-compress-zlib' 'perl-lingua-en-numbers-ordinate'			\
+	 'perl-lingua-preferred' 'perl-term-progressbar' 'perl-unicode-string' 'perl-archive-zip' 'perl-io-stringy' 'perl-soap-lite' 'perl-html-tableextract'		\
+	 'perl-www-mechanize' 'perl-html-tree' 'perl-xml-libxml' 'perl-compress-zlib' 'perl-http-cache-transparent' 'perl-io-stringy' 'perl-tk' 'perl-tk-tablematrix'	)
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('c714a77870b4df3194257de898788b98')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+#	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mv	$startdir/pkg/share/doc		$startdir/pkg/usr
+	mv	$startdir/pkg/share/$pkgname/*	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	mv	$startdir/pkg/usr/share/man	$startdir/pkg/usr
+	rm -r	$startdir/pkg/share
+	rmdir	$startdir/pkg/usr/share
+
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

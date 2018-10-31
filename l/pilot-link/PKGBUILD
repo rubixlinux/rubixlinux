@@ -1,0 +1,37 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=pilot-link
+pkgver=0.11.8
+pkgrel=1
+pkgdesc="pilot-link This is a library for communicating with Palm Computing, Inc.  Palm Devices as well as the Handspring Visor,  TRGPro,  and other devices which conform to this standard (PalmOS licensed devices). pilot-link is used by gnome-pilot and KPilot."
+depends=('gcc' 'readline')
+url=http://www.pilot-link.org
+source=(http://www.pilot-link.org/source/$pkgname-$pkgver.tar.gz)
+md5sums=('93e65404e6584b4af3f57118561eea6c')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure				\
+		--prefix=/usr			\
+		--localstatedir=/var/lib	\
+		--program-prefix=""		\
+		--program-suffix=""		\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

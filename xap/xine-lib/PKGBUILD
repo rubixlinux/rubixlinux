@@ -1,0 +1,66 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=xine-lib
+pkgver=1.1.1
+pkgrel=4
+pkgdesc="xine-lib (xine multimedia playback engine libraries) xine-lib is a free (GPL licensed) high-performance multimedia playback engine.  The xine shared libraries are used by xine-ui (and other media players and multimedia applications) for smooth video processing and playback of multimedia streams such as movies, radio and TV network streams, DVDs, and VCDs."
+depends=('sdl' 'ncurses' 'glibc' 'libtiff' 'db' 'heimdal' 'flac' 'esound' 'e2fsprogs' 'x11' 'openssl' 'libogg' 'lcms'	\
+	 'zlib' 'cyrus-sasl' 'alsa-lib' 'freetype2' 'imagemagick' 'libjpeg' 'gpm' 'libxml2' 'libvorbis' 'audiofile'	\
+	 'arts' 'bzip2' 'libmng' 'glib2' 'openldap' 'gcc' 'aalib' 'libpng' 'samba'					)
+source=(http://dl.sourceforge.net/sourceforge/xine/$pkgname-$pkgver.tar.gz)
+url="http://www.xinehq.de"
+md5sums=('b1f42602c776bb93e3cbf127e220cbfd')
+
+## Todo:
+##   None
+
+## Notes:
+##   xine-lib will not build with pie and crashes with ssp
+##   this is built for i686 only
+
+## Changelog:
+##   rel4: rebuilt against new imagemagick 2006.03.03
+##   rel3: rebuilt against xorg 6.9.0 2005.12.23
+##   rel2: rebuilt without SSP, and only for i686, oops! CFLAGS="" is _CORRECT_ 2005.12.09
+##   rel1: upgraded to 1.1.1 2005.12.06
+##   rel2: rebuilt against some new libs 2005.10.06
+##   rel1: upgraded to 1.1.0 2005.07.29
+##   rel2: rebuilt with updated deps 2005.06.20
+##   rel1: Upgraded to 1.0.1 2005.05.12
+##   rel4: Recompiled without SSP, some movies looked like attacks, lol 2005.02.22
+##   rel3: Recompiled against new version of flac 2005.02.20
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	export CFLAGS=""
+	export CXXFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+
+	XINE_BUILD=i686-pc-linux-gnu ./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		CREDITS		\
+		NEWS		\
+		README		\
+		TODO		\
+		doc		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm -r $startdir/pkg/usr/share/doc
+
+}

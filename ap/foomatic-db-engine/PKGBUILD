@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=foomatic-db-engine
+pkgver=3.0.2
+pkgrel=2
+pkgdesc="foomatic-db-engine Foomatic's database engine generates PPD files from the data in Foomatic's XML database. It also contains scripts to directly configure print queues and handle jobs."
+depends=('foomatic-filters' 'perl')
+source=(http://www.linuxprinting.org/download/foomatic/$pkgname-$pkgver.tar.gz)
+url="http://www.linuxprinting.org/foomatic.html"
+md5sums=('3061b8d3f7870467e6fbeae8d4399211')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a					\
+		COPYING					\
+		ChangeLog				\
+		Foomatic-Devel-Ideas.txt		\
+		README					\
+		README.build-foomatic-filters-ppds	\
+		TODO					\
+		USAGE					\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	find $startdir/pkg/usr/lib -type f -exec chmod 644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+}

@@ -1,0 +1,53 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gimp-print
+pkgver=4.2.7
+pkgrel=1
+pkgdesc="gimp-print (IJS printer driver for Ghostscript and CUPS) Gimp-Print is the print facility for the Gimp, and in addition a suite of drivers that may be used with common UNIX spooling systems using Ghostscript or CUPS.  These drivers provide printing quality for Linux in many cases equal to or better than proprietary vendor-supplied drivers, and can be used for many of the most demanding printing tasks."
+depends=('cups' 'readline')
+makedepends=('espgs')
+source=(http://dl.sourceforge.net/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://gimp-print.sourceforge.net/"
+md5sums=('766be49f44a6a682d857e5aefec414d4')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--infodir=/usr/info	\
+		--with-ijs		\
+		--with-cups		\
+		--without-gimp		\
+		--without-samples	\
+		--without-user-guide	\
+		--enable-escputil	\
+		--disable-static	\
+		--disable-nls		\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	rm -r	$startdir/pkg/usr/lib/gimp
+	rm	$startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp -a src/ghost/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.ghostscript
+
+	rmdir $startdir/pkg/usr/share/gimp-print/samples/
+	rmdir $startdir/pkg/usr/share/gimp-print/
+
+}

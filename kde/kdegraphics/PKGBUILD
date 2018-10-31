@@ -1,0 +1,63 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdegraphics
+pkgver=3.5.1
+pkgrel=2
+pkgdesc="kdegraphics (KDE graphics programs) Graphics programs for KDE, including:  kdvi (displays TeX's device independent .dvi files), kfax (displays fax files), kfract (a fractal generator), kghostview (displays postscript .ps files), kpaint (a simple drawing program), kruler (an onscreen ruler), ksnapshot (a screenshot utility), and kview (displays many graphic file formats)."
+url="http://www.kde.org"
+groups=('kde')
+depends=('qt' 'glibc' 'libtiff' 'libieee1284' 'xfsprogs' 'x11' 'fontconfig' 'expat' 'libusb'	\
+	 'lcms' 'zlib' 'libart_lgpl' 'sane' 'freetype2' 'libjpeg' 'libidn' 'pcre' 'imlib'	\
+	 'libungif' 'libmng' 'gphoto2' 'libexif' 'gcc' 'kdelibs' 'libpng'			)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2			\
+	ftp://ftp.kde.org/pub/kde/security_patches/post-$KDE-$pkgname-CVE-2006-0301.diff	)
+md5sums=('2cd1c5348b7df46cf7f9d91e1dbfebd2' \
+	 'bc7dc2a5235f95a41fc1d7ab885899da' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added security patch 2006.02.06
+##   rel1: Upgraded to 3.5.1 2006.01.31
+##   rel1: Upgraded to 3.5.0 2005.12.18
+##   rel1: rebuilt with security patch 2005.12.07
+##   rel1: Upgraded to 3.4.3 2005.10.15
+##   rel1: Upgraded to 3.4.2 2005.07.31
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/post-$KDE-$pkgname-CVE-2006-0301.diff || return 1
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=taglib
+pkgver=1.4
+pkgrel=1
+pkgdesc="taglib (audio meta-data library) TagLib is a library for reading and editing the meta-data of several popular audio formats.  Currently it supports both ID3v1 and ID3v2 for MP3 files, Ogg Vorbis comments and ID3 tags and Vorbis comments in FLAC files."
+url="http://ktown.kde.org/~wheeler/taglib.html"
+depends=('glibc' 'gcc' 'zlib')
+source=(http://ktown.kde.org/~wheeler/files/src/$pkgname-$pkgver.tar.gz)
+md5sums=('dcd50ddb2544faeae77f194804559404')
+
+#Todo:
+#None
+
+#Notes:
+#taglib does not eat pie!
+
+#Changelog:
+#rel1: Upgraded to 1.4 2005.08.19
+#rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--program-prefix=""	\
+		--program-suffix=""	\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		INSTALL	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}
+

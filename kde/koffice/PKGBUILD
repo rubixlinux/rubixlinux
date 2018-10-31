@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+SHORTVER=1.4.2
+
+pkgname=koffice
+pkgver=1.4.2
+pkgrel=4
+pkgdesc="koffice (KDE office productivity suite) KOffice office productivity applications, including: KWord (Professional text editing) KSpread (Professional number cruncher/spreadsheet) KPresenter (Professional presentation program) KChart (Graphing of your abstract data) Karbon (Vector graphics tool) Kugar (Database report creation) Kivio (Flowcharting program) KOffice Workspace (A combination of all of the above)"
+url="http://www.koffice.org"
+depends=('qt' 'glibc' 'libtiff' 'esound' 'fontconfig' 'openssl' 'expat' 'wv2' 'lcms' 'zlib' 'alsa-lib' 'imagemagick'	\
+	 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'libxml2' 'libmad' 'libmng' 'libpng' 'libwpd' 'libgsf' 'x11'	\
+	 'libogg' 'libart_lgpl' 'readline' 'python' 'libxslt' 'freetype2' 'pcre' 'arts' 'mysql' 'bzip2' 'glib2' 'gcc'	\
+	 'kdelibs' 'libtermcap'												)
+source=(ftp://ftp.kde.org/pub/kde/stable/$pkgname-$SHORTVER/src/$pkgname-$pkgver.tar.bz2	\
+	ftp://ftp.kde.org/pub/kde/security_patches/post-1.3-koffice-CAN-2005-3193.diff		)
+md5sums=('6b456fb7d54c84b11396b27a96ae0cf8' \
+	 '939b41e59cfb5f738e9b6fcfff4faf48' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: rebuilt against new imagemagick 2006.03.03
+##   rel3: rebuilt against xorg 6.9.0 2005.12.23
+##   rel2: rebuilt with security patch for CAN-2005-3193 205.12.08 ## security fix
+##   re11: upgraded to 1.4.2 2005.10.11 ## security fix
+##   rel2: rebuilt against new imagemagick 2005.10.06
+##   rel1: Upgraded to 1.4.1 2005.08.01
+##   rel1: Upgraded to 1.4.0 2005.06.25
+##   rel3: Rebuilt with new cflags 2005.03.17
+##   rel2: Rebuilt without reference to libGL.la 2005.02.19
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export MAKEFLAGS=""
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/post-1.3-koffice-CAN-2005-3193.diff || return 1
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/opt/kde --disable-debug --enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		INSTALL		\
+		README		\
+		koffice.lsm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

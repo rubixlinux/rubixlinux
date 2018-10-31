@@ -1,0 +1,92 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=dcron
+pkgver=2.3.3
+pkgrel=4
+pkgdesc="dcron (Dillon's Cron daemon) The cron daemon runs in the background and executes tasks on behalf of users at the appropriate time.  Many timed system tasks are started with cron, such as the nightly indexing with updatedb. dcron was written entirely from scratch by Matthew Dillon."
+url="http://apollo.backplane.com/FreeSrc"
+backup=(var/spool/cron/crontabs/root)
+depends=('glibc')
+source=($pkgname-$pkgver.tar.gz			\
+	$pkgname-$pkgver.diff			\
+	$pkgname-$pkgver.diff2			\
+	$pkgname-$pkgver.diff3			\
+	$pkgname-$pkgver.crontab.diff4		\
+	$pkgname-$pkgver.version.diff		\
+	$pkgname.fork.diff			\
+	$pkgname-$pkgver.lsm			\
+	root					\
+	cron					)
+md5sums=('537cda2dff7dfaf87660fee91b2cf78f' \
+	 '54b088f35c8550333fae0f40911ebfb8' \
+	 '334ffcf0f8248f46e2b7410278d4fd60' \
+	 'b676c3da626e1e5779170ba53e27b68b' \
+	 '0cde8ed2061a009a9739a038dd5249fa' \
+	 'dfc549637b08fe617b2a0c2fa736aec0' \
+	 '9a745a80710065148f9200ae627a1027' \
+	 '8717e194b6b03c9647f5ccfc706b992c' \
+	 'a174b1193efdd17cb8f8d34b8b6f4978' \
+	 '4a14ce4688a3394b90e949e16404e236' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: updated rc script to new format 2006.01.15
+##   rel3: added for patch 2005.09.18
+##   rel2: Changed spacing in rc script 2005.02.22
+##   rel1: Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/sbin
+        mkdir -p $startdir/pkg/usr/bin
+        mkdir -p $startdir/pkg/usr/man/man1
+        mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/var/spool/cron/crontabs
+	mkdir -p $startdir/pkg/etc/cron.daily
+	mkdir -p $startdir/pkg/etc/cron.hourly
+	mkdir -p $startdir/pkg/etc/cron.monthly
+	mkdir -p $startdir/pkg/etc/cron.weekly
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	cp	-a					\
+		CHANGES					\
+		README					\
+		$startdir/src/$pkgname-$pkgver.lsm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver.diff			|| return 1
+	patch -p1 < $startdir/src/$pkgname-$pkgver.diff2		|| return 1
+	patch -p1 < $startdir/src/$pkgname-$pkgver.diff3		|| return 1
+	patch -p1 < $startdir/src/$pkgname-$pkgver.crontab.diff4	|| return 1
+	patch -p1 < $startdir/src/$pkgname-$pkgver.version.diff		|| return 1
+	patch -p1 < $startdir/src/$pkgname.fork.diff			|| return 1
+
+	make || return 1
+
+	cp crond	$startdir/pkg/usr/sbin
+	cp crontab	$startdir/pkg/usr/bin
+	cp crontab.1	$startdir/pkg/usr/man/man1
+	cp crond.8	$startdir/pkg/usr/man/man8
+
+	cp $startdir/src/root $startdir/pkg/var/spool/cron/crontabs
+	chmod 600 $startdir/pkg/var/spool/cron/crontabs/root
+
+	cp $startdir/src/cron $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	chmod 4755 $startdir/pkg/usr/bin/crontab
+	chmod 0751 $startdir/pkg/var/spool/cron
+	chmod 0750 $startdir/pkg/var/spool/cron/crontabs
+	chmod 0644 $startdir/pkg/usr/man/man*/*
+
+}

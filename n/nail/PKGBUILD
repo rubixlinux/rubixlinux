@@ -1,0 +1,60 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=nail
+pkgver=11.24
+pkgrel=1
+pkgdesc="nail (a simple mail client) Nail is a mail user agent derived from Berkeley Mail 8.1 and is intended to provide the functionality of the POSIX.2 mailx command with additional support for MIME messages, SSL/TLS, POP3 and SMTP. The maintainer and primary developer of nail is Gunnar Ritter."
+depends=('glibc' 'openssl')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+backup=('etc/nail.rc')
+url="http://nail.sourceforge.net"
+md5sums=('e127cdbba1220a45f6f1f463ac4b4fd1')
+
+## Todo:
+##  None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 11.24 2005.07.27
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 444 -exec chmod 644 {} \;
+
+	make		PREFIX=/usr MANDIR=/usr/man MAILSPOOL=/var/spool/mail UCBINSTALL=/usr/bin/install
+	make install	PREFIX=/usr MANDIR=/usr/man MAILSPOOL=/var/spool/mail UCBINSTALL=/usr/bin/install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/bin
+	cd $startdir/pkg/bin
+	ln -sf /usr/bin/nail Mail
+	ln -sf /usr/bin/nail mail
+
+	cd $startdir/pkg/usr/bin
+	ln -sf nail Mail
+	ln -sf nail mail
+	ln -sf nail mailx
+
+	cd $startdir/pkg/usr/man/man1
+	ln -s nail.1 Mail.1
+	ln -s nail.1 mail.1
+	ln -s nail.1 mailx.1
+
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/usr/bin
+
+	cd $startdir/src/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

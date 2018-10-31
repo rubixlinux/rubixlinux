@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libcdaudio
+pkgver=0.99.12
+pkgrel=1
+pkgdesc="libcdaudio is a portable library for controlling audio CDs. It is also able to manage transfers of information with the CDDB (http://www.freedb.org) and CDIndex (http://www.cdindex.org) systems."
+depends=('glibc')
+url="http://libcdaudio.sourceforge.net"
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('63b49cf14d53eed31e7a87cca17a3963')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

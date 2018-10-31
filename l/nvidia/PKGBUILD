@@ -1,0 +1,228 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=nvidia
+pkgver=8178
+pkgrel=13
+depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'x11' 'fontconfig' 'expat' 'glib2' 'zlib' 'libpng')
+pkgdesc="nvidia -- accelerated linux driver set brings accelerated 2d functionality and high-performance opengl support to linux x86 with the use of nvidia graphics processing units"
+url="http://www.nvidia.com/object/unix.html"
+source=(http://download.nvidia.com/XFree86/Linux-x86/1.0-$pkgver/NVIDIA-Linux-x86-1.0-$pkgver-pkg1.run	\
+	nvidia.diff											)
+md5sums=('bc9d459bfeee93735e3959de041635df' \
+	 '804a9ea8bf5164aa3248c89ab2f6792e' )
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+##   This package provides only the 'nvidia' kernel module and 'nvidia' x11 module
+##   The "accelerated" opengl nvidia provides are not included as they would overwrite
+##     other packages. Please keep me updated as to how this package works for you.
+##
+##   NVIDIA has granted Rubix Linux permission to distribute this modified package.
+##
+##   This package may only be downloaded from Rubix Linux official mirrors and modifications
+##     MAY NOT BE REDISTRIBUTED without permission from NVIDIA.
+##
+##   The following is the section from the NVIDIA license which can be found at
+##     /usr/doc/nvidia-*/LICENSE:
+##
+##       2.1.2  Linux/FreeBSD Exception.  Notwithstanding the foregoing terms
+##       of Section 2.1.1, SOFTWARE designed exclusively for use on the Linux or
+##       FreeBSD operating systems, or other operating systems derived from the
+##       source code to these operating systems, may be copied and redistributed,
+##       provided that the binary files thereof are not modified in any way
+##       (except for unzipping of compressed files).
+##
+##   The following is the transcript of the email from nvidia which allows this redistribution:
+##
+##   Date: Tue, 06 Dec 2005 18:52:29 -0800
+##   From: Lonni J Friedman <lfriedman@nvidia.com>
+##   To: Joshua Rubin <joshua@rubixlinux.org>
+##   Subject: Re: Request Permission to Distribute Repackaged NVIDIA Linux x86 Drivers
+##   
+##   Joshua,
+##   What you've described is acceptable, and does fall within the licensing 
+##   terms.
+##   
+##   Thanks,
+##   Lonni
+##   
+##   Joshua Rubin wrote:
+##   > Lonni,
+##   > 
+##   > Thank you for the prompt reply. I am aware of this part of the license, and am 
+##   > unsure if my redistribution falls within these guidelines.
+##   > 
+##   > The section I am referring to is this:
+##   > "provided that the binary files thereof are not modified in any way (except 
+##   > for unzipping of compressed files"
+##   > 
+##   > I am unzipping the nvidia provided package, building kernel drivers for 3 
+##   > different kernels and packaging only a subset of the files normally installed 
+##   > via the nvidia installer.
+##   > 
+##   > Please advise me if this is acceptable to nvidia.
+##   > 
+##   > Thank you,
+##   > Joshua Rubin
+##   >
+##   > On Tuesday 06 December 2005 05:01 pm, you wrote:
+##   >
+##   >>Joshua,
+##   >>Permission is freely granted via section 2.1.2 of the License that is
+##   >>included with the driver:
+##   >>http://www.nvidia.com/object/nv_swlicense.html
+##   >>
+##   >>Thanks,
+##   >>Lonni J Friedman
+##   >>NVIDIA Corporation
+##   >>
+##   >>On 12/06/2005 03:56 PM Joshua Rubin wrote:
+##   >>
+##   >>>To whom it may concern,
+##   >>>
+##   >>>I was unable to determine the proper email address for this request, so
+##   >>>please let me know who to talk with if not you.
+##   >>>
+##   >>>I am the primary developer of Rubix Linux. Rubix Linux is a relatively
+##   >>>new distribution that is based on Slackware and uses Arch Linux's package
+##   >>>management. Rubix now has a year long heritage of providing the highest
+##   >>>quality packages. Simplicity, stability and security are the cornerstones
+##   >>>of Rubix development.
+##   >>>
+##   >>>Several users, myself included, would like to be able to have nvidia
+##   >>>drivers in the native Rubix packaging format and distributed via standard
+##   >>>Rubix mirrors.
+##   >>>
+##   >>>I have looked at the way several other distributions deliver the nvidia
+##   >>>drivers. Primarily, nvidia packages use install scripts that act as a
+##   >>>wrapper for the nvidia installer. Though Rubix could do this, I do not
+##   >>>believe this method provides the quality package that Rubix is known for.
+##   >>>
+##   >>>I have started working on a custom package build and would like to
+##   >>>request permission to distribute the nvidia drivers this way.
+##   >>>
+##   >>>I have attached the preliminary PKGBUILD script (should be fairly self
+##   >>>explanatory) and install script.
+##   >>>
+##   >>>Thank you for your consideration,
+##   >>>Joshua Rubin
+
+## Changelog:
+##   rel13: rebuilt for 2.6.15.5 2006.03.03
+##   rel12: rebuilt for 2.6.15.4 2006.02.12
+##   rel11: fixed install script bug 2006.02.08
+##   rel10: removed agpgart patch, caused a few unexpected problem 2006.02.08
+##   rel9:  added nvidia-glx 2006.02.08
+##   rel8:  removed module dependance on agpgart 2006.02.08
+##   rel7:  added zander's patch instead 2006.02.08
+##   rel5:  added patch so that the nvidia driver can work with suspend2 2006.02.08
+##   rel4:  built for 2.6.15.3 2006.02.07
+##   rel3:  built for 2.6.15.2 2006.01.31
+##   rel2:  built for 2.6.15.1 2006.01.20
+##   rel1:  upgraded to 8178, built for 2.6.15 2006.01.10
+##   rel1:  initial rubix release 2005.12.06
+
+build() {
+
+	cd $startdir/src
+
+	chmod +x NVIDIA-Linux-x86-1.0-$pkgver-pkg1.run
+	./NVIDIA-Linux-x86-1.0-$pkgver-pkg1.run -x
+	cd NVIDIA-Linux-x86-1.0-$pkgver-pkg1
+
+	patch -p0 < $startdir/src/nvidia.diff	|| return 1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		LICENSE		\
+		pkg-history.txt	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/X11R6/lib/modules/drivers
+	cp usr/X11R6/lib/modules/drivers/nvidia_drv.so $startdir/pkg/usr/X11R6/lib/modules/drivers
+	chmod 644 $startdir/pkg/usr/X11R6/lib/modules/drivers/*
+
+	cd usr/bin
+	mkdir -p $startdir/pkg/usr/bin
+	for prog in			\
+		nvidia-bug-report.sh	\
+		nvidia-settings		\
+		nvidia-xconfig
+	do
+		cp $prog $startdir/pkg/usr/bin
+	done
+	chown -R root.bin $startdir/pkg/usr/bin
+	cd ../..
+
+	cp -r usr/share/doc/* $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod -R 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+	chmod 755 $startdir/pkg/usr/doc/$pkgname-$pkgver/html
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp usr/share/man/man1/* $startdir/pkg/usr/man/man1
+	chmod 644 $startdir/pkg/usr/man/man1/*
+
+	cd usr/src/nv
+
+	# Make 2.4 vanilla module:
+		make SYSSRC=/usr/src/linux-$vver24 module || return 1
+		mkdir -p $startdir/pkg/lib/modules/$vver24/kernel/drivers/video
+		cp nvidia.o $startdir/pkg/lib/modules/$vver24/kernel/drivers/video
+		make clean
+
+	# Make 2.4 grsec module:
+		make SYSSRC=/usr/src/linux-$gver24 module || return 1
+		mkdir -p $startdir/pkg/lib/modules/$gver24/kernel/drivers/video
+		cp nvidia.o $startdir/pkg/lib/modules/$gver24/kernel/drivers/video
+		make clean
+
+	# Make 2.6 vanilla module:
+		make SYSSRC=/usr/src/linux-$vver26 module || return 1
+		mkdir -p $startdir/pkg/lib/modules/$vver26/kernel/drivers/video
+		cp nvidia.ko $startdir/pkg/lib/modules/$vver26/kernel/drivers/video
+		make clean
+
+	cd ../../..
+
+	mkdir -p							$startdir/pkg/usr/lib
+	cp usr/lib/libGL.so.1.0.$pkgver					$startdir/pkg/usr/lib
+	cp usr/lib/libGLcore.so.1.0.$pkgver				$startdir/pkg/usr/lib
+	cp usr/lib/libnvidia-tls.so.1.0.$pkgver				$startdir/pkg/usr/lib
+#	ln -s libGL.so.1.0.$pkgver					$startdir/pkg/usr/lib/libGL.so.1
+#	ln -s libGL.so.1						$startdir/pkg/usr/lib/libGL.so
+	ln -s libGLcore.so.1.0.$pkgver					$startdir/pkg/usr/lib/libGLcore.so.1
+	ln -s libGLcore.so.1						$startdir/pkg/usr/lib/libGLcore.so
+	ln -s libnvidia-tls.so.1.0.$pkgver				$startdir/pkg/usr/lib/libnvidia-tls.so.1
+	ln -s libnvidia-tls.so.1					$startdir/pkg/usr/lib/libnvidia-tls.so
+
+	mkdir -p							$startdir/pkg/lib/tls
+	cp usr/lib/tls/libnvidia-tls.so.1.0.$pkgver			$startdir/pkg/lib/tls
+	ln -s libnvidia-tls.so.1.0.$pkgver				$startdir/pkg/lib/tls/libnvidia-tls.so.1
+	ln -s libnvidia-tls.so.1					$startdir/pkg/lib/tls/libnvidia-tls.so
+
+	mkdir -p							$startdir/pkg/usr/X11R6/lib
+	cp usr/X11R6/lib/libXvMCNVIDIA.so.1.0.$pkgver			$startdir/pkg/usr/X11R6/lib
+	cp usr/X11R6/lib/libXvMCNVIDIA.a				$startdir/pkg/usr/X11R6/lib
+	ln -s libXvMCNVIDIA.so.1.0.$pkgver				$startdir/pkg/usr/X11R6/lib/libXvMCNVIDIA.so.1
+	ln -s libXvMCNVIDIA.so.1					$startdir/pkg/usr/X11R6/lib/libXvMCNVIDIA.so
+
+	mkdir -p							$startdir/pkg/usr/X11R6/lib/modules/extensions
+	cp usr/X11R6/lib/modules/extensions/libglx.so.1.0.$pkgver	$startdir/pkg/usr/X11R6/lib/modules/extensions
+	ln -s libglx.so.1.0.$pkgver					$startdir/pkg/usr/X11R6/lib/modules/extensions/libglx.so.1
+#	ln -s libglx.so.1						$startdir/pkg/usr/X11R6/lib/modules/extensions/libglx.so
+
+	mkdir -p							$startdir/pkg/usr/share/applications
+	cp usr/share/applications/nvidia-settings.desktop		$startdir/pkg/usr/share/applications
+
+	find $startdir/pkg/lib/modules -type f -name *.o -exec gzip {} \;
+	find $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+}

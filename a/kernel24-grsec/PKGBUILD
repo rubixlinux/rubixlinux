@@ -1,0 +1,97 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+GRSEC=2.1.8
+SUBVER=200601081803
+
+pkgname=kernel24-grsec
+pkgver=2.4.32
+pkgrel=2
+url="http://www.kernel.org"
+pkgdesc="kernel4-grsec (Linux kernel) You MUST install a kernel image in order for your system to boot. This kernel supports IDE and SCSI hard drives and IDE CD-ROM drives.  Other drivers (such as for CD-ROM drives on proprietary interfaces, or ethernet cards) may be loaded as modules. This kernel includes the grsecurity patch that contains PAX and RBAC."
+groups=('grsec')
+backup=('boot/config-$pkgver-grsec')
+depends=('i2c')
+provides=('kernel')
+source=(ftp://ftp.kernel.org/pub/linux/kernel/v2.4/linux-$pkgver.tar.bz2	\
+	http://grsecurity.net/grsecurity-$GRSEC-$pkgver-$SUBVER.patch.gz	\
+	build.diff								\
+	config									)
+md5sums=('38f4d0830e95a20f4bfed17622d5557c' \
+	 'fe6d319b6622e1c0ed94b6d6705cc140' \
+	 'a07907eea88d58a64c7acca3bb2ff9cd' \
+	 'dfca7c1789fb152759c843a24c6618cd' )
+install=$pkgname.install
+
+## Todo:
+##   Possibly make install note about running lilo or updating /boot/grub/menu.lst
+
+## Notes:
+##   This is the grsec kernel, it is intended for security not features or speed
+##     know what you are doing before using this!
+##   This kernel combines all possible features from each of the slackware kernels
+##     not including zipslack or lowmem
+##     as such, it does not fit on a floppy, boot from the CD to rescue your system
+##   No longer split into two packages for kernel and modules
+##     symbiotic dependencies dont make sense
+
+## Changelog:
+##   rel2: upgraded grsec to 2.1.8 2006.01.17
+##   rel1: upgraded to 2.4.32 and grsec 2.1.7 2005.11.16
+##   rel3: rebuilt with smp and himem support 2005.11.13
+##   rel2: 'unremoved' the kernel modules msp3400 since the ivtv module have been renamed to msp3400-ivtv 2005.07.27
+##   rel1: upgraded to 2.4.31, grsec 2.1.6 2005.06.18
+##   rel5: removed the msp3400 (but kept bttv), install ivtv for the newer msp3400 module 2005.05.28
+##   rel4: added /boot/vmlinuz-2.4-grsec symlink 2005.04.26
+##   rel3: updated install script to create /boot/vmlinuz link 2005.04.24
+##   rel2: fixed some broken links 2005.04.22
+##   rel1: upgraded to 2.4.30 and grsec 2.1.5 2005.04.13
+##   rel5: removed old i2c, we use an updated i2c which is now a dependency for 2.4 kernels 2005.03.08
+##   rel4: upgraded to grsec 2.1.3, this is another CRITICAL UPDATE 2005.03.08
+##   rel3: upgraded to grsec 2.1.2, this is a CRITICAL UPDATE 2005.03.04
+##   rel2: gziped modules, added modprobe install script 2005.02.26
+##   rel1: Initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/linux-$pkgver
+
+	patch -p1 < $startdir/src/build.diff					|| return 1
+	patch -p1 < $startdir/src/grsecurity-$GRSEC-$pkgver-$SUBVER.patch	|| return 1
+
+	cp $startdir/src/config .config
+
+	make oldconfig	|| return 1
+	make dep	|| return 1
+	make bzImage	|| return 1
+	make modules	|| return 1
+
+	make INSTALL_MOD_PATH=$startdir/pkg modules_install
+
+	mkdir -p $startdir/pkg/boot
+	cp arch/i386/boot/bzImage	$startdir/pkg/boot/vmlinuz-$pkgver-grsec
+	cp .config			$startdir/pkg/boot/config-$pkgver-grsec
+	cp System.map			$startdir/pkg/boot/System.map-$pkgver-grsec
+
+	cd $startdir/pkg/boot
+
+	rdev -R vmlinuz-$pkgver-grsec  0
+	rdev -v vmlinuz-$pkgver-grsec -1
+	rdev -r vmlinuz-$pkgver-grsec  0
+
+	cd $startdir/pkg/lib/modules/$pkgver-grsec
+	rm build
+	ln -s /usr/src/linux-$pkgver-grsec build
+
+	find $startdir/pkg/lib/modules -type f -name *.o -exec gzip {} \;
+
+	cd $startdir/pkg/lib/modules/*/pcmcia
+	for module in *
+	do
+		link=`ls -l $module | cut -d" " -f10`
+		rm $module
+		ln -s $link.gz
+	done
+
+}

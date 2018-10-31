@@ -1,0 +1,70 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=openvpn
+pkgver=2.0.6
+pkgrel=1
+pkgdesc="OpenVPN -- A Secure tunneling daemon"
+url="http://openvpn.sourceforge.net"
+depends=('glibc' 'openssl' 'tcpip')
+backup=('etc/rc.d/openvpn')
+source=(http://openvpn.net/release/$pkgname-$pkgver.tar.gz	\
+	$pkgname						)
+md5sums=('8d2f95fa825e58363a676b25d4815aa7' \
+	 '7738158092d5b991e782e5a61eaaff3c' )
+
+## Todo:
+##   None
+
+## Notes:
+##    None
+
+## Changelog:
+##   rel1: upgraded to 2.0.6 2006.04.11
+##   rel2: added rc script in new format 2006.01.16
+##   rel1: upgraded to 2.0.5 2005.11.11
+##   rel2: fixed a bug to get redirect-gateway working again 2005.11.02
+##   rel1: RSA:2005-305-01
+##           upgraded to 2.0.4 to fix several security bugs 2005.11.01
+##   rel1: rebuilt against new openssl 2005.09.04
+##   rel1: upgraded to 2.0.2 2005.08.25
+##   rel2: rebuild with static lzo 2005.08.17
+##   rel1: upgraded to 2.0.1 2005.08.16
+##   rel1: upgraded to 2.0 final 2005.04.17
+##   rel1: upgraded to 2.0_rc16 2005.02.26
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chmod	0755			\
+		sample-config-files	\
+		sample-keys		\
+		sample-scripts
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		AUTHORS			\
+		COPYING			\
+		COPYRIGHT.GPL		\
+		ChangeLog		\
+		INSTALL			\
+		INSTALL-win32.txt	\
+		NEWS			\
+		PORTS			\
+		README			\
+		management/*		\
+		sample-config-files	\
+		sample-keys		\
+		sample-scripts		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

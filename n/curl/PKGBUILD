@@ -1,0 +1,62 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=curl
+pkgver=7.15.3
+pkgrel=1
+pkgdesc="Curl is a command line tool for transferring data specified with URL syntax.  The command is designed to work without user interaction or any kind of interactivity.   Curl offers a busload of useful tricks like proxy support, user authentication, ftp upload, HTTP post,  SSL (https:) connections, cookies, file transfer resume and more. libcurl is a library that Curl uses to do its job. It is readily available to be used by your software, too."
+depends=('glibc' 'openssl' 'zlib' 'libidn')
+source=(http://curl.haxx.se/download/$pkgname-$pkgver.tar.bz2)
+url="http://curl.haxx.se"
+md5sums=('d71b2ee8febfde2c7dc30a43638ec0d9')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 7.15.3 2006.04.22 *security*
+##   rel1: upgraded to 7.15.1 2005.12.20 (*security*)
+##   rel1: upgraded to 7.15.0 2005.11.06 (*security*)
+##   rel1: upgraded to 7.14.1 2005.09.30
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		CHANGES	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd docs
+	cp	-a		\
+		BUGS		\
+		CONTRIBUTE	\
+		FAQ		\
+		FEATURES	\
+		INSTALL		\
+		INTERNALS	\
+		MANUAL		\
+		README.win32	\
+		RESOURCES	\
+		THANKS		\
+		TODO		\
+		examples	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+SNORT_ARGS="-i eth0 -t /var/log/snort -c /etc/snort/snort.conf -u snort -g snort -D -A full"
+
+SCRIPT=`basename $0`
+PROG=/usr/bin/snort
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG $SNORT_ARGS
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

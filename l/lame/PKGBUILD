@@ -1,0 +1,42 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=lame
+pkgver=3.96.1
+pkgrel=1
+pkgdesc="An MP3 encoder and graphical frame analyzer"
+url="http://lame.sourceforge.net"
+depends=('ncurses')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('e1206c46a5e276feca11a7149e2fc6ac')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		API			\
+		COPYING			\
+		ChangeLog		\
+		DEFINES			\
+		HACKING			\
+		INSTALL			\
+		INSTALL.configure	\
+		LICENSE			\
+		README			\
+		README.WINGTK		\
+		STYLEGUIDE		\
+		TODO			\
+		USAGE			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/usr/share/doc/lame/html $startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -r $startdir/pkg/usr/share
+
+}

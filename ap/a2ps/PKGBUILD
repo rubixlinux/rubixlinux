@@ -1,0 +1,90 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PSUTILS=p17
+
+pkgname=a2ps
+pkgver=4.13b
+pkgrel=1
+pkgdesc="a2ps (any to PostScript filter) GNU a2ps is an Any to PostScript filter.  Of course it processes plain text files, but also pretty prints quite a few popular programming languages.  Also contained in this package is psutils, a collection of programs for manipulating PostScript files. a2ps is used by Apsfilter, so be sure to install this package if you plan to do any printing."
+depends=('espgs' 'perl')
+source=(http://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz			\
+	http://www.ctan.org/tex-archive/support/psutils/psutils-$PSUTILS.tar.gz	\
+	psutils-$PSUTILS.diff.gz						\
+	$pkgname-$pkgver.diff.gz						)	
+url="http://www.inf.enst.fr/~demaille/a2ps"
+md5sums=('0c8e0c31b08c14f7a7198ce967eb3281' \
+	 'b161522f3bd1507655326afa7db4a0ad' \
+	 '3441ab174ebff48b3b89c43a7660844b' \
+	 '9f6a010edd6538ca89e2d3679b5c4179' )
+
+#Todo:
+#Rebuild with emacs
+#depends!
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/psutils
+
+	mkdir -p				\
+		$startdir/pkg/usr/bin		\
+		$startdir/pkg/usr/share/psutils	\
+		$startdir/pkg/usr/man/man1
+
+	make -f Makefile.unix					\
+		BINDIR=$startdir/pkg/usr/bin			\
+		INCLUDEDIR=$startdir/pkg/usr/share/psutils	\
+		PERL=/usr/bin/perl				\
+		MANDIR=$startdir/pkg/usr/man/man1
+	make -f Makefile.unix					\
+		BINDIR=$startdir/pkg/usr/bin			\
+		INCLUDEDIR=$startdir/pkg/usr/share/psutils	\
+		PERL=/usr/bin/perl				\
+		MANDIR=$startdir/pkg/usr/man/man1		\
+		install
+
+	mkdir -p $startdir/pkg/usr/doc/psutils-$PSUTILS
+	cp -a LICENSE README $startdir/pkg/usr/doc/psutils-$PSUTILS
+	chmod 644 $startdir/pkg/usr/doc/psutils-$PSUTILS/*
+
+	cd $startdir/src/$pkgname-4.13
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver.diff
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--with-medium=letter	\
+		$CHOST
+	make
+	make					\
+		prefix=$startdir/pkg/usr	\
+		sysconfdir=$startdir/pkg/etc	\
+		install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		ANNOUNCE	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		FAQ		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	rm $startdir/pkg/usr/info/dir
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

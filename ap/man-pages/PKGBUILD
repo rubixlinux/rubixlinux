@@ -1,0 +1,84 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=man-pages
+pkgver=2.22
+pkgrel=1
+pkgdesc="man-pages (system documentation) Man pages are online documentation for Linux.  This package includes many section 1, 2, 3, 4, 5, 7, and 8 man pages for Linux. The man-pages distribution is maintained by Andries E. Brouwer with the help of more writers, editors, and other contributors than we can name here."
+source=(ftp://ftp.kernel.org/pub/linux/docs/manpages/$pkgname-$pkgver.tar.bz2)
+md5sums=('92e58f60e45608f9289638a3a9e1b148')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 2.22 2006.02.15
+##   rel1: Upgraded to 2.21 2006.01.18
+##   rel1: Upgraded to 2.20 2006.01.13
+##   rel1: Upgraded to 2.18 2005.12.19
+##   rel1: Upgraded to 2.14 2005.11.25
+##   rel1: Upgraded to 2.13 2005.11.09
+##   rel1: Upgraded to 2.11 2005.10.30
+##   rel1: Upgraded to 2.08 2005.09.30
+##   rel1: Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make MANDIR=$startdir/pkg/usr/man install || return 1
+
+	## Remove manpages that exist in other packages
+	rm $startdir/pkg/usr/man/man1/chgrp.1
+	rm $startdir/pkg/usr/man/man1/chmod.1
+	rm $startdir/pkg/usr/man/man1/chown.1
+	rm $startdir/pkg/usr/man/man1/cp.1
+	rm $startdir/pkg/usr/man/man1/dd.1
+	rm $startdir/pkg/usr/man/man1/df.1
+	rm $startdir/pkg/usr/man/man1/diff.1
+	rm $startdir/pkg/usr/man/man1/dir.1
+	rm $startdir/pkg/usr/man/man1/dircolors.1
+	rm $startdir/pkg/usr/man/man1/du.1
+	rm $startdir/pkg/usr/man/man1/install.1
+	rm $startdir/pkg/usr/man/man1/ln.1
+	rm $startdir/pkg/usr/man/man1/ls.1
+	rm $startdir/pkg/usr/man/man1/mkdir.1
+	rm $startdir/pkg/usr/man/man1/mkfifo.1
+	rm $startdir/pkg/usr/man/man1/mknod.1
+	rm $startdir/pkg/usr/man/man1/mv.1
+	rm $startdir/pkg/usr/man/man1/rm.1
+	rm $startdir/pkg/usr/man/man1/rmdir.1
+	rm $startdir/pkg/usr/man/man1/touch.1
+	rm $startdir/pkg/usr/man/man1/vdir.1
+	rm $startdir/pkg/usr/man/man2/capget.2
+	rm $startdir/pkg/usr/man/man2/capset.2
+	rm $startdir/pkg/usr/man/man2/fgetxattr.2
+	rm $startdir/pkg/usr/man/man2/flistxattr.2
+	rm $startdir/pkg/usr/man/man2/fremovexattr.2
+	rm $startdir/pkg/usr/man/man2/fsetxattr.2
+	rm $startdir/pkg/usr/man/man2/getxattr.2
+	rm $startdir/pkg/usr/man/man2/lgetxattr.2
+	rm $startdir/pkg/usr/man/man2/listxattr.2
+	rm $startdir/pkg/usr/man/man2/llistxattr.2
+	rm $startdir/pkg/usr/man/man2/lremovexattr.2
+	rm $startdir/pkg/usr/man/man2/lsetxattr.2
+	rm $startdir/pkg/usr/man/man2/quotactl.2
+	rm $startdir/pkg/usr/man/man2/removexattr.2
+	rm $startdir/pkg/usr/man/man2/setxattr.2
+	rm $startdir/pkg/usr/man/man3/err.3
+	rm $startdir/pkg/usr/man/man4/fd.4
+	rm $startdir/pkg/usr/man/man5/passwd.5
+
+	rm -r $startdir/pkg/usr/man/man?p
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a				\
+		POSIX-COPYRIGHT			\
+		README				\
+		man-pages-$pkgver.Announce	\
+		man-pages-$pkgver.lsm		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

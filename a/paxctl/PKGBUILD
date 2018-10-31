@@ -1,0 +1,40 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=paxctl
+pkgver=0.3
+pkgrel=1
+pkgdesc="This is paxctl for controlling PaX flags on a per binary basis. PaX is an intrusion prevention system that provides the best protection mechanisms against memory corruption bugs."
+url="http://pax.grsecurity.net"
+source=(http://pax.grsecurity.net/$pkgname-$pkgver.tar.gz)
+groups=('grsec')
+md5sums=('a1ebfd41b8323f3af2263317b3911806')
+
+## Todo:
+##   desc
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.3 2005.11.17
+##   rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	install -m0755 paxctl   $startdir/pkg/sbin/paxctl
+	install -m0644 paxctl.1 $startdir/pkg/usr/man/man1/paxctl.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a ChangeLog README  $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/sbin
+
+}

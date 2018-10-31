@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libmng
+pkgver=1.0.8
+pkgrel=1
+pkgdesc="libmng (Multiple-image Network Graphics library) This is libmng, the MNG reference library.  MNG (pronounced 'ming'), is short for Multiple-image Network Graphics.  Designed with the same modular philosophy as PNG and by many of the same people, MNG is intended to provide a home for all of the multi-image (animation) capabilities that have no place in PNG.   libmng was written by Gerard Juyn."
+url="http://www.libmng.com"
+depends=('zlib' 'libjpeg')
+makedepends=('libtool')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('d688ca879c934e9cde8b323cf3025f89')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	sh autogen.sh
+	./configure --prefix=/usr
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/man/man3 $startdir/pkg/usr/man/man5
+	cd doc/man
+	cp libmng.3	$startdir/pkg/usr/man/man3
+	cp jng.5	$startdir/pkg/usr/man/man5
+	cp mng.5	$startdir/pkg/usr/man/man5
+	cd ../..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		LICENSE		\
+		README*		\
+		doc/libmng.txt	\
+		doc/Plan1.png	\
+		doc/Plan2.png	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

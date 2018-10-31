@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=amp
+pkgver=0.7.6
+pkgrel=1
+pkgdesc="amp (An MP3 player) amp (Audio Mpeg Player) is a command-line MPEG audio decoder (MP3 player).  It works with both MPEG1 and MPEG2 audio streams (except for the multichannel extensions defined in MPEG2), layers 2 and 3."
+source=(http://www-users.cs.umn.edu/~wburdick/ftp/$pkgname-$pkgver.tar.gz	\
+	$pkgname-$pkgver-gcc34.diff.gz						)
+depends=('glibc')
+md5sums=('c12a27ac84b417bdac3330c3aa366122' \
+	 '583bd5584e47402750d2e747bcb76902' )
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/$pkgname-$pkgver-gcc34.diff
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+
+	cp amp		$startdir/pkg/usr/bin
+	cp amp.1	$startdir/pkg/usr/man/man1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		BUGS			\
+		CHANGES			\
+		README			\
+		TODO			\
+		doc/jukebox.txt		\
+		doc/layer2.txt		\
+		doc/linuxrealtime.txt	\
+		doc/BeOS.txt		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

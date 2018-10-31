@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdeedu
+pkgver=3.5.1
+pkgrel=1
+url="http://www.kde.org"
+pkgdesc="kdeedu Educational applications for KDE."
+groups=('kde')
+depends=('qt' 'glibc' 'esound' 'xfsprogs' 'x11' 'fontconfig' 'expat' 'libogg' 'zlib' 'libart_lgpl' 'alsa-lib'	\
+	 'freetype2' 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'pcre' 'arts' 'libmad' 'glib2' 'libmng' 'gcc'	\
+	 'kdelibs' 'libpng'											)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('fe31b9a2ec4e299531c6b7beeab09534')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 3.5.1 2006.01.31
+##   rel1: upgraded to 3.5.0 2005.12.18
+##   rel1: upgraded to 3.4.3 2005.10.15
+##   rel2: added security patch 2005.09.03
+##   rel1: Upgraded to 3.4.2 2005.07.31
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--enable-final
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		INSTALL		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 755 $startdir/pkg/opt/kde/bin/fliccd
+
+}

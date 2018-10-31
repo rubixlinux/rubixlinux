@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-term-readkey
+pkgver=2.30
+pkgrel=3
+pkgdesc="Term::ReadKey - A perl module for simple terminal control"
+depends=('perl')
+source=(http://cpan.uwinnipeg.ca/cpan/authors/id/J/JS/JSTOWE/TermReadKey-$pkgver.tar.gz)
+md5sums=('f0ef2cea8acfbcc58d865c05b0c7e1ff')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel3: Rebuilt with perl 5.8.7 2005.06.13
+#rel2: Initial Rubix release 2005.05.20
+
+build() {
+
+	cd $startdir/src/TermReadKey-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/TermReadKey-$pkgver
+	cp	-a		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/TermReadKey-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/TermReadKey-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=parted
+pkgver=1.6.25.1
+pkgrel=1
+pkgdesc="parted (GNU disk partitioning tool) GNU Parted is a program for creating, destroying, resizing, checking and copying partitions, and the filesystems on them.  This is useful for creating space for new operating systems, reorganizing disk usage, copying data between hard disks, and disk imaging."
+url="http://www.gnu.org/software/parted/parted.html"
+depends=('glibc' 'e2fsprogs' 'ncurses' 'readline')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('8ad8b2c8aa865d9d6a43a4ecfe021782')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.6.25.1 2005.12.31
+##   rel1: upgraded to 1.6.25 2005.11.10
+##   rel1: initial rubix release 1.6.23 2005.09.21
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--enable-shared=no	\
+		--enable-static=yes	\
+		--with-readline
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		AUTHORS			\
+		BUGS			\
+		COPYING			\
+		README			\
+		THANKS			\
+		TODO			\
+		doc/{API,FAQ,FAT}	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm $startdir/pkg/usr/info/dir
+
+	find $startdir/pkg/usr/man -type f -exec chmod 644 {} \;
+
+}

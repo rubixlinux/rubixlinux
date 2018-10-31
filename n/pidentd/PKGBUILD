@@ -1,0 +1,71 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=pidentd
+pkgver=3.0.19
+pkgrel=1
+pkgdesc="pidentd (TCP/IP IDENT protocol server) The identd daemon implements the IDENT protocol as specified in RFC1413.  When your machine connects to a remote system, the remote machine may connect to your identd daemon to find out either the user name or other information about the process that initiated the connection.  Some remote machines may choose not to allow your connections if you do not provide access to an identd daemon. The pidentd daemon was written by Peter Eriksson."
+source=(ftp://ftp.lysator.liu.se/pub/ident/servers/$pkgname-$pkgver.tar.gz	\
+	pidentd.conf.diff							\
+	identd									)
+depends=('glibc' 'openssl')
+url="http://www.lysator.liu.se/~pen/pidentd"
+backup=('etc/identd.conf')
+md5sums=('ee8d3608a2590827cf8b55caeb1d7b93' \
+	 '678c14cf2d4aa2e1eaa6d7e53cf5f47b' \
+	 '3ea8d76c309c9f494c7eaca250835fae' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 3.0.19, updated rc script to new format
+##   rel1: 3.0.18 initial rubix release 2005.09.18
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/pidentd.conf.diff || return 1
+
+	./configure						\
+		--prefix=/usr					\
+		--sysconfdir=/etc				\
+		--with-des-includes=/usr/include/openssl	\
+		$CHOST
+	make || return 1
+
+	mkdir -p $startdir/pkg/usr/sbin
+
+	cp src/identd	$startdir/pkg/usr/sbin/in.identd
+	cp src/ibench	$startdir/pkg/usr/sbin
+	cp src/idecrypt	$startdir/pkg/usr/sbin
+	cp src/ikeygen	$startdir/pkg/usr/sbin
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	mkdir -p		$startdir/pkg/etc
+	cp etc/identd.conf	$startdir/pkg/etc
+
+	mkdir -p	$startdir/pkg/usr/man/man8
+	cp doc/identd.8	$startdir/pkg/usr/man/man8
+
+	echo ".so man8/identd.8" > $startdir/pkg/usr/man/man8/in.identd.8
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS		\
+		ChangeLog	\
+		FAQ		\
+		INSTALL		\
+		README		\
+		Y2K		\
+		doc/rfc*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/identd $startdir/pkg/etc/rc.d
+
+}

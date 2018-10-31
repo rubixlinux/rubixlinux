@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=cpio
+pkgver=2.6
+pkgrel=1
+pkgdesc="cpio (backup and archiving utility) This is GNU cpio, a program to manage archives of files. This package also includes mt, a tape drive control program. cpio copies files into or out of a cpio or tar archive, which is a file that contains other files plus information about them, such as their pathname, owner, timestamps, and access permissions. The archive can be another file on the disk, a magnetic tape, or a pipe."
+url="http://www.gnu.org/software/cpio"
+depends=('glibc')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('76b4145f33df088a5bade3bf4373d17d')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#mt-GNU is no longer included
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make
+
+	mkdir -p		$startdir/pkg/bin
+	cp src/cpio		$startdir/pkg/bin
+	chmod 755		$startdir/pkg/bin/*
+	chown -R root.bin	$startdir/pkg/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+	cp doc/cpio.1	$startdir/pkg/usr/man/man1
+
+	makeinfo doc/cpio.texi
+	mkdir -p		$startdir/pkg/usr/info
+	cp doc/cpio.info	$startdir/pkg/usr/info
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

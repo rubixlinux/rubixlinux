@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libao
+pkgver=0.8.6
+pkgrel=2
+pkgdesc="libao (Audio Output library) Libao is a cross-platform audio library, and is required by many programs and other libraries that use audio (some examples include ogg123, GAIM, and the Ogg Vorbis libraries).  This package provides plugins for OSS, ESD, aRts, and ALSA.  You will need to install the supporting libraries for any plugins you want to use."
+depends=('glibc' 'alsa-lib' 'audiofile' 'esound')
+source=(http://downloads.xiph.org/releases/ao/$pkgname-$pkgver.tar.gz)
+url="http://www.xiph.org/ao"
+md5sums=('12e136a4c0995068ff134997c84421ed')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: rebuilt without arts 2006.01.24
+##   rel1: initial rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --disable-arts $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}
+

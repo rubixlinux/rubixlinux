@@ -1,0 +1,17 @@
+--- ./firefox.orig	2005-11-01 16:12:09.000000000 -0700
++++ ./firefox	2005-11-01 16:11:06.000000000 -0700
+@@ -75,6 +75,14 @@
+ moz_libdir=/usr/lib/firefox-1.0.7
+ MRE_HOME=/usr/lib/mre/mre-1.0.7
+ 
++# Include /usr/lib/mozilla/plugins in the plugin path:
++if [ "$MOZ_PLUGIN_PATH" ] ; then
++  MOZ_PLUGIN_PATH=$MOZ_PLUGIN_PATH:${moz_libdir}/plugins:/usr/lib/mozilla/plugins
++else
++  MOZ_PLUGIN_PATH=${moz_libdir}/plugins:/usr/lib/mozilla/plugins
++fi
++export MOZ_PLUGIN_PATH
++
+ # Use run-mozilla.sh in the current dir if it exists
+ # If not, then start resolving symlinks until we find run-mozilla.sh
+ found=0

@@ -1,0 +1,56 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=nano
+pkgver=1.2.5
+pkgrel=1
+pkgdesc="GNU nano - an enhanced clone of the Pico text editor."
+url="http://www.nano-editor.org"
+depends=('ncurses')
+source=(http://www.nano-editor.org/dist/v1.2/$pkgname-$pkgver.tar.gz)
+md5sums=('f2b3efbf1cf356d736740d531b6b22c4')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 1.2.5 changed compile to --enable-all 2005.05.23
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--enable-all
+
+	make
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		BUGS		\
+		COPYING		\
+		INSTALL		\
+		ChangeLog	\
+		NEWS		\
+		README		\
+		THANKS		\
+		TODO		\
+		UPGRADE		\
+		nanorc.sample	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	rm $startdir/pkg/usr/info/dir
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

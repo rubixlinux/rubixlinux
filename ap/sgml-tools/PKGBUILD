@@ -1,0 +1,32 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=sgml-tools
+pkgver=1.0.9
+pkgrel=1
+pkgdesc="sgml-tools (Utilities for working with SGML) SGML stands for Standard Generalized Markup Language.  This is a system which allows you to produce LaTeX, HTML, GNU info, LyX, RTF, and plain text (via groff) from a single source file in SGML.  It is often used for technical software documentation, such as the Linux HOWTO documents.  This package includes everything you need to use SGML -- all the standard SGML tools, OpenJade, and tools for working with DocBook documents (various DTDs)."
+depends=('glibc')
+source=(ftp://ftp.slackware.com/pub/slackware/slackware-current/slackware/ap/$pkgname-$pkgver-i486-12.tgz)
+md5sums=('05ae41e128b93df6bce600d6c21ce7db')
+
+## Todo:
+##   None
+
+## Notes:
+##   This is a HORRIBLE package. I have struggled with it for nearly a year.
+##    I have finally broke down and just repackaged the Slackware package,
+##    which in turn is a bunch of RPMs repackaged
+
+## Changelog:
+##   rel1: Initial Rubix release 2005.09.19
+
+build() {
+
+	cd $startdir/pkg
+
+	tar zxf $startdir/src/$pkgname-$pkgver-i486-12.tgz
+	sh install/doinst.sh
+	rm -r install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

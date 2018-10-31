@@ -1,0 +1,53 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-net-ssleay
+pkgver=1.25
+pkgrel=2
+pkgdesc="Net::SSLeay Perl module for using OpenSSL"
+depends=('perl' 'openssl')
+source=(http://www.cpan.org/authors/id/S/SA/SAMPO/Net_SSLeay.pm-$pkgver.tar.gz)
+md5sums=('87de8a06802fbb63c7c85e89eedbe139')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: rebuilt for perl 5.8.7
+#rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/Net_SSLeay.pm-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+#	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Net_SSLeay.pm-$pkgver
+	cp	-a		\
+		Changes		\
+		Credits		\
+		MANIFEST	\
+		QuickRef	\
+		README		\
+		README.Win32	\
+		RECIPE.Win32	\
+	$startdir/pkg/usr/doc/perl-$PERL/Net_SSLeay.pm-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

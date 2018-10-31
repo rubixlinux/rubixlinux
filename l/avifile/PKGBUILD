@@ -1,0 +1,33 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=avifile
+pkgver=0.7.43
+pkgrel=1
+pkgdesc="Avifile is a library that allows you to read and write compressed AVI files (Indeo? Video, DivX, etc.) under x86 Linux. (De)compression is performed with Win32 DLLs. It includes AVI player, video4linux-compatible capture program and simple AVI recompres"
+depends=('qt' 'sdl')
+url="http://avifile.sourceforge.net"
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-0.7-$pkgver.tar.bz2)
+md5sums=('821adfba2606773764aa29fcf14eb51f')
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/$pkgname-0.7-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

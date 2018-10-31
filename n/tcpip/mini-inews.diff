@@ -1,0 +1,85 @@
+--- ./inews.c.orig	Mon Nov  4 16:01:20 1996
++++ ./inews.c	Wed Sep 15 22:36:41 1999
+@@ -93,7 +93,7 @@
+ 		}
+ 	}
+ 
+-	uname(host_name);
++	inews_uname(host_name);
+ 
+ #ifdef REALDOMAIN
+ 	{
+@@ -233,7 +233,7 @@
+ 	char	*cp;
+ 	struct	passwd	*passwd;
+ 	FILE	*fp;
+-	char	*index(), *getenv();
++	char	*getenv();
+ 	int	count = 0;
+ 	char	*dotdir;
+ 	
+@@ -310,7 +310,7 @@
+ 	char	*full_name;
+ 	char	*cp;
+ 	struct	passwd *passwd;
+-	char	*index(), *getenv();
++	char	*getenv();
+ 
+ 	passwd = getpwuid(getuid());
+ 
+@@ -438,7 +438,6 @@
+ int valid_header(h)
+ register char *h;
+ {
+-  char *index();
+   char *colon, *space;
+   
+   /*
+--- ./conf.h.orig	Wed Sep 15 22:35:58 1999
++++ ./conf.h	Wed Sep 15 22:36:24 1999
+@@ -14,14 +14,14 @@
+ #define LOAD 6	/* Loadav above which server refuses connections */
+ 
+ 
+-#undef	BSD_42		/* 4.2 compatability code -- if this is defined, */
++#define	BSD_42		/* 4.2 compatability code -- if this is defined, */
+ 			/* DBM probably wants to be defined as well. */
+ 
+ #undef BSD_43		/* Define if you are running on BSD 4.3 */
+ 
+ #undef CMU_MACH		/* Use CMU's MACH ioctl(FIOCFSPARAM) for dfree(). */
+ 
+-#define USG		/* System V support */
++#undef USG		/* System V support */
+ 
+ #undef TLI		/* Define this if you want to use TLI instead of */
+ 			/* sockets */
+--- ./uname.c.orig	Wed Sep 15 22:36:57 1999
++++ ./uname.c	Wed Sep 15 22:37:18 1999
+@@ -36,7 +36,7 @@
+ #include <sys/socket.h>
+ #include <netdb.h>
+ 
+-uname(uptr)
++inews_uname(uptr)
+ char	*uptr;
+ {
+ 	struct hostent *he;
+@@ -51,7 +51,7 @@
+ #endif
+ 
+ #ifdef	UUNAME
+-uname(uptr)
++inews_uname(uptr)
+ char *uptr;
+ {
+ 	FILE *uucpf;
+@@ -76,7 +76,7 @@
+ #ifndef DONE
+ #define	HDRFILE "/usr/include/whoami.h"
+ 
+-uname(uptr)
++inews_uname(uptr)
+ char *uptr;
+ {
+ 	char buf[BUFSIZ];

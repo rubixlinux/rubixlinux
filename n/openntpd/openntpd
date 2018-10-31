@@ -1,0 +1,28 @@
+#!/bin/bash
+
+## Uncomment the next line to set the time on startup
+## can cause boot process to hang if server can not be reached
+#OPTS="-s"
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/ntpd
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG $OPTS
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

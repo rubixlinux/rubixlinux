@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+REALVER=0.4.9-pre1
+
+pkgname=ffmpeg
+pkgver=20060129
+pkgrel=1
+pkgdesc="FFmpeg is an audio/video conversion tool. It includes libavcodec, the leading open source codec library. An experimental streaming server for live broadcasts is also included."
+url="http://ffmpeg.sourceforge.net"
+depends=('sdl' 'glibc' 'lame' 'faac' 'faad2' 'libvorbis' 'x11' 'libogg' 'gcc' 'zlib')
+
+## Todo:
+##   None
+
+## Note:
+##   None
+
+## Changelog:
+##   rel1: upgraded to cvs to fix some bugs 2006.01.29
+##   rel1: initial rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src
+
+	cvs -z9 -d:pserver:anonymous@mplayerhq.hu:/cvsroot/$pkgname co $pkgname
+
+	cd $pkgname
+
+	./configure			\
+		--prefix=/usr		\
+		--disable-mmx		\
+		--enable-mp3lame	\
+		--enable-vorbis		\
+		--enable-faac		\
+		--enable-faad		\
+		--enable-a52		\
+		--enable-shared		\
+		--enable-gpl
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		CREDITS		\
+		Changelog	\
+		INSTALL		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

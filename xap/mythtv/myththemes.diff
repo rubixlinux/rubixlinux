@@ -1,0 +1,9 @@
+--- ./myththemes.pro.orig	2005-05-29 00:39:32.000000000 -0600
++++ ./myththemes.pro	2005-05-29 00:39:46.000000000 -0600
+@@ -1,5 +1,5 @@
+ isEmpty( PREFIX ) {
+-  PREFIX = /usr/local
++  PREFIX = /usr
+ }
+ 
+ QMAKE_STRIP = echo

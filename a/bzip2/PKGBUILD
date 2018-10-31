@@ -1,0 +1,103 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=bzip2
+pkgver=1.0.3
+pkgrel=2
+pkgdesc="bzip2 (a block-sorting file compressor) Bzip2 compresses files using the Burrows-Wheeler block sorting text compression algorithm, and Huffman coding.  Compression is generally considerably better than that achieved by more conventional LZ77/LZ78- based compressors, and approaches the performance of the PPM family of statistical compressors. Julian Seward <jseward@acm.org> is the author of bzip2."
+url="http://sources.redhat.com/$pkgname"
+depends=('glibc')
+source=(http://www.bzip.org/$pkgver/$pkgname-$pkgver.tar.gz	\
+	$pkgname-$pkgver.saneso.diff				\
+	$pkgname.bigfiles.diff					)
+md5sums=('8a716bebecb6e647d2e8a29ea5d8447f' \
+	 'b988f70aedefbac53106be020e966b00' \
+	 '0395db28bcd4f7c9ba8b0d29db5dfd31' )
+
+## Todo:
+##   explain patchs
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: added small patch for big file support from Slack 2005.12.20
+##   rel1: upgraded to 1.0.3 2005.03.03
+##   Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver.saneso.diff	|| return 1
+	patch -p1 < $startdir/src/$pkgname.bigfiles.diff	|| return 1
+
+	make -f Makefile-libbz2_so	|| return 1
+	make				|| return 1
+
+	mkdir -p $startdir/pkg/usr/include
+
+	cp -a bzlib.h $startdir/pkg/usr/include
+	chmod 644 $startdir/pkg/usr/include/bzlib.h
+
+	mkdir -p $startdir/pkg/usr/lib
+	cp -a libbz2.a $startdir/pkg/usr/lib/libbz2.a
+	chmod 644 $startdir/pkg/usr/lib/libbz2.a
+
+	mkdir -p $startdir/pkg/lib
+	cp -a libbz2.so.$pkgver $startdir/pkg/lib/libbz2.so.$pkgver
+	chmod 755 $startdir/pkg/lib/libbz2.so.$pkgver
+
+	mkdir -p $startdir/pkg/bin
+	cp bzip2-shared	$startdir/pkg/bin/bzip2
+	cp bzip2recover $startdir/pkg/bin
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp $pkgname.1 $startdir/pkg/usr/man/man1/$pkgname.1
+	echo ".so man1/$pkgname.1.gz" > $startdir/pkg/usr/man/man1/${pkgname}recover.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a				\
+		CHANGES				\
+		LICENSE				\
+		README				\
+		README.COMPILATION.PROBLEMS	\
+		Y2K_INFO			\
+		bzip2.txt			\
+		*.html				\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/pkg/lib
+	ln -s libbz2.so.$pkgver libbz2.so.1.0
+	ln -s libbz2.so.1.0 libbz2.so.1
+
+	cd  $startdir/pkg/usr/lib
+	ln -s ../../lib/libbz2.so.1 libbz2.so
+
+	cd $startdir/pkg/bin
+	ln -s bzip2 bunzip2
+
+	cd $startdir/pkg/bin
+	ln -s bzip2 bzcat
+
+	mkdir -p $startdir/pkg/usr/bin
+	cd $startdir/pkg/usr/bin
+	ln -s ../../bin/bzip2 .
+	ln -s ../../bin/bzip2 bunzip2
+	ln -s ../../bin/bzip2 bzcat
+	ln -s bzmore bzless
+
+	cd $startdir/src/$pkgname-$pkgver
+	for file in 	\
+		bzdiff	\
+		bzgrep	\
+		bzmore
+	do
+		cp $file	$startdir/pkg/usr/bin/$file
+		cp ${file}.1	$startdir/pkg/usr/man/man1/${file}.1
+	done
+
+	chmod 755 $startdir/pkg/bin/* $startdir/pkg/usr/bin/*
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/usr/bin
+
+}

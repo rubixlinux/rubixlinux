@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=pcre
+pkgver=6.4
+pkgrel=1
+pkgdesc="pcre (Perl-compatible regular expression library) The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5, with just a few differences (documented in the man page). The PCRE library is used by KDE's Konqueror browser."
+depends=('glibc' 'gcc')
+url="http://pcre.sourceforge.net"
+source=(ftp://ftp.csx.cam.ac.uk/pub/software/programming/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('06608f8438d034f570cc1c0b63091ee2')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 6.4 2005.09.18
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --enable-utf8 --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		LICENCE		\
+		NEWS		\
+		NON-UNIX-USE	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd doc
+	cp -a Tech.Notes html $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+}

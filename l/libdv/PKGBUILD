@@ -1,0 +1,38 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libdv
+pkgver=0.104
+pkgrel=1
+pkgdesc="libdv is a software codec for DV video, the encoding format used by most digital camcorders, typically those that support the IEEE 1394 (a.k.a. FireWire or i.Link) interface. Libdv was developed according to the official standards for DV video: IEC 61834 and SMPTE 314M."
+depends=('gtk+' 'popt')
+makedepends=('pkgconfig')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('f6b08efce7472daa20685e6e8431f542')
+url="http://libdv.sourceforge.net"
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		AUTHORS			\
+		COPYING			\
+		COPYRIGHT		\
+		ChangeLog		\
+		INSTALL			\
+		NEWS			\
+		README			\
+		README.dvconnect	\
+		README.encoder		\
+		TODO			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

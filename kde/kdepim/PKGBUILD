@@ -1,0 +1,62 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+KDE=3.5.1
+
+pkgname=kdepim
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="kdepim This is a collection of Personal Information Management (PIM) tools."
+url="http://www.kde.org"
+groups=('kde')
+depends=('qt' 'glibc' 'esound' 'fontconfig' 'xfsprogs' 'gnokii' 'expat' 'zlib' 'alsa-lib' 'pilot-link'	\
+	 'libjpeg' 'libidn' 'libvorbis' 'audiofile' 'libmad' 'libmng' 'libpng' 'ncurses' 'x11' 'libogg'	\
+	 'gpgme' 'libart_lgpl' 'readline' 'cyrus-sasl' 'freetype2' 'bluez-libs' 'pcre' 'arts'		\
+	 'libgpg-error' 'glib2' 'gcc' 'kdelibs'								)
+source=(ftp://ftp.kde.org/pub/kde/stable/$KDE/src/$pkgname-$pkgver.tar.bz2)
+md5sums=('8e87c9cbe1f0c0f983f94d804a5bc8f9')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 3.5.1 2006.01.31
+##   rel1: Upgraded to 3.5.0 2005.12.18
+##   rel2: rebuilt with gpgme 2005.10.30
+##   rel1: upgraded to 3.4.3 2005.10.16
+##   rel2: added patch from slackware 2005.08.05
+##   rel1: Upgraded to 3.4.2 2005.07.31
+##   rel3: rebuilt with gnokii and bluetooth support 2005.07.05
+##   rel2: rebuilt with akregator patch that resolves an issue where read articles
+##         are remarked as unread, it was REALLY bugging me! 2005.06.23
+##   rel1: Upgraded to 3.4.1 2005.06.01
+##   rel1: Upgraded to 3.4.0 2005.03.16
+##   rel2: Rebuilt without reference to libGL.la 2005.02.19
+##   rel1: Initial Rubix Release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -pipe -Wa,--noexecstack"
+
+	export QTDIR=/usr/lib/qt
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/opt/kde	\
+		--disable-debug		\
+		--enable-final		\
+		--enable-indexlib
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		README		\
+		README.libical	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

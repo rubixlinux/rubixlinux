@@ -1,0 +1,10 @@
+--- ./print.c.orig	Sun Feb 25 18:01:39 2001
++++ ./print.c	Sun Feb 25 18:01:52 2001
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include	"defs.h"
++#include <time.h>
+ 
+ #ifndef ANSI_OFFSETOF
+ #ifndef offsetof

@@ -1,0 +1,78 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=wireless_tools
+pkgver=27
+pkgrel=4
+pkgdesc="wireless-tools (utilities for wireless networking) This package contains tools used for configuring wireless networking interfaces. iwconfig;  manipulate the basic wireless parameters iwlist;  to list addresses, frequencies, and bit-rates iwspy;  query the per node link quality iwpriv;  set the private parameters of a wireless network interface The wireless-tools were written by Jean Tourrilhes."
+url="http://pcmcia-cs.sourceforge.net/ftp/contrib"
+depends=('glibc' 'tcpip')
+source=(http://pcmcia-cs.sourceforge.net/ftp/contrib/$pkgname.$pkgver.tar.gz	\
+	$pkgname.nowhine.diff.gz						\
+	$pkgname.static.diff.gz							)
+md5sums=('29891b66f23565e7e381d28404abb29a' \
+	 '581a2ad25f728c17e39ee92e5e10a09c' \
+	 'dfe77b3d5c5220ac5a8a6149352d3f5a' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel4: built against static libiw 2005.07.27
+#Rebuilt with support for kdenetwork 2005.03.07
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname.$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.nowhine.diff	|| return 1
+	patch -p1 < $startdir/src/$pkgname.static.diff	|| return 1
+
+	make || return 1
+
+	mkdir -p $startdir/pkg/sbin
+	cp	-a		\
+		iwconfig	\
+		iwevent		\
+		iwgetid		\
+		iwlist		\
+		iwpriv		\
+		iwspy		\
+		ifrename	\
+	$startdir/pkg/sbin
+	chown -R root.bin	$startdir/pkg/sbin
+	chmod 755		$startdir/pkg/sbin/*
+
+	mkdir -p		$startdir/pkg/usr/lib
+	cp -a libiw.a		$startdir/pkg/usr/lib
+
+	mkdir -p		$startdir/pkg/usr/include
+	cp -a iwlib.h		$startdir/pkg/usr/include
+	cp -a wireless.h	$startdir/pkg/usr/include
+	chmod 644		$startdir/pkg/usr/include/*
+
+	mkdir -p	$startdir/pkg/usr/man/man5
+	cp iftab.5	$startdir/pkg/usr/man/man5
+
+	mkdir -p	$startdir/pkg/usr/man/man7
+	cp wireless.7	$startdir/pkg/usr/man/man7
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	for file in *.8 ; do
+		chmod 0644 $file
+		cp $file $startdir/pkg/usr/man/man8
+	done
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		INSTALL		\
+		PCMCIA.txt	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

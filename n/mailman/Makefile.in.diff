@@ -1,0 +1,11 @@
+--- ./Makefile.in.orig	2005-04-12 01:45:35.000000000 -0600
++++ ./Makefile.in	2005-04-12 01:45:51.000000000 -0600
+@@ -81,7 +81,7 @@
+ 	    (cd $$d; $(MAKE)); \
+ 	done
+ 
+-install: doinstall update
++install: doinstall
+ 
+ doinstall: $(SUBDIRS)
+ 	@echo "Creating architecture independent directories..."

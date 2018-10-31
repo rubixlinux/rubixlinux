@@ -1,0 +1,158 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=module-init-tools
+pkgver=3.2.2
+pkgver24=2.4.27
+pkgrel=1
+pkgdesc="module-init-tools (kernel module utilities) Utilities to load and unload kernel modules.  These are used on Linux to load extra drivers or other features into the running kernel. This package includes both module-init-tools (the module utilities for for 2.6.x Linux kernels) and modutils (for 2.4.x kernels)."
+url="http://www.kernel.org"
+depends=('glibc')
+provides=('modutils')
+backup=('etc/modprobe.conf'	\
+	'etc/modules.conf'	)
+source=(ftp://www.kernel.org/pub/linux/utils/kernel/$pkgname/$pkgname-$pkgver.tar.bz2		\
+	ftp://www.kernel.org/pub/linux/utils/kernel/modutils/v2.4/modutils-${pkgver24}.tar.bz2	\
+	insmod-hint-use-stderr.diff.gz								\
+	kmod.gz											\
+	modprobe.conf.gz									)
+md5sums=('a1ad0a09d3231673f70d631f3f5040e9' \
+	 'bac989c74ed10f3bf86177fc5b4b89b6' \
+	 'ef7fdb78e0ad7f914cceb48baad901ee' \
+	 '20bf741d45733cb5ca4031076080a9ea' \
+	 'f8a59b5585296e73499b52b51337df7a' )
+
+## Todo:
+##   None
+
+## Notes:
+##   Will not build with pie
+##   The insmod patch changes the behavior to use stderr for usage hints, not stdout
+
+## Changelog:
+##   rel1: upgraded to 3.2.2, added blacklisted modules to default modprobe.conf 2005.12.16
+##   rel1: upgraded to 3.2.1 2005.11.25
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/modutils-${pkgver24}
+
+	patch -p1 < $startdir/src/insmod-hint-use-stderr.diff || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/modutils-${pkgver24}
+	cp	-a				\
+		COPYING				\
+		CREDITS				\
+		ChangeLog			\
+		NEWS				\
+		README				\
+		TODO				\
+		depmod/create_syms		\
+		insmod/insmod_ksymoops_clean	\
+	$startdir/pkg/usr/doc/modutils-${pkgver24}
+
+	./configure --enable-zlib --enable-insmod-static $CHOST
+	make || return 1
+
+	cd man
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp kernelversion.1 $startdir/pkg/usr/man/man1/kernelversion.1
+
+	mkdir -p $startdir/pkg/usr/man/man5
+	cp modules.conf.5 $startdir/pkg/usr/man/man5/modules.conf.5
+
+	mkdir -p $startdir/pkg/usr/man/man2
+	for manpage in *.2; do
+		cp $manpage $startdir/pkg/usr/man/man2/$manpage
+	done
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	for manpage in `ls *.8 | grep -v kerneld`; do
+		cp $manpage $startdir/pkg/usr/man/man8/$manpage
+	done
+
+	mv $startdir/pkg/usr/man/man8/depmod.8		$startdir/pkg/usr/man/man8/depmod.old.8
+	mv $startdir/pkg/usr/man/man8/insmod.8		$startdir/pkg/usr/man/man8/insmod.old.8
+	mv $startdir/pkg/usr/man/man8/lsmod.8		$startdir/pkg/usr/man/man8/lsmod.old.8
+	mv $startdir/pkg/usr/man/man8/modinfo.8		$startdir/pkg/usr/man/man8/modinfo.old.8
+	mv $startdir/pkg/usr/man/man8/modprobe.8	$startdir/pkg/usr/man/man8/modprobe.old.8
+	mv $startdir/pkg/usr/man/man8/rmmod.8		$startdir/pkg/usr/man/man8/rmmod.old.8
+
+	cd ..
+
+	mkdir -p $startdir/pkg/sbin
+
+	cp depmod/depmod		$startdir/pkg/sbin/depmod.old
+	cp genksyms/genksyms		$startdir/pkg/sbin/genksyms
+	cp insmod/insmod		$startdir/pkg/sbin/insmod.old
+	cp insmod/modinfo		$startdir/pkg/sbin/modinfo.old
+	cp insmod/kernelversion		$startdir/pkg/sbin/kernelversion
+	cp insmod/insmod_ksymoops_clean	$startdir/pkg/sbin/insmod_ksymoops_clean
+
+	chown -R root.bin $startdir/pkg/sbin
+	chmod 755 $startdir/pkg/sbin/*
+
+	cd $startdir/pkg/sbin
+	ln -s insmod.old ksyms
+	ln -s insmod.old lsmod.old
+	ln -s insmod.old modprobe.old
+	ln -s insmod.old rmmod.old
+	ln -s insmod.old kallsyms
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/ --enable-zlib $CHOST
+	make || return 1
+
+	cp depmod			$startdir/pkg/sbin/depmod
+	cp generate-modprobe.conf	$startdir/pkg/sbin/generate-modprobe.conf
+	cp insmod			$startdir/pkg/sbin/insmod
+	cp insmod.static		$startdir/pkg/sbin/insmod.static
+	cp lsmod			$startdir/pkg/sbin/lsmod
+	cp modinfo			$startdir/pkg/sbin/modinfo
+	cp modprobe			$startdir/pkg/sbin/modprobe
+	cp rmmod			$startdir/pkg/sbin/rmmod
+	chmod 755			$startdir/pkg/sbin/*
+
+	mkdir -p $startdir/pkg/bin
+	ln -s /sbin/lsmod $startdir/pkg/bin
+	ln -s /sbin/lsmod.old $startdir/pkg/bin
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/sbin
+
+	mkdir -p $startdir/pkg/usr/man/man5
+	cd $startdir/src/$pkgname-$pkgver
+	for file in *.5; do
+		cp $file $startdir/pkg/usr/man/man5/$file
+	done
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	for file in *.8; do
+		cp $file $startdir/pkg/usr/man/man8/$file
+	done
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		FAQ		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	mkdir -p $startdir/pkg/etc/cron.hourly
+	cp $startdir/src/kmod $startdir/pkg/etc/cron.hourly/kmod
+	chmod 755 $startdir/pkg/etc/cron.hourly/kmod
+
+	touch $startdir/pkg/etc/modules.conf
+
+	cp $startdir/src/modprobe.conf $startdir/pkg/etc
+
+}

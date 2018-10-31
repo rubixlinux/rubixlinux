@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-dbd-mysql
+pkgver=2.9008
+pkgrel=1
+pkgdesc="DBD::mSQL / DBD::mysql - mSQL and mysql drivers for the Perl5 Database Interface (DBI)"
+url="http://search.cpan.org/~jwied/Msql-Mysql-modules-1.2219/mysql/lib/DBD/mysql.pm"
+depends=('perl-dbi' 'mysql')
+source=(http://search.cpan.org/CPAN/authors/id/R/RU/RUDY/DBD-mysql-$pkgver.tar.gz)
+md5sums=('8779f4eb6b56024ddcbdffeb674ad683')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 2.9008 and rebuilt for perl 5.8.7 2005.06.13
+#rel2: Removed .packlist file 2005.05.12
+#rel1: Initial Rubix release 2005.04.25
+
+build() {
+
+	cd $startdir/src/DBD-mysql-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	#make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/DBD-mysql-$pkgver
+	cp -a INSTALL.html README TODO $startdir/pkg/usr/doc/perl-$PERL/DBD-mysql-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/perl-$PERL/DBD-mysql-$pkgver/*
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+}

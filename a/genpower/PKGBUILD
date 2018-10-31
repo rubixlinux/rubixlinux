@@ -1,0 +1,63 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=genpower
+pkgver=1.0.3
+pkgrel=1
+pkgdesc="genpower (UPS monitoring daemon) The genpower daemon, genpowerd, will monitor the status of a serial line connected to a UPS (Uninterruptible Power Supply).  If a power failure is detected, genpowerd will notify the system to take the needed steps to react to the condition of the UPS.  This may include shutting the system down, or canceling a pending shutdown if the power is restored."
+url="http://genpower.sourceforge.net"
+source=(genpower-1.0.3-1.tar.gz	\
+	genpower.var.diff.gz	)
+md5sums=('aeeef4b30cca188a94ed1115edf7bcfb' \
+	 'ec95e74ae3f9133dc73ff533f34af6c7' )
+depends=('glibc')
+backup=('etc/genpowerd.conf')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#Initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	patch -p1 < $startdir/src/genpower.var.diff
+
+	make
+
+	mkdir -p $startdir/pkg/sbin
+
+	cp genpowerd	$startdir/pkg/sbin
+	cp gentest	$startdir/pkg/sbin
+	cp genpowerfail	$startdir/pkg/sbin
+
+	mkdir -p $startdir/pkg/etc
+
+	cp genpowerd.conf $startdir/pkg/etc
+
+	chown -R root.bin	$startdir/pkg/sbin
+	chmod 755		$startdir/pkg/sbin/*
+
+	mkdir -p $startdir/pkg/usr/man/man8
+
+	cp genpowerd.8	$startdir/pkg/usr/man/man8
+	cp gentest.8	$startdir/pkg/usr/man/man8
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		COPYING		\
+		Change.Log	\
+		README		\
+		TODO		\
+		genpower.docs	\
+		cables		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

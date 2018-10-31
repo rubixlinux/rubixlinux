@@ -1,0 +1,37 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libsigc++
+pkgver=2.0.16
+pkgrel=1
+pkgdesc="libsigc++ implements a typesafe callback system for standard C++. It allows you to define signals and to connect those signals to any callback function, either global or a member function, regardless of whether it is static or virtual."
+url="http://libsigc.sourceforge.net"
+depends=('glibc' 'gcc')
+source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/2.0/$pkgname-$pkgver.tar.bz2)
+md5sums=('bd997b35a420861259a68d5f27a7592e')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/share/doc/libsigc-2.0/docs/
+	tar cjf $startdir/pkg/usr/doc/$pkgname-$pkgver/docs.tar.bz2 *
+
+	cd $startdir
+	rm -r $startdir/pkg/usr/share
+
+}

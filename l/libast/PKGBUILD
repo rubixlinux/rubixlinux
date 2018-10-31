@@ -1,0 +1,29 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libast
+pkgver=0.6.1
+pkgrel=1
+pkgdesc="LibAST is the Library of Assorted Spiffy Things.  It contains manyspiffy things, and it is a library.  Thus, the ever-so-creative name."
+pkgurl="http://www.eterm.org"
+depends=('imlib2' 'pcre')
+source=(http://www.eterm.org/download/$pkgname-$pkgver.tar.gz)
+md5sums=('1cbbf86a0afb74a5905dc92982117250')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure  --prefix=/usr $CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ChangeLog	\
+		DESIGN		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

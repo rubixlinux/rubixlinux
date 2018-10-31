@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=fftw2
+pkgver=2.1.5
+pkgrel=2
+pkgdesc="FFTW is a C subroutine library for computing the discrete Fourier transform (DFT) in one or more dimensions, of both real and complex data, and of arbitrary input size."
+url="http://www.fftw.org"
+depends=('glibc')
+source=(http://www.fftw.org/fftw-$pkgver.tar.gz)
+md5sums=('8d16a84f3ca02a785ef9eb36249ba433')
+
+## Todo:
+##   None
+
+## Nones:
+##   None
+
+## Changelog:
+##   rel2: rebuilt with --enable-shared 2005.06.06
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/fftw-$pkgver
+
+	./configure --prefix=/usr --enable-shared
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYRIGHT	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		README.hacks	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

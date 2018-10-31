@@ -1,0 +1,54 @@
+#!/bin/bash
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/samhain
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG -t check -D
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	update)
+		if [ -f /var/run/daemons/samhain ]; then
+			$0 stop
+			WASRUNNING=1
+			sleep 1
+		fi
+
+		stat_busy "updating samhain"
+		/usr/sbin/samhain -t update --foreground > /dev/null 2>&1
+		stat_done
+
+		if [ "$WASRUNNING" == 1 ]; then
+			$0 start
+		fi
+		;;
+	check)
+		if [ -f /var/run/daemons/samhain ]; then
+			$0 stop
+			WASRUNNING=1
+			sleep 1
+		fi
+
+		stat_busy "checking samhain"
+		/usr/sbin/samhain -t check --foreground > /dev/null 2>&1
+		stat_done
+
+		if [ "$WASRUNNING" == 1 ]; then
+			$0 start
+		fi
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status|update|check}"
+esac

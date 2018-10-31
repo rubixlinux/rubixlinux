@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=vpnc
+pkgver=0.3.2
+pkgrel=1
+pkgdesc="A VPN client compatible with Cisco's EasyVPN equipment."
+url="http://www.unix-ag.uni-kl.de/~massar/vpnc"
+depends=('tcpip' 'libgcrypt' 'iproute2')
+backup=('etc/vpnc.conf')
+source=(http://www.unix-ag.uni-kl.de/~massar/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('aaccdffc5656095a45dfe87c5bf612cb')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make
+
+	install -D -m755 vpnc			$startdir/pkg/usr/sbin/vpnc
+	install -D -m755 vpnc-connect		$startdir/pkg/usr/sbin/vpnc-connect
+	install -D -m755 vpnc-disconnect	$startdir/pkg/usr/sbin/vpnc-disconnect
+	install -D -m644 vpnc.8			$startdir/pkg/usr/man/man8/vpnc.8
+	install -D -m644 vpnc.conf		$startdir/pkg/etc/vpnc.conf
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

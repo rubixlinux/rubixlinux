@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-gdgraph
+pkgver=1.43
+pkgrel=2
+pkgdesc="GD::Graph - Graph Plotting Module for Perl 5"
+url="http://search.cpan.org/~mverb/GDGraph-$pkgver/Graph.pm"
+depends=('perl-gdtextutil')
+source=(http://search.cpan.org/CPAN/authors/id/M/MV/MVERB/GDGraph-$pkgver.tar.gz)
+md5sums=('cf546f2de827a56458afe288ab0807f2')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/GDGraph-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/GDGraph-$pkgver
+	cp	-a			\
+		CHANGES			\
+		Dustismo.LICENSE	\
+		MANIFEST		\
+		README			\
+	$startdir/pkg/usr/doc/perl-$PERL/GDGraph-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

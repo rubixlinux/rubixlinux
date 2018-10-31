@@ -1,0 +1,37 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+SUBVER=200509290840
+
+pkgname=eclipse
+pkgver=3.1.1
+pkgrel=1
+pkgdesc="eclipse is an open extensible ide"
+url="http://www.eclipse.org"
+depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'atk' 'pango' 'x11' 'fontconfig' 'expat' 'glib2' 'zlib' 'libpng' 'jre')
+source=(http://mirrors.ibiblio.org/pub/mirrors/$pkgname/$pkgname/downloads/drops/R-$pkgver-$SUBVER/$pkgname-sourceBuild-srcIncluded-$pkgver.zip)
+md5sums=('0d78d5f8afe767014a1cc69ee8c20869')
+
+build() {
+
+	cd $startdir/src
+
+	./build -os linux -ws gtk -arch x86 || return 1
+
+	mkdir -p $startdir/pkg/opt
+	cd $startdir/pkg/opt
+	tar zxf $startdir/src/result/linux-gtk-x86-sdk.tar.gz
+
+	rm $startdir/pkg/opt/$pkgname/about.html
+	rm $startdir/pkg/opt/$pkgname/libcairo.so.1
+	rm $startdir/pkg/opt/$pkgname/about_files/about_cairo.html
+
+	mkdir -p $startdir/pkg/usr/doc
+	mv $startdir/pkg/opt/$pkgname/about_files	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	mv $startdir/pkg/opt/$pkgname/readme/*		$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/bin
+	echo -e '#!/bin/bash\n\ncd /opt/eclipse\n./eclipse' > $startdir/pkg/usr/bin/$pkgname
+	chmod +x $startdir/pkg/usr/bin/$pkgname
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

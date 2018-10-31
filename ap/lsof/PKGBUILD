@@ -1,0 +1,34 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=lsof
+pkgver=4.74
+pkgrel=1
+pkgdesc="lsof (list open files) Lsof is a Unix-specific tool.  Its name stands for \"LiSt Open Files\", and it does just that.  It lists information about files that are open by the processes running on the system. Victor A. Abell of Purdue University is the developer of lsof."
+depends=('glibc')
+url="ftp://vic.cc.purdue.edu/pub/tools/unix/lsof"
+source=(ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/${pkgname}_$pkgver.tar.bz2)
+md5sums=('f3259008d6cca746da6bb48278a56e59')
+
+build() {
+
+	cd $startdir/src/${pkgname}_$pkgver
+	tar xf ${pkgname}_${pkgver}_src.tar
+	cd ${pkgname}_${pkgver}_src
+
+	echo n | ./Configure -n linux
+	make || return 1
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp lsof			$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/lsof
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man8
+	cp lsof.8	$startdir/pkg/usr/man/man8
+
+	mkdir -p		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp -a 00*		$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644		$startdir/pkg/usr/doc/$pkgname-$pkgver/*
+	chown -R root.root	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

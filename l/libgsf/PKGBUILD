@@ -1,0 +1,51 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libgsf
+pkgver=1.12.1
+pkgrel=1
+pkgdesc="libgsf aims to provide an efficient extensible i/o abstraction for dealing with different structured file formats. libgsf is used by AbiWord, Gnumeric, and KWord."
+depends=('bzip2' 'glib2' 'libxml2')
+source=(http://ftp.gnome.org/pub/GNOME/sources/$pkgname/1.12/$pkgname-$pkgver.tar.bz2)
+md5sums=('76473db3245f2f384475f2e40c4ca432')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 1.12.1 2005.06.13
+#rel1: Upgraded to 1.12.0 2005.05.12
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure					\
+		--prefix=/usr				\
+		--sysconfdir=/etc			\
+		--localstatedir=/var/lib		\
+		--with-html-dir=/usr/share/gtk-doc/html	\
+		--disable-static			\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		BUGS		\
+		COPYING		\
+		COPYING.LIB	\
+		HACKING		\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

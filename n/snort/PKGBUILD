@@ -1,0 +1,94 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=snort
+pkgver=2.4.3
+pkgrel=2
+pkgdesc="Snort is an open source network intrusion prevention system, capable of performing real-time traffic analysis and packet logging on IP networks. It can perform protocol analysis, content searching/matching and can be used to detect a variety of attacks and probes, such as buffer overflows, stealth port scans, CGI attacks, SMB probes, OS fingerprinting attempts, and much more."
+depends=('glibc' 'mysql' 'openssl' 'zlib' 'pcre')
+backup=('etc/snort/snort.conf'	\
+	'etc/rc.d/snort'	)
+source=(http://www.snort.org/dl/current/$pkgname-$pkgver.tar.gz						\
+	http://www.snort.org/pub-bin/downloads.cgi/Download/comm_rules/Community-Rules-2.4.tar.gz	\
+	snort												)
+md5sums=('5c3c8c69f2459bbe0c1f2057966c88a7' \
+	 '7e7fc36a2c7f86102e50055c5572b9c9' \
+	 'b7b3c687166f366fccb849850fe58234' )
+url="http://www.snort.org"
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.16
+##   rel1: upgraded to 2.4.3 2005.11.09
+##   rel1: upgraded to 2.4.2 2005.09.30
+##   rel1: upgraded to 2.3.3 2005.06.15
+##   rel2: fixed typo in rc script 2005.04.14
+##   rel1: Initial Rubix release 2005.04.14
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc/snort	\
+		--with-mysql
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		ChangeLog		\
+		LICENSE			\
+		RELEASE.NOTES		\
+		schemas/create_mysql	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd doc
+	cp	-a			\
+		AUTHORS			\
+		BUGS			\
+		CREDITS			\
+		INSTALL			\
+		NEWS			\
+		PROBLEMS		\
+		README*			\
+		TODO			\
+		USAGE			\
+		WISHLIST		\
+		faq.pdf			\
+		snort_manual.pdf	\
+		snort_schema_v106.pdf	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	cd ..
+
+	cd etc
+	mkdir -p $startdir/pkg/etc/snort
+	cp	-a			\
+		classification.config	\
+		reference.config	\
+		sid-msg.map		\
+		snort.conf		\
+		threshold.conf		\
+		unicode.map		\
+	$startdir/pkg/etc/snort
+
+	cd $startdir/src
+	cp -a rules $startdir/pkg/etc/snort
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	mkdir -p $startdir/pkg/var/log/snort
+	chown snort.snort $startdir/pkg/var/log/snort
+
+	find $startdir/pkg -perm 664 -exec chmod 644 {} \;
+
+}

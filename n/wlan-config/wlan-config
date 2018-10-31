@@ -1,0 +1,26 @@
+#!/bin/bash
+
+OPTS="connect list"
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/wlan-config
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG $OPTS
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG disconnect
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

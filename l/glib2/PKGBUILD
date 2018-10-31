@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=glib2
+pkgver=2.8.6
+pkgrel=1
+pkgdesc="glib2 (library of C routines) GLib is a library which includes support routines for C such as lists, trees, hashes, memory allocation, and many other things."
+depends=('glibc')
+source=(ftp://ftp.gtk.org/pub/gtk/v2.8/glib-$pkgver.tar.bz2)
+url="http://www.gtk.org"
+md5sums=('fce6835fd8c99ab4c3e5213bc5bcd0ed')
+
+## Todo:
+##   None
+
+## Notes:
+##   Builds with PIE, but causes segmentation faults
+
+## Changelog:
+##   rel1: upgraded to 2.8.6 2006.02.15
+##   rel1: upgraded to 2.8.5 2006.01.13
+##   rel2: bumped the pkgver so it is not confused with the old 2.8.4 2005.12.31
+##   rel1: regressed to 2.8.4 for better stability 2005.12.19
+##   rel1: upgraded to 2.9.1 2005.12.19
+##   rel1: upgraded to 2.9.0 2005.12.05
+##   rel1: upgraded to 2.8.3 2005.10.17
+##   rel1: upgraded to 2.8.2 2005.09.30
+##   rel1: upgraded to 2.8.1 2005.08.30
+##   rel1: upgraded to 2.6.5 2005.06.13
+##   rel1: upgraded to 2.6.3 2005.03.03
+##   rel2: Removed PIE from build flags 2005.02.18
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all"
+
+	cd $startdir/src/glib-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr --sysconfdir=/etc
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		NEWS	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

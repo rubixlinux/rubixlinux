@@ -1,0 +1,332 @@
+#!/bin/bash
+
+. /etc/rc.conf
+
+DHCP_HOSTNAME=""
+DHCP_ARGS="-t 10"
+DEBUG_ETH_UP=yes
+
+SCRIPT=`basename $0`
+PROG=do_network
+
+. /etc/rubixlib
+
+# If possible, log events in /var/log/messages:
+if [ -f /var/run/syslogd.pid -a -x /usr/bin/logger ]; then
+	LOGGER=/usr/bin/logger
+else # output to stdout/stderr:
+	LOGGER=/bin/cat
+fi
+
+# Special wrapper for hotplug ifup calls
+#  (make sure hotplug doesn't bring up disabled interfaces)
+hotplug_ifup()
+{
+	[ "$1" != "" ] || return 1
+	# Test to see if the root partition is read-only
+	# this fixes the case where udev brings up the interface before
+	# there is read-write access to the /etc directory, not a problem
+	# unless the device uses dhcp and needs to write a resolv.conf
+	# in this case, the interface is just brought up when the whole
+	# network is brought up, the rest of the time there is read-write
+	# access to /etc and the device is brought up
+	if touch /etc/fsrwtestfile 2>/dev/null; then
+		rm -f /etc/fsrwtestfile
+	else
+		return 1
+	fi
+	FOUND=0
+	for ifline in ${INTERFACES[@]}; do
+		# if the interface is disabled then this will be skipped
+		if [ "$ifline" = "$1" ]; then
+			FOUND=1
+			ifup $ifline
+		fi
+	done
+	if [ "$FOUND" == 1 ]; then
+		return $?
+	else
+		return 1
+	fi
+}
+
+ifup()
+{
+	if [ "$1" = "" ]; then
+		stat_err "usage: $0 ifup <interface_name>"
+		return 1
+	fi
+	if ! grep $1: /proc/net/dev 1> /dev/null ; then # no interface yet
+		if /sbin/modprobe -c | grep -w "alias $1" | grep -vw "alias $1 off" > /dev/null ; then
+			echo "/etc/rc.d/network:  /sbin/modprobe $1" | $LOGGER
+			/sbin/modprobe $1
+		fi
+	fi
+	if grep $1: /proc/net/dev 1> /dev/null ; then # interface exists
+		if ! /sbin/ifconfig | grep -w "$1" 1>/dev/null || ! /sbin/ifconfig $1 | grep "inet addr" 1> /dev/null ; then # interface not up or not configured
+			varname="\$${1}"
+			eval new_ifline=$varname
+			if [ "$new_ifline" = "dhcp" ]; then
+				# remove the .pid file if it exists
+				rm -f /etc/dhcpc/dhcpcd-${1}.{pid,cache} >/dev/null 2>&1
+				if [ ! "$DHCP_HOSTNAME" = "" ]; then
+					echo "/etc/rc.d/network:  /sbin/dhcpcd $DHCP_ARGS -h $DHCP_HOSTNAME $1" | $LOGGER
+					/sbin/dhcpcd $DHCP_ARGS -h $DHCP_HOSTNAME $1
+				else
+					echo "/etc/rc.d/network:  /sbin/dhcpcd $DHCP_ARGS $1" | $LOGGER
+					/sbin/dhcpcd $DHCP_ARGS $1
+				fi
+			elif [ "$new_ifline" != "" ]; then
+				echo "/etc/rc.d/network:  /sbin/ifconfig $new_ifline" | $LOGGER
+				/sbin/ifconfig $new_ifline
+			elif [ "$DEBUG_ETH_UP" = "yes" ]; then
+				echo "/etc/rc.d/network:  $1 interface is not configured in /etc/rc.conf" | $LOGGER
+			fi
+		elif [ "$DEBUG_ETH_UP" = "yes" ]; then
+			echo "/etc/rc.d/network:  $1 is already up, skipping" | $LOGGER
+		fi
+	elif [ "$DEBUG_ETH_UP" = "yes" ]; then
+		echo "/etc/rc.d/network:  $1 interface does not exist (yet)" | $LOGGER
+	fi
+	return $?
+}
+
+ifdown()
+{
+	if [ "$1" = "" ]; then
+		stat_err "usage: $0 ifdown <interface_name>"
+		return 1
+	fi
+	varname="\$${1}"
+	eval new_ifline=$varname
+	if [ "$new_ifline" = "dhcp" ]; then
+		if [ -f /etc/dhcpc/dhcpcd-${1}.pid ]; then
+			echo "/etc/rc.d/network:  /sbin/dhcpcd -k -d $1" | $LOGGER
+			/sbin/dhcpcd -k -d $1
+			sleep 1
+		else
+			echo "/etc/rc.d/network:  /sbin/ifconfig $1 down" | $LOGGER
+			/sbin/ifconfig $1 down
+		fi
+	else
+		echo "/etc/rc.d/network:  /sbin/ifconfig $1 down" | $LOGGER
+		/sbin/ifconfig $1 down
+	fi
+	return $?
+}
+
+iflist()
+{
+	for ifline in ${INTERFACES[@]}; do
+		eval real_ifline=\$${ifline#!}
+		if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
+			stat_main " $ifline:\t$real_ifline"
+		else
+			stat_main "$ifline:\t$real_ifline"
+		fi
+	done
+}
+
+rtup()
+{
+	if [ "$1" = "" ]; then
+		stat_err "usage: $0 rtup <route_name>"
+		return 1
+	fi
+	varname="\$${1}"
+	eval new_rtline=$varname
+	echo "/etc/rc.d/network:  /sbin/route add $new_rtline" | $LOGGER
+	/sbin/route add $new_rtline
+	return $?
+}
+
+rtdown()
+{
+	if [ "$1" = "" ]; then
+		stat_err "usage: $0 rtdown <route_name>"
+		return 1
+	fi
+	varname="\$${1}"
+	eval new_rtline=$varname
+	echo "/etc/rc.d/network:  /sbin/route del $new_rtline" | $LOGGER
+	/sbin/route del $new_rtline
+	return $?
+}
+
+rtlist()
+{
+	for rtline in ${ROUTES[@]}; do
+		eval real_rtline=\$${rtline#!}
+		if echo $rtline | grep '^[^\!]' >/dev/null 2>&1; then
+			stat_main " $rtline:\t$real_rtline"
+		else
+			stat_main "$rtline:\t$real_rtline"
+		fi
+	done
+}
+
+nmup()
+{
+	if [ ! -r /etc/resolv.conf ]; then
+		if [ "$DOMAINNAME" != "" ]; then
+			echo "search $DOMAINNAME" > /etc/resolv.conf
+		fi
+		for nmline in ${NAMESERVERS[@]}; do
+			if echo $nmline | grep '^[^\!]' > /dev/null 2>&1; then
+				echo "nameserver $nmline" >> /etc/resolv.conf
+			fi
+		done
+	fi
+}
+
+nmdown()
+{
+	if [ -r /etc/resolv.conf ]; then
+		rm -f /etc/resolv.conf
+	fi
+}
+
+nmlist()
+{
+	for nmline in ${NAMESERVERS[@]}; do
+		if echo $nmline | grep '^[^\!]' >/dev/null 2>&1; then
+			stat_main " $nmline"
+		else
+			stat_main "$nmline"
+		fi
+	done
+}
+
+brup()
+{
+	if [ "$1"ifs = "" ]; then
+		stat_err "usage: $0 brup <bridge_name>"
+		return 1
+	fi
+	varname="\$${1}ifs"
+	eval interfaces=$varname
+	echo "/etc/rc.d/network:  echo /sbin/brctl addbr $1" | $LOGGER
+	/sbin/brctl addbr $1 > /dev/null 2>&1 || return 1
+	for interface in $interfaces; do
+		if ! grep $interface: /proc/net/dev 1> /dev/null ; then # no interface yet
+			if /sbin/modprobe -c | grep -w "alias $interface" | grep -vw "alias $interface off" > /dev/null ; then
+				echo "/etc/rc.d/network:  /sbin/modprobe $interface" | $LOGGER
+				/sbin/modprobe $interface
+			fi
+		fi
+		if grep $interface: /proc/net/dev 1> /dev/null ; then # interface exists
+			if ! /sbin/ifconfig | grep -w "$interface" 1>/dev/null || ! /sbin/ifconfig $interface | grep "inet addr" 1> /dev/null ; then # interface not up or not configured
+				echo "/etc/rc.d/network:  /sbin/ifconfig $interface promisc up" | $LOGGER
+				/sbin/ifconfig $interface promisc up || return 1
+				echo "/etc/rc.d/network:  /sbin/brctl addif $1 $interface" | $LOGGER
+				/sbin/brctl addif $1 $interface || return 1
+				echo "/etc/rc.d/network:  /sbin/ifconfig $interface 0.0.0.0" | $LOGGER
+				/sbin/ifconfig $interface 0.0.0.0 || return 1
+			elif [ "$DEBUG_ETH_UP" = "yes" ]; then
+				echo "/etc/rc.d/network:  $interface is already up, skipping" | $LOGGER	
+			fi
+		elif [ "$DEBUG_ETH_UP" = "yes" ]; then
+			echo "/etc/rc.d/network:  $interface interface does not exist (yet)" | $LOGGER
+		fi
+	done
+	return 0
+}
+
+brdown()
+{
+	if [ "$1"ifs = "" ]; then
+		stat_err "usage: $0 brdown <bridge_name>"
+		return 1
+	fi
+	varname="\$${1}ifs"
+	eval interfaces=$varname
+	for interface in $interfaces; do
+		echo "/etc/rc.d/network:  /sbin/brctl delif $interface" | $LOGGER
+		/sbin/brctl delif $1 $interface
+		echo "/etc/rc.d/network:  /sbin/ifconfig $interface down" | $LOGGER
+		/sbin/ifconfig $interface down
+	done
+	echo "/etc/rc.d/network:  /sbin/brctl delbr $1" | $LOGGER
+	/sbin/brctl delbr $1 > /dev/null 2>&1
+	return $?
+}
+
+brlist()
+{
+	for brline in ${BRIDGES[@]}; do
+		eval real_brline=\$${brline#!}
+		if echo $brline | grep '^[^\!]' >/dev/null 2>&1; then
+			stat_main " $brline:\t$real_brline"
+		else
+			stat_main "$brline:\t$real_brline"
+		fi
+	done
+}
+
+do_network() {
+	case "$1" in
+		start)
+			error=0
+			nmup || error=1
+			for brline in ${BRIDGES[@]}; do
+				if echo $brline | grep '^[^\!]' >/dev/null 2>&1; then
+					brup $brline || error=1
+				fi
+			done
+			for ifline in ${INTERFACES[@]}; do
+				if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
+					ifup $ifline || error=1
+				fi
+			done
+			for rtline in "${ROUTES[@]}"; do
+				if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
+					rtup $rtline || error=1
+				fi
+			done
+			return $error
+			;;
+		stop)
+			error=0
+			for rtline in "${ROUTES[@]}"; do
+				if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
+					rtdown $rtline || error=1
+				fi
+			done
+			for ifline in ${INTERFACES[@]}; do
+				if echo $ifline | grep '^[^\!]' 2>&1 >/dev/null; then
+					ifdown $ifline || error=1
+				fi
+			done
+			for brline in ${BRIDGES[@]}; do
+				if echo $brline | grep '^[^\!]' 2>&1 >/dev/null; then
+					brdown $brline || error=1
+				fi
+			done
+			nmdown || error=1
+			return $error
+			;;
+	esac
+}
+
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG start
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG stop
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT
+		;;
+	ifup|hotplug_ifup|ifdown|iflist|rtup|rtdown|rtlist|nmup|nmdown|nmlist|brup|brdown|brlist)
+		$1 $2
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"  
+		stat_err "       $0 {ifup|ifdown|iflist|rtup|rtdown|rtlist|nmup|nmdown|nmlist|brup|brdown|brlist}"
+esac

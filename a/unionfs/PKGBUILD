@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+REALVER=20050918-0111
+
+pkgname=unionfs
+pkgver=200509180111
+pkgrel=5
+pkgdesc="unionfs - a stackable unification file system"
+url="http://www.unionfs.org"
+depends=('e2fsprogs' 'glibc')
+install=$pkgname.install
+source=(ftp://ftp.fsl.cs.sunysb.edu/pub/$pkgname/snapshots/$pkgname-$REALVER.tar.gz)
+md5sums=('0d39844498f47a55e1cf131ef91bdf25')
+
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel5: rebuilt for 2.6.15.5 2006.03.03
+##   rel4: rebuilt for 2.6.15.4 2006.02.12
+##   rel3: rebuilt for 2.6.15.3 2006.02.07
+##   rel2: rebuilt for 2.6.15.2 2006.01.31
+##   rel1: reverted to an older cvs release in the hopes of better stability 2006.01.20
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$REALVER
+
+	echo "EXTRACFLAGS=-DUNIONFS_NDEBUG" > fistdev.mk
+
+	make KVERS=$vver26 || return 1
+	make KVERS=$vver26 PREFIX=$startdir/pkg MODPREFIX=$startdir/pkg MANDIR=$startdir/pkg/usr/man install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$REALVER
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$REALVER
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$REALVER/*
+
+	find $startdir/pkg/lib/modules -type f -name *.ko -exec gzip {} \;
+
+	chown -R root.bin $startdir/pkg/sbin
+
+}

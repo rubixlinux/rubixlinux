@@ -1,0 +1,25 @@
+#!/bin/bash
+
+OPTS=""
+SCRIPT=`basename $0`
+PROG=/usr/bin/svnserve
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG -d $OPTS
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG-real
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG-real
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"  
+esac

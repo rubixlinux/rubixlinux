@@ -1,0 +1,45 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gimp-help
+pkgver=0.9
+pkgrel=1
+pkgdesc="gimp-help-2 (documentation for GIMP) This package contains documentation for the GIMP image editor's built-in help system."
+url="http://www.gimp.org"
+depends=('gimp')
+source=(ftp://ftp.gimp.org/pub/gimp/help/testing/$pkgname-2-$pkgver.tar.gz)
+md5sums=('c2f5c20cc5d861e7d403dda8e46d1c97')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 0.9 2005.11.01
+#rel1: upgraded to 0.8 2005.06.24
+#rel1: Initial Rubix release 2005.05.12
+
+build() {
+
+	cd $startdir/src/$pkgname-2-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure
+	make install DESTDIR=$startdir/pkg
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-2-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		TERMINOLOGY	\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-2-$pkgver
+
+	find $startdir/pkg -type f ! -perm 644 -exec chmod 644 {} \;
+
+}

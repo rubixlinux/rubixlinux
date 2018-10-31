@@ -1,0 +1,44 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=traceroute
+pkgver=1.4a12
+pkgrel=1
+pkgdesc="traceroute (IP packet route tracing utility) The traceroute utility displays the route used by IP packets on their way to a specified network host.  Traceroute will display the IP number and host name (if possible) of all the machines along the route taken by the packets.  If you're having network connectivity problems, traceroute can show you where the trouble is located."
+depends=('glibc')
+source=(ftp://ftp.ee.lbl.gov/$pkgname-$pkgver.tar.gz	\
+	$pkgname.no.domain.strip.diff.gz		\
+	${pkgname}_$pkgver-5.diff.gz			)
+md5sums=('964d599ef696efccdeebe7721cd4828d' \
+	 '3183bcf844cae3b495db69f9d6934bdc' \
+	 'd615a608ccc77712ba12449c356b0900' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/${pkgname}_$pkgver-5.diff
+	patch -p1 < $startdir/src/$pkgname.no.domain.strip.diff
+
+	./configure --prefix=/usr
+	make
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp $pkgname		$startdir/pkg/usr/bin
+	chown -R root.bin	$startdir/pkg/usr/bin
+	chmod 4711		$startdir/pkg/usr/bin/traceroute
+
+	mkdir -p	$startdir/pkg/usr/man/man8
+	cp $pkgname.8	$startdir/pkg/usr/man/man8
+	chmod 644	$startdir/pkg/usr/man/man8/*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		CHANGES	\
+		FILES	\
+		INSTALL	\
+		README	\
+		VERSION	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644	$startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

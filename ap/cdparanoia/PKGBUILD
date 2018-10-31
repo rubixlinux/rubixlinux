@@ -1,0 +1,36 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=cdparanoia
+pkgver=9.8
+pkgrel=1
+pkgdesc="cdparanoia (digital audio extraction tool) Cdparanoia is a Compact Disc Digital Audio (CDDA) extraction tool, commonly known on the net as a 'ripper'.  It reads digital audio data from a Compact Disc and saves it to sound files.  Cdparanoia has been designed to read correct audio data even using cheap CDROM drives prone to misalignment, frame jitter and loss of streaming. Cdparanoia will also read and repair data from CDs that have been damaged in some way."
+depends=('glibc')
+source=(http://www.xiph.org/paranoia/download/$pkgname-III-alpha$pkgver.src.tgz	\
+	$pkgname.diff.gz							)
+md5sums=('7218e778b5970a86c958e597f952f193' \
+	 '7484910031534955ad24beca6a14b05e' )
+
+build() {
+
+	cd $startdir/src/$pkgname-III-alpha9.8
+
+	patch -p1 < $startdir/src/$pkgname.diff
+
+	./configure --prefix=/usr $CHOST
+	make
+	make prefix=$startdir/pkg/usr install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-III-alpha$pkgver
+	cp	-a		\
+		FAQ.txt		\
+		GPL		\
+		README		\
+		cdparanoia.1.jp	\
+	$startdir/pkg/usr/doc/$pkgname-III-alpha$pkgver
+
+	chmod 755 $startdir/pkg/usr/lib/libcdda*.so
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-III-alpha$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

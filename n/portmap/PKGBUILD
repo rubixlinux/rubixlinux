@@ -1,0 +1,62 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=portmap
+pkgver=5.0
+pkgrel=2
+pkgdesc="portmap (a daemon to manage RPC connections) The portmapper (/sbin/rpc.portmap) is a network daemon used to manage connections to RPC services.  Daemons that offer RPC services (such as the daemons for NFS) tell the portmapper on what port they listen.  Unlike the services registered with the inetd, RPC network port numbers may change each time the system is booted. The portmapper is required to use NFS or other RPC services."
+backup=('etc/rc.d/rc.portmap')
+depends=('glibc')
+source=(ftp://ftp.porcupine.org/pub/security/${pkgname}_5beta.tar.gz	\
+	${pkgname}_5-2.1.diff						\
+	$pkgname							)
+md5sums=('781e16ed4487c4caa082c6fef09ead4f' \
+	 '412d909dd4e0d0cf9a1c65b42dace219' \
+	 'b6d5ac8efe5031a11c992e6abcc1ab2f' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.16
+##   rel1: initial rubix release
+
+build() {
+
+	cd ${pkgname}_5beta
+
+	patch -p1 < $startdir/src/${pkgname}_5-2.1.diff || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		BLURB	\
+		CHANGES	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	make || return 1
+
+	mkdir -p		$startdir/pkg/sbin
+	cp portmap		$startdir/pkg/sbin/rpc.portmap
+	chmod 755		$startdir/pkg/sbin/rpc.portmap
+	chown -R root.bin	$startdir/pkg/sbin
+
+	mkdir -p		$startdir/pkg/usr/sbin
+	cp pmap_dump		$startdir/pkg/usr/sbin
+	cp pmap_set		$startdir/pkg/usr/sbin
+	chmod 755		$startdir/pkg/usr/sbin/*
+	chown -R root.bin	$startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/man/man8
+	for file in *.8 ; do
+		cp $file $startdir/pkg/usr/man/man8/$file
+	done
+	ln -s portmap.8 $startdir/pkg/usr/man/man8/rpc.portmap.8
+
+	mkdir -p			$startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname	$startdir/pkg/etc/rc.d
+
+}

@@ -1,0 +1,38 @@
+#!/bin/bash
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/named
+ARGS="-u named -t /var/named"
+
+. /etc/rubixlib
+
+genrndckey() {
+	if ! cmp -s /etc/rndc.key /var/named/etc/rndc.key ; then
+		stat_busy "$SCRIPT: generating rndc key"
+		if /usr/sbin/rndc-confgen -a -t /var/named >/dev/null 2>&1; then
+			chmod 0640 /var/named/etc/rndc.key
+			chgrp named /var/named/etc/rndc.key
+		fi
+		stat_done
+	fi
+}
+
+case "$1" in
+	start)
+		genrndckey
+		start_daemon $SCRIPT $PROG $ARGS
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=lvm2
+pkgver=2.01.15
+pkgrel=1
+pkgdesc="lvm (Logical Volume Manager version 2) Heinz Mauelshagen's LVM (Logical Volume Manager) for Linux. LVM adds an additional layer between the physical peripherals and the I/O interface in the 2.4.x kernel to get a logical view of disks. This allows the concatenation of several disks (so-called physical volumes or PVs) to form a storage pool (so-called Volume Group or VG) with allocation units called physical extents (called PE).  With LVM, you can actually extend, resize, or relocate storage dynamically."
+url="http://sourceware.org/lvm2"
+depends=('glibc' 'device-mapper')
+backup=('etc/lvm/lvm.conf')
+source=(ftp://sources.redhat.com/pub/$pkgname/LVM2.$pkgver.tgz)
+md5sums=('c71654baff263254fb5a226624ee8ef3')
+replaces=('lvm')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 2.01.15
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/LVM2.$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --enable-static_link --with-lvm1=internal
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/LVM2.$pkgver
+	cp	-a		\
+		COPYING		\
+		COPYING.LIB	\
+		INSTALL		\
+		README		\
+		VERSION		\
+		WHATS_NEW	\
+	$startdir/pkg/usr/doc/LVM2.$pkgver
+
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+
+}

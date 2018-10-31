@@ -1,0 +1,100 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+SUB=4.3
+
+pkgname=db
+pkgver=4.3.29
+pkgrel=1
+pkgdesc="db (Berkeley database library version 4) The Berkeley Database (Berkeley DB) library provides embedded database support for both traditional and client/server applications. This package should be installed if compatibility is needed with databases created with the Berkeley DB version 4."
+url="http://www.sleepycat.com"
+depends=('glibc')
+provides=('db4')
+source=(ftp://ftp.sleepycat.com/releases/$pkgname-$pkgver.tar.gz)
+md5sums=('13585a20ce32f113b8e8cdb57f52e3bb')
+
+#Todo:
+#None
+
+#Notes:
+#This is now the default db
+
+#Changelog:
+#rel1: upgraded to 4.3.29 2005.10.17
+#rel2: Rebuilt without required nptl support 2005.06.13
+#rel1: Upgraded to 4.3.28 2005.06.12
+#rel1: Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	mkdir build-dir
+	cd build-dir
+
+	../dist/configure			\
+		--prefix=/usr			\
+		--enable-shared			\
+		--enable-rpc			\
+		--enable-compat185		\
+		--with-mutex=x86/gcc-assembly	\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	rm -r $startdir/pkg/usr/docs
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		../LICENSE	\
+		../README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+cat << EOF > $startdir/pkg/usr/doc/$pkgname-$pkgver/README-DOCS
+
+  For a ton of additional documentation (too large to include
+  here) on writing source code that uses libdb4, please see
+  the source tarball $pkgname-$pkgver.tar.bz2, which can be found
+  in the Slackware source tree in source/l/db4/, or on
+  Sleepycat's web site:  http://www.sleepycat.com.
+
+EOF
+
+	mkdir -p $startdir/pkg/lib
+	mv $startdir/pkg/usr/lib/libdb-$SUB.so $startdir/pkg/lib/libdb-$SUB.so
+
+	cd $startdir/pkg/usr/lib
+	ln -sf /lib/libdb-$SUB.so .
+
+	cd $startdir/pkg/usr/include
+	chmod 644 *
+	mkdir db4
+	mv db.h db_185.h db_cxx.h db4
+	ln -sf db4/db.h .
+	ln -sf db4/db_185.h .
+	ln -sf db4/db_cxx.h .
+
+
+	cd $startdir/pkg/usr/lib
+	ln -sf libdb-$SUB.a libdb-4.a
+	ln -sf libdb-$SUB.a libdb.a
+
+	cd $startdir/pkg/usr/lib
+	ln -sf libdb-4.a libdb4.a
+	ln -sf libdb-4.so libdb4.so
+
+	chmod 755 $startdir/pkg/usr/bin/*
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

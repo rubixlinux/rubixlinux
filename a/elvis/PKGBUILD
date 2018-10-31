@@ -1,0 +1,87 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=elvis
+pkgver=2.2_0
+pkgrel=1
+pkgdesc="elvis Elvis is a text editor.  It is intended to be a modern replacement for the classic ex/vi editor of UNIX fame.  Elvis supports many new features, including multiple edit buffers, multiple windows, and a variety of display modes. As elvis is Rubix's default vi, this is a required package."
+depends=('glibc' 'ncurses')
+install=elvis.install
+source=(ftp://ftp.cs.pdx.edu/pub/$pkgname/$pkgname-$pkgver.tar.gz	\
+	elvis.clr.gz							\
+	elvis.clr.orig.gz						)
+md5sums=('6831b8df3e4a530395e66c2889783752' \
+	 '82357d833c01399f30cd478d172aa2fc' \
+	 '2d5e7718e0bce6c0553e24bb65621304' )
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#make install does not work with DESTDIR or prefix
+#  have to use stupid hack to make the package
+#the ex link is not included here since we will use vim for that
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/share/$pkgname-$pkgver
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure							\
+		--without-x						\
+		--without-gnome						\
+		--bindir=$startdir/pkg/usr/bin				\
+		--datadir=$startdir/pkg/usr/share/$pkgname-$pkgver	\
+		--docdir=$startdir/pkg/usr/share/$pkgname-$pkgver/doc	\
+		--verbose
+	make
+	make install
+	make clean
+
+	./configure						\
+		--without-x					\
+		--without-gnome					\
+		--bindir=/usr/bin				\
+		--datadir=/usr/share/$pkgname-$pkgver		\
+		--docdir=/usr/share/$pkgname-$pkgver/doc	\
+		--verbose
+	make
+
+	cp elvis	$startdir/pkg/usr/bin/elvis
+	cp elvtags	$startdir/pkg/usr/bin/elvtags
+	cp ref		$startdir/pkg/usr/bin/ref
+
+	cp -a $startdir/src/elvis.clr* $startdir/pkg/usr/share/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	cd doc
+	cp ctags.man	$startdir/pkg/usr/man/man1/elvtags.1
+	cp elvfmt.man	$startdir/pkg/usr/man/man1/elvfmt.1
+	cp elvis.man	$startdir/pkg/usr/man/man1/elvis.1
+	cp ref.man	$startdir/pkg/usr/man/man1/ref.1
+	cd ..
+
+	cp	-a		\
+		BUGS		\
+		COPYING		\
+		INSTALL		\
+		README.html	\
+	$startdir/pkg/usr/share/$pkgname-$pkgver
+
+	rm -f $startdir/pkg/usr/share/$pkgname-$pkgver/tags
+	rm -f $startdir/pkg/usr/share/$pkgname-$pkgver/doc/*.man
+	rm -f $startdir/pkg/usr/share/$pkgname-$pkgver/doc/printdoc.bat
+
+	mkdir $startdir/pkg/usr/doc
+	cd $startdir/pkg/usr/doc
+	ln -sf /usr/share/$pkgname-$pkgver .
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

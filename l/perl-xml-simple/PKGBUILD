@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+PERL=5.8.7
+
+pkgname=perl-xml-simple
+pkgver=2.14
+pkgrel=1
+pkgdesc="XML::Simple - Easy API to maintain XML (esp config files)"
+url="http://search.cpan.org/~grantm/XML-Simple-$pkgver/lib/XML/Simple.pm"
+depends=('perl' 'perl-xml-sax' 'perl-xml-parser')
+source=(http://search.cpan.org/CPAN/authors/id/G/GR/GRANTM/XML-Simple-$pkgver.tar.gz)
+md5sums=('f321058271815de28d214c8efb9091f9')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/XML-Simple-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/XML-Simple-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/XML-Simple-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/XML-Simple-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

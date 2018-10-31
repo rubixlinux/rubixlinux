@@ -1,0 +1,68 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gimp
+pkgver=2.2.10
+pkgrel=1
+pkgdesc="gimp (The GNU Image Manipulation Program) The GIMP is a powerful tool for the preparation and manipulation of digital images.  The GIMP provides the user with a wide variety of image manipulation, painting, processing, and rendering tools.  The GIMP's open design and extensible architecture make for a very powerful end product for photo and image retouching, web graphics design, or digital illustration."
+url="http://www.gimp.org"
+depends=('glibc' 'gimp-print' 'libtiff' 'gtk+2' 'libcroco' 'atk' 'ncurses' 'libgsf'	\
+	 'librsvg' 'x11' 'fontconfig' 'expat' 'lcms' 'zlib' 'libart_lgpl' 'alsa-lib'	\
+	 'freetype2' 'gpm' 'libjpeg' 'pango' 'cairo' 'libxml2' 'bzip2' 'libmng' 'glib2'	\
+	 'libwmf' 'libexif' 'aalib' 'libgtkhtml' 'libpng'				)
+source=(ftp://ftp.gimp.org/pub/$pkgname/v2.2/$pkgname-$pkgver.tar.bz2)
+md5sums=('aa29506ed2272af02941a7a601a7a097')
+
+## Todo:
+##   None
+
+## Notes:
+##   Does not like pie
+
+## Changelog:
+##   rel1: Upgraded to 2.2.10 2005.12.29
+##   rel1: Upgraded to 2.2.9 2005.10.31
+##   rel1: Upgraded to 2.2.8 2005.08.16
+##   rel1: Upgraded to 2.2.7 2005.05.12
+##   rel1: Upgraded to gimp 2.2.4 2005.02.23
+##   rel1: Initial Rubix release
+
+build() {
+
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all"
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 666 -exec chmod 644 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc		\
+		--localstatedir=/var/lib	\
+		--disable-static		\
+		$CHOST
+	make || return 1
+	mkdir -p $startdir/pkg/usr/share/applications $startdir/pkg/usr/share/application-registry
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		AUTHORS			\
+		COPYING			\
+		HACKING			\
+		INSTALL			\
+		LICENSE			\
+		NEWS			\
+		README*			\
+		docs/Wilber*		\
+		docs/keybindings.txt	\
+		docs/quick_reference*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/man/man1
+	ln -s gimptool-2.0.1	gimptool.1
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

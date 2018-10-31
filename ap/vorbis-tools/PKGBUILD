@@ -1,0 +1,41 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=vorbis-tools
+pkgver=1.1.1
+pkgrel=1
+pkgdesc="vorbis-tools (Ogg Vorbis Tools) The vorbis-tools package contains several basic tools for working with compressed audio files in the Ogg Vorbis (.ogg) format: oggenc (an .ogg encoder), ogg123 (a playback tool), vorbiscomment (add comments to vorbis files), ogginfo (show information about an ogg file), oggdec (a command line decoder), and vcut (a tool for splitting vorbis files). These tools require the libao, libogg, and libvorbis libraries."
+depends=('glibc' 'flac' 'libao' 'libvorbis' 'openssl' 'libogg' 'curl' 'zlib')
+source=(http://downloads.xiph.org/releases/vorbis/$pkgname-$pkgver.tar.gz)
+md5sums=('47845fd76f5f2354a3619c4097575487')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.1.1 2005.09.18
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

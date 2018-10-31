@@ -1,0 +1,62 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=openntpd
+pkgver=3.7p1
+pkgrel=2
+pkgdesc="OpenNTPD is a FREE, easy to use implementation of the Network Time Protocol."
+url="http://www.openntpd.org"
+depends=('openssl')
+backup=('etc/ntpd.conf'		\
+	'etc/rc.d/openntpd'	)
+source=(ftp://ftp.openbsd.org/pub/OpenBSD/OpenNTPD/$pkgname-$pkgver.tar.gz	\
+	openntpd								)
+md5sums=('10ed8eefd760e5819efcf3277b118f47' \
+	 'eb8c8324f083909163d296c596cf83dc' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.16
+##   rel1: upgraded to 3.7 2005.06.12
+##   rel7: added rc script in backup files and made "-s" an option in the rc file 2005.04.15
+##   rel6: rebuilt with ntpd as privsep user, not _ntp, will add this user to etc 2005.03.09
+##         will no longer do the install script to add and remove the _ntp user, please
+##         remove that user manually.
+##   rel5: rebuilt with new execstack flags 2005.03.04
+##   rel4: GAH! can I forget anything else??? added status option to rc script 2005.02.28
+##   rel3: changed rc script 2005.02.28
+##   rel2: forgot to add docs 2005.02.28
+##   rel1: Initial Rubix release 2005.02.28
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc		\
+		--with-privsep-path=/var/empty	\
+		--with-privsep-user=ntpd	\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	rm -r $startdir/pkg/var
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/openntpd $startdir/pkg/etc/rc.d
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CREDITS		\
+		ChangeLog	\
+		LICENCE		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

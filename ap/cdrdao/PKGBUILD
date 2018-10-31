@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=cdrdao
+pkgver=1.1.9
+pkgrel=1
+pkgdesc="cdrdao (CD burning utility) cdrdao burns proper disc-at-once (DAO) audio discs.  In DAO mode the disc is written in one shot, so you don't have to have irritating 2 second gaps interrupting a live recording."
+depends=('gcc')
+source=(http://dl.sourceforge.net/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://cdrdao.sourceforge.net"
+md5sums=('dd7df809fca7db8e212a6522688c166b')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make
+
+	mkdir -p $startdir/pkg/usr/bin
+	cp			\
+		dao/cdrdao	\
+		utils/cue2toc	\
+		utils/toc2cddb	\
+		utils/toc2cue	\
+	$startdir/pkg/usr/bin
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/share/cdrdao
+	cp dao/cdrdao.drivers $startdir/pkg/usr/share/cdrdao/drivers
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp dao/cdrdao.man	$startdir/pkg/usr/man/man1/cdrdao.1
+	cp utils/cue2toc.1	$startdir/pkg/usr/man/man1/cue2toc.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		CREDITS		\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		Release-$pkgver	\
+		cdrdao.lsm	\
+		contrib		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

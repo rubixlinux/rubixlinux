@@ -1,0 +1,28 @@
+#!/bin/bash
+
+WHITE=/etc/mail/whitelist
+USER=nobody
+SOCKET=local:/var/run/milter/graymilter.sock
+
+SCRIPT=`basename $0`
+PROG=/usr/bin/graymilter
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG -initialwhitelist $WHITE -user $USER $SOCKET
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 5
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|status}"
+esac

@@ -1,0 +1,68 @@
+#!/bin/bash
+
+IPTABLES=/usr/sbin/iptables
+IPTABLES_CONF=/etc/iptables/rules
+IPTABLES_FORWARD=1
+
+SCRIPT=`basename $0`
+PROG=do_iptables
+
+. /etc/rubixlib
+do_iptables() {
+	case "$1" in
+		start)
+			if [ ! -f $IPTABLES_CONF ]; then
+				stat_fail
+				stat_err "cannot load rules: $IPTABLES_CONF is missing!"
+				exit 1
+			fi
+			if [ "$IPTABLES_FORWARD" = "1" -a -e /proc/sys/net/ipv4/ip_forward ]; then
+				echo 1 >/proc/sys/net/ipv4/ip_forward
+			fi
+			/usr/sbin/iptables-restore < $IPTABLES_CONF
+			;;
+		stop)
+			$IPTABLES -F &>/dev/null && \
+			$IPTABLES -X &>/dev/null && \
+			$IPTABLES -Z &>/dev/null
+			$IPTABLES -P OUTPUT ACCEPT
+			$IPTABLES -P INPUT ACCEPT
+			$IPTABLES -P FORWARD ACCEPT
+			;;
+		save)
+			stat_busy "saving iptables"
+			/usr/sbin/iptables-save > $IPTABLES_CONF
+			if [ $? -ne 0 ]; then
+				stat_fail
+			else
+				stat_done
+			fi
+			;;
+		*)
+			stat_fail
+			stat_err "usage: $0 {start|stop|save}"
+			;;
+	esac
+}
+
+case "$1" in
+	start)
+		start_daemon $SCRIPT $PROG start
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG stop
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	save)
+		$PROG save
+		;;
+	status)
+		daemon_status $SCRIPT
+		;;
+	*)
+		stat_err "usage: $0 {start|stop|restart|save|status}"
+esac

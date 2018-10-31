@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=libxml2
+pkgver=2.6.23
+pkgrel=1
+pkgdesc="libxml2 XML parser library."
+depends=('glibc' 'zlib')
+source=(ftp://xmlsoft.org/$pkgname-$pkgver.tar.gz)
+url="http://www.xmlsoft.org"
+md5sums=('0f37385e3ad73cc94db43d6873f4fc3b')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: Upgraded to 2.6.23 2006.02.15
+##   rel1: Upgraded to 2.6.22 2005.12.13
+##   rel1: Upgraded to 2.6.21 2005.09.18
+##   rel1: Upgraded to 2.6.20 2005.08.05
+##   rel1: Upgraded to 2.6.19 2005.05.12
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mv $startdir/pkg/usr/share/doc $startdir/pkg/usr
+	mv $startdir/pkg/usr/doc/$pkgname-python-$pkgver $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver
+	find . -type f | xargs chmod 644
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

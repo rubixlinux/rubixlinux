@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=graymilter
+pkgver=1.26
+pkgrel=1
+pkgdesc="Blackmilter is a flexible and efficient tool for blocking mail senders by IP address. It could be used to implement an almost unlimited variety of blocking policies, depending on how the IP blacklists and whitelists are generated, how entries expire, and so on."
+depends=('glibc')
+source=(http://www.acme.com/software/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname							)
+md5sums=('fc6a94abcf652d9acc5ca9455ac9383f' \
+	 '9dabbfe2409843f7b2c8b534f97c9ff2' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 1.26, updated rc script to new format 2006.01.15
+##   rel1: Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+        make BINDIR=$startdir/pkg/usr/bin MANDIR=$startdir/pkg/usr/man install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		FILES	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.root      $startdir/pkg
+	chown -R root.bin       $startdir/pkg/usr/bin
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/var/run/milter
+	chown nobody $startdir/pkg/var/run/milter
+
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+}

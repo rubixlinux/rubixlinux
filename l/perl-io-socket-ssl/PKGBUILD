@@ -1,0 +1,50 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-io-socket-ssl
+pkgver=0.96
+pkgrel=2
+pkgdesc="IO::Socket::SSL is a class implementing an object oriented interface to SSL sockets. The class is a descendent of IO::Socket::INET."
+depends=('perl-net-ssleay')
+source=(http://www.cpan.org/authors/id/B/BE/BEHROOZI/IO-Socket-SSL-$pkgver.tar.gz)
+md5sums=('85f84c0810851eb4f540b118c9902b03')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: rebuilt for perl 5.8.7 2005.06.13
+#rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/IO-Socket-SSL-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/IO-Socket-SSL-$pkgver
+	cp	-a		\
+		BUGS		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/IO-Socket-SSL-$pkgver
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

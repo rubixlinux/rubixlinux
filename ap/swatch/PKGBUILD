@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=swatch
+pkgver=3.1.1
+pkgrel=2
+pkgdesc="swatch is an active log file monitoring tool."
+url="http://swatch.sourceforge.net"
+depends=('perl-date-calc' 'perl-timedate' 'perl-date-manip')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('fe38cc8d073e692a7426693837c3749d')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Added perl-date-manip to deps 2005.06.15
+#rel1: Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+#	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		COPYING		\
+		COPYRIGHT	\
+		INSTALL		\
+		KNOWN_BUGS	\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,39 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=mt-st
+pkgver=0.8
+pkgrel=1
+pkgdesc="mt-st (controls magnetic tape drive operation) This mt originates from BSD NET-2.  Some Linux SCSI tape-specific ioctls have been added to the original source and the man page has been updated.  Although this mt program is tailored for SCSI tape, it can also be used with the QIC-02 driver and hopefully with other Linux tape drivers using the same ioctls (some of the commands may not work with all drivers)."
+url="ftp://ftp.ibiblio.org/pub/linux/system/backup"
+depends=('glibc')
+source=(ftp://ftp.ibiblio.org/pub/linux/system/backup/$pkgname-$pkgver.tar.gz)
+md5sums=('bddcad0290630e4521b4d72cbc75d9dd')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	make
+
+	mkdir -p $startdir/pkg/{bin,sbin}
+
+	cp mt $startdir/pkg/bin/mt-st
+	cp stinit $startdir/pkg/sbin
+
+	mkdir -p	$startdir/pkg/usr/man/man{1,8}
+	cp mt.1		$startdir/pkg/usr/man/man1/mt-st.1
+	cp stinit.8	$startdir/pkg/usr/man/man8/stinit.8
+
+	chown -R root.bin $startdir/pkg/{bin,sbin}
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		COPYING			\
+		README*			\
+		*.lsm			\
+		stinit.def.examples	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

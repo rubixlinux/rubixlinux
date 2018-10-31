@@ -1,0 +1,58 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-tk
+pkgver=804.027
+pkgrel=2
+pkgdesc="Tk is a Graphical User Interface ToolKit."
+url="http://search.cpan.org/~ni-s/Tk-804.027"
+depends=('libjpeg' 'perl' 'tk' 'zlib')
+source=(http://search.cpan.org/CPAN/authors/id/N/NI/NI-S/Tk-$pkgver.tar.gz)
+md5sums=('d1ca4a6bff6dae4d937fabde4e86256b')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Tk-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+#	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Tk-$pkgver
+	cp	-a		\
+		COPYING		\
+		Change.log	\
+		Changes		\
+		INSTALL		\
+		MANIFEST*	\
+		README*		\
+		ToDo		\
+		VERSIONS	\
+	$startdir/pkg/usr/doc/perl-$PERL/Tk-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/Tk-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

@@ -1,0 +1,69 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gnupg2
+pkgver=1.9.19
+pkgrel=1
+pkgdesc="gnupg2 (The GNU Privacy Guard) GnuPG is GNU's tool for secure communication and data storage.  It can be used to encrypt data and to create digital signatures.  It includes an advanced key management facility and is compliant with the proposed OpenPGP Internet standard as described in RFC2440."
+url="http://www.gnupg.org"
+depends=('glibc' 'libgcrypt' 'libksba' 'pth' 'libgpg-error' 'libusb' 'zlib')
+source=(ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-$pkgver.tar.bz2	\
+	$pkgname-$pkgver.diff.gz					)
+md5sums=('8084256a61aa90e0173d436bf1e6f82b' \
+	 '4e20b250a8fea89aef55bee531b9824a' )
+
+#Todo:
+#None
+
+#Notes:
+#The patch is to increase security. It is included with loop-aes, the following is
+#  in the loop-aes README:
+#    When gpg encrypts data with symmetric cipher only or when gpg encrypts
+#    secret keyring keys with secret passphrase, gpg uses seeded (salted) and
+#    iterated key setup. However, default amount of iteration is tuned for slow
+#    processors and can be increased for better resistance against dictionary
+#    attacks. Larger key iteration makes key setup much slower, but also makes
+#    dictionary attacks much slower too.
+#    Included optional gpg patch makes gpg password iteration 128 times slower.
+#    gpg stores new iteration value along with seed bytes into symmetric cipher
+#    encrypted output file or secret keyring, so unpatched gpg versions will read
+#    and decrypt the data just fine.
+  
+#Changelog:
+#rel1: Initial rubix release
+
+build() {
+
+	cd $startdir/src/gnupg-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver.diff || return 1
+
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+#	chmod 4755 $startdir/pkg/usr/bin/gpgsm
+
+	rm $startdir/pkg/usr/info/dir
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README*		\
+		THANKS		\
+		TODO		\
+		VERSION		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg/usr/doc/$pkgname-$pkgver
+	ln -sf /usr/share/gnupg/FAQ FAQ
+	ln -sf /usr/share/gnupg/faq.html faq.html
+}

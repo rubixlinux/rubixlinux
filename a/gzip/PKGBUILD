@@ -1,0 +1,91 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gzip
+pkgver=1.3.3
+pkgrel=1
+pkgdesc="gzip (file compression utility) Gzip reduces the size of the named files using Lempel-Ziv coding (LZ77).  Whenever possible, each file is replaced by one with the extension .gz, while keeping the same ownership modes, access and modification times."
+url="http://www.gzip.org"
+depends=('glibc')
+source=(http://www.gzip.org/$pkgname-$pkgver.tar.gz)
+md5sums=('52eaf713673507d21f7abefee98ba662')
+
+#Todo:
+#depends
+#makedepends
+
+#Notes:
+#None
+
+#Changelog:
+#Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/bin
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/man/man1
+	mkdir -p $startdir/pkg/usr/info
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+
+	make
+
+	cp gzip		$startdir/pkg/bin
+	cp gzexe	$startdir/pkg/usr/bin
+	cp zdiff	$startdir/pkg/usr/bin
+	cp zforce	$startdir/pkg/usr/bin
+	cp zgrep	$startdir/pkg/usr/bin
+	cp zless	$startdir/pkg/usr/bin
+	cp zmore	$startdir/pkg/usr/bin
+	cp znew		$startdir/pkg/usr/bin
+
+	for page in		\
+		gunzip.1	\
+		gzexe.1		\
+		gzip.1		\
+		zcat.1		\
+		zcmp.1		\
+		zdiff.1		\
+		zforce.1	\
+		zgrep.1		\
+		zless.1		\
+		zmore.1		\
+		znew.1
+	do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+
+	cp gzip.info $startdir/pkg/usr/info
+
+	cp -a			\
+		README		\
+		AUTHORS		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		README-alpha	\
+		THANKS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/* $startdir/pkg/usr/man/man1/*
+
+	cd $startdir/pkg/bin
+	ln -sf gzip gunzip
+	ln -sf gzip zcat
+
+
+	cd $startdir/pkg/usr/bin
+	ln -sf ../../bin/gzip gzip
+	ln -sf ../../bin/gunzip gunzip
+	ln -sf ../../bin/zcat zcat
+	ln -sf zdiff zcmp
+	ln -sf zgrep zegrep
+	ln -sf zgrep zfgrep
+
+	chown -R root.bin $startdir/pkg/bin $startdir/pkg/usr/bin
+
+}

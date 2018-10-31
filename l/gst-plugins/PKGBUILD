@@ -1,0 +1,54 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gst-plugins
+pkgver=0.8.8
+pkgrel=1
+pkgdesc="gst-plugins This is gst-plugins, a set of multimedia plugins for GStreamer."
+url="http://gstreamer.freedesktop.org"
+install=$pkgname.install
+depends=('aalib' 'arts' 'cdparanoia' 'faac' 'faad2' 'flac' 'gstreamer' 'gtk+2' 'lame' 'libdv' 'libdvdread' 'libid3tag' 'libmikmod' 'libmng' 'libmusicbrainz' 'libvisual' 'sdl' 'slang')
+source=(http://gstreamer.freedesktop.org/src/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('4f6e7e730fa674ecd6ec713f937b8acb')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 0.8.8 2005.05.22
+#rel2: Recompiled against new flac 2005.02.20
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc		\
+		--localstatedir=/var/lib	\
+		--program-prefix=""		\
+		--program-suffix=""		\
+		--disable-static		\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		NEWS		\
+		README		\
+		RELEASE		\
+		REQUIREMENTS	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

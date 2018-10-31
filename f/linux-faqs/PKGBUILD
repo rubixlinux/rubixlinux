@@ -1,0 +1,22 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=linux-faqs
+pkgver=20030907
+pkgrel=1
+pkgdesc="linux-faqs (Linux FAQ collection from ibiblio.org) Frequently Asked Questions (and answers!) on many Linux topics. Some of the FAQs included in this package:  ATAPI-FAQ, AfterStep-FAQ, BLFAQ (Brief Linux FAQ), Ftape-FAQ, GCC-SIG11-FAQ, Joe-Command-Reference, the Linux-FAQ, PPP-FAQ, SMP-FAQ, and the Threads-FAQ. These FAQs will be installed under /usr/doc/Linux-FAQs."
+source=(ftp://ftp.slackware.com/pub/slackware/slackware-current/slackware/f/$pkgname-$pkgver-noarch-1.tgz)
+md5sums=('7e39d8f58b8818b42b9dbfacf8afdca1')
+
+build() {
+
+	cd $startdir/pkg
+
+	tar zxpvf $startdir/src/$pkgname-$pkgver-noarch-1.tgz
+
+	rm -r install
+
+	cd $startdir/pkg/usr/doc/Linux-FAQs
+	ln -s Linux-FAQ/Linux-FAQ	FAQ
+	ln -s Linux-FAQ			linux-faq
+
+}

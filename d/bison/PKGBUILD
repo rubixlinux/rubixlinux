@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=bison
+pkgver=2.1
+pkgrel=1
+pkgdesc="bison (parser generator similar to yacc) GNU "Bison" is a general-purpose parser generator that converts a grammar description for an LALR(1) context-free grammar into a C program to parse that grammar. Bison is upward compatible with Yacc:  all properly-written Yacc grammars ought to work with Bison with no change.  Anyone familiar with Yacc should be able to use Bison with little trouble."
+url="http://www.gnu.org/software/bison/bison.html"
+depends=('glibc')
+makedepends=('m4')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('b1468d49c1357aebcd1de6ef12cbf3e8')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: upgraded to 2.1 2005.09.30
+#rel1: Initial Rubix release
+
+build() {
+
+	LDFLAGS=-s
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		OChangeLog	\
+		README		\
+		THANKS		\
+		doc/FAQ		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	rm $startdir/pkg/usr/info/dir
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

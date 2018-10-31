@@ -1,0 +1,64 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=tcsh
+pkgver=6.14.00
+pkgrel=1
+pkgdesc="tcsh (C shell) tcsh is an enhanced but completely compatible version of the Berkeley UNIX C shell, csh(1). It is a command language interpreter usable both as an interactive login shell and a shell script command processor. It includes a command-line editor, programmable word completion, spelling correction, a history mechanism, job control, and a C-like syntax."
+depends=('glibc' 'libtermcap')
+source=(ftp://ftp.gw.com/pub/unix/$pkgname/$pkgname-$pkgver.tar.gz)
+url="http://www.tcsh.org"
+install=tcsh.install
+md5sums=('353d1bb7d2741bf8de602c7b6f0efd79')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#None
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --prefix= $CHOST
+	make
+
+	mkdir -p $startdir/pkg/bin
+
+	cp tcsh			$startdir/pkg/bin
+	chmod 755		$startdir/pkg/bin/tcsh
+	ln -sf tcsh		$startdir/pkg/bin/csh
+	chown -R root:bin	$startdir/pkg/bin
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp tcsh.man $startdir/pkg/usr/man/man1/tcsh.1
+	echo '.so man1/tcsh.1' > $startdir/pkg/usr/man/man1/csh.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		BUGS		\
+		FAQ		\
+		Fixes		\
+		NewThings	\
+		Ported		\
+		README		\
+		README.imake	\
+		WishList	\
+		Y2K		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

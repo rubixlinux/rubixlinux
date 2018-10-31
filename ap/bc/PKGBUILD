@@ -1,0 +1,55 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=bc
+pkgver=1.06
+pkgrel=1
+pkgdesc="bc (An arbitrary precision calculator language) bc is an arbitrary precision numeric processing language.  Syntax is similar to C, but differs in many substantial areas.  It supports interactive execution of statements.  bc is a utility included in the POSIX P1003.2/D11 draft standard. The GNU version of bc was written by Philip A. Nelson."
+depends=('readline')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname-$pkgver.readline.diff.gz			)
+md5sums=('d44b5dddebd8a7a7309aea6c36fda117' \
+	 'ef8dde96135c041073786c697f2019a1' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver.readline.diff
+
+	./configure --prefix=/usr --with-readline
+	make
+
+	mkdir -p $startdir/pkg/usr/bin
+
+	cp bc/bc $startdir/pkg/usr/bin
+	cp dc/dc $startdir/pkg/usr/bin
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	cd doc
+	for page in bc.1 dc.1 ; do
+		cp $page $startdir/pkg/usr/man/man1
+	done
+
+	mkdir -p $startdir/pkg/usr/info
+
+	cp dc.info $startdir/pkg/usr/info
+
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		Examples	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		Test		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

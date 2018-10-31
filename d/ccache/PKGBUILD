@@ -1,0 +1,29 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=ccache
+pkgver=2.4
+pkgrel=1
+pkgdesc="ccache (a fast compiler cache) ccache is a compiler cache. It speeds up re-compilation of C/C++ code by caching previous compiles and detecting when the same compile is being done again. ccache was written by Andrew Tridgell."
+depends=('glibc')
+source=(http://ccache.samba.org/ftp/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('73c1ed1e767c1752dd0f548ec1e66ce7')
+url="http://ccache.samba.org"
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		web/index.html	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

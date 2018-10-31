@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=indent
+pkgver=2.2.9
+pkgrel=2
+pkgdesc="indent (changes the appearance of a C program) GNU indent changes the appearance of a C program by inserting or deleting whitespace according to a plethora of options.  Some canned styles of formatting (like the GNU style, Kernighan & Ritchie style, and original Berkeley style) are supported as well. GNU indent is a descendant of BSD indent."
+url="http://mysite.freeserve.com/indent/beautify.html"
+depends=('glibc')
+source=(http://mysite.freeserve.com/$pkgname/${pkgname}_$pkgver.tar.gz)
+md5sums=('dcdbb163bef928306dee2a0cfc581c89')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: fixed doc dir typo 2005.05.20
+#rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr $CHOST
+	make
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp src/indent		$startdir/pkg/usr/bin
+	chown -R root.bin	$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/indent
+
+	mkdir -p		$startdir/pkg/usr/info
+	cp doc/indent.info	$startdir/pkg/usr/info
+
+	mkdir -p		$startdir/pkg/usr/man/man1
+	cp man/indent.1		$startdir/pkg/usr/man/man1
+
+	cd po
+	for locale in *.gmo ; do
+		mkdir -p	$startdir/pkg/usr/share/locale/`basename $locale .gmo`/LC_MESSAGES
+		cp $locale	$startdir/pkg/usr/share/locale/`basename $locale .gmo`/LC_MESSAGES/indent.mo
+	done
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING*	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

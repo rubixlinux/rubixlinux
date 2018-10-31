@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-xml-libxml-common
+pkgver=0.13
+pkgrel=2
+pkgdesc="XML::LibXML::Common - Routines and Constants common for XML::LibXML and XML::GDOME"
+url="http://search.cpan.org/~phish/XML-LibXML-Common-$pkgver/Common.pm"
+depends=('perl' 'libxml2')
+source=(http://search.cpan.org/CPAN/authors/id/P/PH/PHISH/XML-LibXML-Common-$pkgver.tar.gz)
+md5sums=('13b6d93f53375d15fd11922216249659')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/XML-LibXML-Common-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/XML-LibXML-Common-$pkgver
+	cp	-a		\
+		Changes		\
+		LICENSE		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/XML-LibXML-Common-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/XML-LibXML-Common-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

@@ -1,0 +1,11 @@
+--- ./src/kernel/qgif.h.orig	2005-02-03 15:16:45.000000000 -0700
++++ ./src/kernel/qgif.h	2005-02-03 15:17:02.000000000 -0700
+@@ -50,7 +50,7 @@
+ #endif // QT_H
+ 
+ #ifndef QT_BUILTIN_GIF_READER
+-#define QT_BUILTIN_GIF_READER 0
++#define QT_BUILTIN_GIF_READER 1
+ #endif
+ 
+ bool qt_builtin_gif_reader();

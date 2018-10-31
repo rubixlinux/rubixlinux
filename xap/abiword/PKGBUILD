@@ -1,0 +1,101 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=abiword
+pkgver=2.2.10
+pkgrel=1
+pkgdesc="abiword (AbiWord Personal) AbiWord Personal is a lean and fast full-featured word processor. It can import many formats including Word97/2000 and RTF, Palm, Psion, DocBook and XHTML documents, and can export to RTF, Palm, Psion, XHTML, Text, and LaTeX formats. Linux Journal calls it \"an elegant, open source word processor that delivers the Word functionality most people use.\""
+url="http://www.abisource.com"
+depends=('glibc' 'libglade' 'gtk+2' 'libcroco' 'atk' 'libwpd' 'librsvg' 'libgsf' 'fontconfig'	\
+	 'x11' 'expat' 'zlib' 'libart_lgpl' 'readline' 'python' 'freetype2' 'libjpeg' 'pango'	\
+	 'cairo' 'libxml2' 'bzip2' 'glib2' 'libwmf' 'gucharmap' 'gcc' 'libpng' 'popt'		\
+	 'libtermcap'										)
+source=(http://www.abisource.com/downloads/$pkgname/$pkgver/source/$pkgname-$pkgver.tar.gz	\
+	abiword.desktop.gz									\
+	python.diff.gz										)
+md5sums=('6085d11314b447c0101d2bb26d27aa4c' \
+	 '072c206f5e2e41819b0f744936101128' \
+	 '5993dce2ebb5150bc8de57e4e3f5afbb' )
+
+#Todo:
+#None
+
+#Notes:
+#The python patch simply changes the python version from 2.3 to 2.4
+
+#Changelog:
+#rel1: upgraded to 2.2.10 2005.09.30
+#rel1: upgraded to 2.2.9, fribidi is now packaged separately 2005.08.05
+#rel2: Rebuilt because libwpd is now packaged separately 2005.06.24
+#rel1: Upgraded to 2.2.8, fribidi 0.10.5, libwpd 0.8.1
+#rel1: Upgraded to abiword 2.2.4 2005.02.23
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/python.diff || return 1
+
+	chown -R root.root .
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -type d -exec chmod 755 {} \;
+
+	cd wv
+	./configure			\
+		--prefix=/usr		\
+		--disable-shared	\
+		$CHOST
+	make || return 1
+
+	cd ../abi
+	./configure \
+		--prefix=/usr \
+		--disable-debug \
+		--disable-gnome \
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver/docs
+	cp	-a		\
+		BUILD.TXT	\
+		BiDiReadme.txt	\
+		COPYING		\
+		COPYRIGHT.TXT	\
+		CREDITS.TXT	\
+		README.TXT	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cp	-a		\
+		docs/*.abw	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver/docs
+
+	cd ../abiword-docs/man
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp abiword.1 $startdir/pkg/usr/man/man1
+
+	cd ..
+	mkdir -p $startdir/pkg/usr/share/AbiSuite-2.2/AbiWord
+	cp -a ABW $startdir/pkg/usr/share/AbiSuite-2.2/AbiWord
+	cp -a Manual/en/Abiword_Manual.abw $startdir/pkg/usr/doc/$pkgname-$pkgver/docs
+
+	cd ../abiword-plugins
+	./configure		\
+		--prefix=/usr	\
+		--disable-debug	\
+		--disable-gnome	\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cp $startdir/src/abiword.desktop $startdir/pkg/usr/share/applications
+
+	rm -r $startdir/pkg/usr/lib/bonobo
+	rm $startdir/pkg/usr/lib/AbiWord-2.2/plugins/libAbiDash.*
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

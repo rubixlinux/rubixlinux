@@ -1,0 +1,202 @@
+From root@soundwave.cybertron.cc  Mon Aug 29 18:11:50 2005
+Return-Path: <root@soundwave.cybertron.cc>
+Received: from soundwave.cybertron.cc (localhost [127.0.0.1])
+	by soundwave.cybertron.cc (8.13.4/8.13.4) with ESMTP id j7U0BoiJ013486
+	for <root@soundwave.cybertron.cc>; Mon, 29 Aug 2005 18:11:50 -0600
+Received: (from root@localhost)
+	by soundwave.cybertron.cc (8.13.4/8.13.4/Submit) id j7U0BoWW013485
+	for root; Mon, 29 Aug 2005 18:11:50 -0600
+Date: Mon, 29 Aug 2005 18:11:50 -0600
+From: root@soundwave.cybertron.cc
+Message-Id: <200508300011.j7U0BoWW013485@soundwave.cybertron.cc>
+To: root@soundwave.cybertron.cc
+Subject: Register with the Linux counter project
+
+   (Adapted from a question in the Linux-FAQ)
+
+   9.8. How Many People Use Linux?
+
+   Linux is freely available, and no one is required to register with
+   any central authority, so it is difficult to know. Several businesses
+   survive solely on selling and supporting Linux. Linux news groups are
+   some of the most heavily read on Usenet. Accurate numbers are hard to
+   come by, but the number is almost certainly in the millions.
+
+   However, one brave soul, Harald T. Alvestrand <Harald@Alvestrand.no>,
+   has decided to try, and asks that if you use Linux, you visit this Web
+   site to register:
+
+   http://counter.li.org
+
+   If you don't want to use the Web, send E-mail to
+   counter@counter.li.org with the subject line, ``I use Linux at home,''
+   or ``I use Linux at work.''
+
+   The current count is posted monthly to comp.os.linux.misc, and is
+   always available from the Web site.
+
+From root@soundwave.cybertron.cc  Mon Aug 29 18:11:54 2005
+Return-Path: <root@soundwave.cybertron.cc>
+Received: from soundwave.cybertron.cc (localhost [127.0.0.1])
+	by soundwave.cybertron.cc (8.13.4/8.13.4) with ESMTP id j7U0Bs5h013500
+	for <root@soundwave.cybertron.cc>; Mon, 29 Aug 2005 18:11:54 -0600
+Received: (from root@localhost)
+	by soundwave.cybertron.cc (8.13.4/8.13.4/Submit) id j7U0BsM9013499
+	for root; Mon, 29 Aug 2005 18:11:54 -0600
+Date: Mon, 29 Aug 2005 18:11:54 -0600
+Message-Id: <200508300011.j7U0BsM9013499@soundwave.cybertron.cc>
+From: Joshua Rubin <joshua@rubixlinux.org>
+To: root@soundwave.cybertron.cc
+Subject: Welcome to Linux (Rubix 1.0)!
+
+
+
+Welcome! Glad to see you've made it this far! :^)
+
+Here are a few hints to help you navigate through the Linux operating
+system a little bit better:
+
+    Remember the screen you saw while each package was installing? You
+can see all the information (and more) again. The simplest way is to use
+the 'pacman' utility to view the package contents. You can simply type 'pacman 
+-Qi _pkgname_' to get a brief overview of each package. To see the file 
+contents of each package just type 'pacman -Ql _pkgname_'.
+
+    You may need to make some changes to the /etc/rc.d/serial script if
+you're using serial ports other than /dev/ttyS0 or /dev/ttyS1 (com1: and
+com2: under DOS), or if these ports use non-standard IRQs.
+
+    I suggest using the section about halfway through that lets you set up
+the ports manually. Here's an example of how I set up the ports on my
+machine for /dev/ttyS0 and /dev/ttyS2:
+
+# These are the standard COM1 through COM4 devices
+#
+${SETSERIAL} /dev/ttyS0 uart 16450 port 0x3F8 irq 4
+# ${SETSERIAL} /dev/ttyS1 uart 16450 port 0x2F8 irq 3
+${SETSERIAL} /dev/ttyS2 uart 16450 port 0x3E8 irq 5
+# ${SETSERIAL} /dev/ttyS3 uart 16450 port 0x2E8 irq 3
+
+You'll also need to add the serial option to the DAEMON line in /etc/rc.conf.
+
+    If you've got hardware such as a CD-ROM drive or ethernet card that
+doesn't seem to work with Linux, it's possible that the kernel you're using
+doesn't contain the needed support.  In that case, you can do one of
+two things:
+
+   1.  Recompile your kernel, including the needed driver(s).
+   2.  Load the support with kernel modules.  This is probably the
+       simplest way to handle the situation.  Just edit the MODULES line in
+       /etc/rc.conf so that it loads the modules you need.
+
+    If you're on a standalone LAN without a nameserver, make sure you
+don't have a nameserver line in /etc/resolv.conf, or you may experience
+delays with many network commands as they attempt to query the bogus
+nameserver.
+
+    Want to run NFS? You'll need to install the portmap and nfs-utils
+packages.  Then, edit your /etc/exports to allow NFS access. (see 'man
+exports' for examples)  Once you've set up /etc/exports, and add portmap and 
+nfsd (in that order) to the DAEMONS line in /etc/rc.conf the NFS daemons should 
+run automatically at boot.
+
+    Do you have an IDE based CD-RW drive?  If so, you'll need to use
+the SCSI emulation kernel module, which will allow your drive to look
+like a SCSI CD burner to cdrdao, cdrecord, and other Linux CD
+burning applications.  (Unless you use a 2.6 kernel, which no longer
+requires the ide-scsi driver and can use IDE devices like /dev/hdc
+directly)
+   To load the ide-scsi module simply "unbang" the !ide-scsi option on the 
+MODULES line of /etc/rc.conf. You'll also need to pass an option to the kernel 
+telling it to use SCSI emulation for a specific device, otherwise the ATAPI 
+driver will be used.  Let's say your CD-RW drive is /dev/hdc, then you'd want 
+to pass the "hdc=ide-scsi" option to the kernel.  You can do this by editing 
+the file /boot/grub/menu.lst, here is an example line:
+    kernel /vmlinuz-2.4 root=/dev/sda3 ro vga=791 hdc=ide-scsi
+You can also pass the hdc=ide-scsi option on a bootdisk command line.
+Once you do this, your CD-RW device will appear as a SCSI device
+(/dev/scd0) rather than an IDE device (/dev/hdc).  If this is the only
+CD-ROM type device in the machine (there's no DVD drive, for instance),
+then you'll probably also want to change your /dev/cdrom symbolic link
+to point to the new SCSI device instead of the old IDE device:
+
+   cd /dev
+   rm cdrom
+   ln -sf scd0 cdrom
+
+    A lot of people ask me how to set up their printer under Linux.  In my
+opinion, the best method is to use cups, a system that allows you to print 
+many file formats (DVI, PS, PDF, text) by just sending them to the print 
+spooler with lpr.  To set this up, do the following steps:
+
+   1.  Make sure you're loading the parallel driver in /etc/rc.conf.
+       If you just added it, you can start cups by typing:
+       /etc/rc.d/cups start
+   2.  Install the cups printer software.  This is the "cups" package on
+       the A series.  To install it simply type: pacman -Sy cups
+   3.  You'll probably want to have the TCP/IP subsystem installed and
+       configured (at least for loopback).  The "tcpip" package is part of
+       the N series, and the /etc/rc.conf file is used to do a basic TCP/IP
+       configuration.
+   4.  cups uses a variety of other filters that it expects to find
+       installed.  You'll want to install the "espgs" (Ghostscript)
+       package on the AP series to add Ghostscript if you want the ability
+       to print PostScript documents.  If you want to print DVI files,
+       install at least the default teTeX packages from the T series.
+       espgs is installed automatically as a dependency of cups.
+   5.  Here are somr more printing related packages you may want to
+       install:
+         hpijs:      If you use hp inkjet or laserjet printers, you will
+                     probably want to install the hpijs package for support
+                     for more printers.
+         gimp-print: This package contains more printer drivers in case
+                     yours is not supported by the default cups
+                     installation.
+         a2ps:       This package was required by apsfilter, but not cups,
+                     it is still usefull though.
+         enscript:   If you need more printing options than lpr has,
+                     enscript can prettify the output.
+         foomatic:   foomatic-db, foomatic-db-engine and foomatic-filters
+                     are additional packages that will enable MANY MANY
+                     more printers to function with cups.
+   6.  The easiest way to configure cups is to use the web configuration.
+       Using any browser (firefox, konqueror, links or lynx to name a few),
+       on the computer you are trying to configure, simply go to
+       http://127.0.0.1:631 and follow the GUI setup, simple!
+
+    If you have a busmouse, you'll need to load a mouse driver module
+before your mouse will work.  These days, most mice are PS/2 (with a
+6 pin round plug), USB, or serial (with a 9 pin trapazoidal plug).
+These kinds of mice don't require any special setup as the system
+should detect and activate them automatically. If you think your
+mouse might need a special driver (if it's not working), edit the
+MODULES line in /etc/rc.conf and add the module you are missing and
+it will be loaded at boot time.  It's also possible that the
+/dev/mouse link may need to be changed to point to the proper mouse
+device. Or, compile a new kernel with built in support for your mouse
+and install that.
+
+    To get your machine on the net with a modem and PPP, you need to install
+the "tcpip" and "ppp" packages.  Your machine should be configured at
+least with loopback using the "netconfig" utility.  Also, be sure the
+serial port your modem uses is correctly configured.  If in doubt,
+take a look through /etc/rc.d/serial.  Then, use "pppsetup" to
+configure the dialup process.  Additional documentation on pppsetup
+can be found in /usr/doc/pppsetup-*/.  DSL/Cable users who need to use
+PPPoE (PPP over Ethernet) should see the docs in /usr/doc/rp-pppoe-3.6/.
+
+    If you installed the F series, there will be lots of FAQs (lists of
+Frequently Asked Questions with answers) /usr/doc/Linux-FAQs/, and
+HOWTOs (files explaining how to do a particular Linux task), in
+/usr/doc/Linux-HOWTOs/.  These should be helpful in getting you going
+with Linux.  They cover most system admin tasks in a lot more detail
+than this little email does.  Also see the RELEASE_NOTES included with
+the distribution for any last-minute changes.
+
+
+Have fun!
+
+---
+Joshua Rubin
+joshua@rubixlinux.org
+

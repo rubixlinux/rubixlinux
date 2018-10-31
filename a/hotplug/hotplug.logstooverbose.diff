@@ -1,0 +1,20 @@
+--- ./etc/hotplug/hotplug.functions.orig	2004-09-20 16:12:07.000000000 -0700
++++ ./etc/hotplug/hotplug.functions	2004-11-03 21:35:19.000000000 -0800
+@@ -141,7 +141,7 @@
+ 	    # it's not an error if a module doesn't exist or won't load.
+ 	    if $MODPROBE -n $MODULE >/dev/null 2>&1 &&
+ 		    ! $MODPROBE $MODULE >/dev/null 2>&1 ; then
+-		mesg "... can't load module $MODULE"
++		debug_mesg "... can't load module $MODULE"
+ 	    else
+ 		# /etc/modules.conf may have set non-default module
+ 		# parameters ... handle per-device parameters in apps
+@@ -165,7 +165,7 @@
+ 	fi
+ 
+ 	if [ "$LOADED" = "false" ]; then
+-	    mesg "missing kernel or user mode driver $MODULE "
++	    debug_mesg "missing kernel or user mode driver $MODULE "
+ 	fi
+ 	if echo "$MODULE" | grep -q "usb-storage" > /dev/null 2>&1 ; then
+ 	    [ -x /usr/sbin/updfstab ] &&  /usr/sbin/updfstab

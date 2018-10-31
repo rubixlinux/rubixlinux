@@ -1,0 +1,75 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+VERSION=1.3.22-pl4
+
+pkgname=dhcpcd
+pkgver=1.3.22pl4
+pkgrel=2
+pkgdesc="dhcpcd (DHCP client daemon) The DHCP client program dhcpcd is used to connect to a network by contacting a DHCP server.  dhcpcd gets an IP address and other information from a corresponding DHCP server, configures the network interface automatically, and tries to renew the lease time according to RFC2131 or RFC1541 depending on the command line option."
+url="http://www.phystech.com/download/dhcpcd.html"
+depends=('glibc')
+source=(http://www.phystech.com/ftp/$pkgname-$VERSION.tar.gz	\
+	$pkgname.noarchforce.diff.gz				\
+	dhcpcd.CAN-2005-1848.diff.gz				)
+md5sums=('dd627a121e43835bead3ffef5b1a72fd' \
+	 'dd77861c375f1c1c65d7320a01c17242' \
+	 '269e6d198dadcaf9988b141b8efc4c99' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: fixed small security problem 2005.09.13
+#rel1: Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/etc/dhcpc
+	mkdir -p $startdir/pkg/sbin
+	mkdir -p $startdir/pkg/usr/man/man8
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$VERSION
+
+	cd $startdir/src/$pkgname-$VERSION
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+
+	patch -p1 < $startdir/src/$pkgname.noarchforce.diff	|| return 1
+	patch -p1 < $startdir/src/$pkgname.CAN-2005-1848.diff	|| return 1
+
+	./configure --prefix=/usr
+
+	sed -i 's|aclocal-1.7|aclocal|g'   Makefile
+	sed -i 's|automake-1.7|automake|g' Makefile
+
+	make clean
+	make || return 1
+
+	cp dhcpcd	$startdir/pkg/sbin
+	cp dhcpcd.8	$startdir/pkg/usr/man/man8
+
+cat << EOF > $startdir/pkg/etc/dhcpc/dhcpcd-eth0.exe
+#!/bin/sh
+echo "(dhcpcd)  IP address changed to \$1" | logger
+EOF
+
+	chmod 750 $startdir/pkg/etc/dhcpc/dhcpcd-eth0.exe
+
+	cp	-a		\
+		pcmcia		\
+		AUTHORS		\
+		COPYING		\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+		dhcpcd*lsm	\
+	$startdir/pkg/usr/doc/$pkgname-$VERSION
+
+	chown -R root.bin $startdir/pkg/sbin
+
+}

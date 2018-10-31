@@ -1,0 +1,47 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=sc
+pkgver=7.16
+pkgrel=1
+pkgdesc="sc (spreadsheet calculator) This is a simple curses-based spreadsheet program."
+source=(http://ibiblio.org/pub/Linux/apps/financial/spreadsheet/$pkgname-$pkgver.tar.gz	\
+	xmalloc.diff.gz									)
+md5sums=('1db636e9b2dc7cd73c40aeece6852d47' \
+	 '0ce9685e70b013d7d058f62e3dd5e938' )
+depends=('glibc' 'gpm' 'ncurses')
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/lib/sc
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p0 < $startdir/src/xmalloc.diff || return 1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		CHANGES	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cp tutorial.sc $startdir/pkg/usr/lib/sc
+
+	make || return 1
+
+	cp sc		$startdir/pkg/usr/bin
+	cp scqref	$startdir/pkg/usr/bin
+	cp psc		$startdir/pkg/usr/bin
+
+	name=sc NAME=SC LIBDIR=/usr/lib/sc sh torev sc.doc  > sc.1
+	name=sc NAME=SC LIBDIR=/usr/lib/sc sh torev psc.doc > psc.1
+
+	cp sc.1		$startdir/pkg/usr/man/man1
+	cp psc.1	$startdir/pkg/usr/man/man1
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

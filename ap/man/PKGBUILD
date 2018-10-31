@@ -1,0 +1,53 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=man
+pkgver=1.6b
+pkgrel=1
+pkgdesc="man (format and display the on-line manual pages) The man package is a collection of tools used for searching and reading the online system documentation.  In fact, on most UNIX-like operating systems it is the primary means of finding out how programs on the system work.  For example, 'man man' will display the documentation for man itself. Man requires the groff text processing package."
+depends=('groff' 'less' 'gzip' 'gawk' 'coreutils' 'bash' 'gcc' 'glibc' 'ncurses' 'libtermcap' 'binutils' 'gpm')
+	source=(http://primates.ximian.com/~flucifredi/$pkgname/$pkgname-$pkgver.tar.gz	\
+	man.msafer.diff.gz							\
+	man.noisy.diff.gz							)
+md5sums=('81d96091482b6445cbfa248fadb422b8' \
+	 '64522ed40642715aa7d6eef63829d83c' \
+	 '26cd71d070fa5d5734f3b55ee2f1d450' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 1.6b 2005.09.30
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/man.noisy.diff || return 1
+
+	./configure +lang all +traditional
+
+	patch -p1 < $startdir/src/man.msafer.diff || return 1
+
+	make || return 1
+	make install PREFIX=$startdir/pkg
+
+	find $startdir/pkg/usr/man -type d | xargs rmdir 2> /dev/null
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		INSTALL	\
+		LSM	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chmod 755 $startdir/pkg/usr/sbin/makewhatis
+
+}

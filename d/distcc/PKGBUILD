@@ -1,0 +1,60 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=distcc
+pkgver=2.18.3
+pkgrel=4
+pkgdesc="distcc (distributed C/C++ compiler/daemon) distcc allows compilation of C code to be distributed across several machines on a network.  distcc should always generate the same results as a local compile, is simple to install and use, and is often significantly faster than a local compile. IMPORTANT SECURITY NOTE:  distccd should only run on trusted networks. distcc was written by Martin Pool."
+url="http://distcc.samba.org"
+backup=('etc/rc.d/distccd')
+depends=('glibc' 'popt')
+source=(http://distcc.samba.org/ftp/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	distccd								)
+md5sums=('0d6b80a1efc3a3d816c4f4175f63eaa2' \
+	 '2afb3dfc8898a2b7a79b4ce090da6fad' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: rebuilt without gui 2006.02.15
+##   rel2: added an rc script 2006.01.01
+##   rel1: initial rubix release 2.18.3 2006.01.01
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--datadir=/usr/share	\
+		--sysconfdir=/etc	\
+		--without-gtk		\
+		--without-gnome		\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg docdir=/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	for file in * ; do
+		if [ -f $file ]; then
+			if [ -r $startdir/pkg/usr/doc/$pkgname-$pkgver/$file ]; then
+				cp -a $file $startdir/pkg/usr/doc/$pkgname-$pkgver/$file
+				chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/$file
+			fi
+		fi
+	done
+
+	mkdir -p $startdir/pkg/usr/share/applications
+	cd $startdir/pkg/usr/share/applications
+	ln -s /usr/share/distcc/distccmon-gnome.desktop .
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/distccd $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

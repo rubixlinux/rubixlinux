@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libungif
+pkgver=4.1.3
+pkgrel=1
+pkgdesc="libungif GIF loading and saving shared library.  (Saving uses an uncompressed GIF algorithm that does not use LZW compression.)"
+depends=('glibc')
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('cb11e300347ad29e502abc6f56fd23df')
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure		\
+		--prefix=/usr	\
+		--with-x=no	\
+		$CHOST
+	make
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		AUTHORS			\
+		BUGS			\
+		COPYING			\
+		ChangeLog		\
+		INSTALL			\
+		NEWS			\
+		ONEWS			\
+		README			\
+		TODO			\
+		UNCOMPRESSED_GIF	\
+		doc			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm $startdir/pkg/usr/doc/$pkgname-$pkgver/doc/Makefile*
+
+	rm -r $startdir/pkg/usr/bin
+
+	cd $startdir/pkg/usr/lib
+	ln -sf libungif.so.$pkgver libgif.so.$pkgver
+	ln -sf libgif.so.$pkgver libgif.so.4
+	ln -sf libgif.so.4 libgif.so
+	ln -sf libungif.a libgif.a
+
+}

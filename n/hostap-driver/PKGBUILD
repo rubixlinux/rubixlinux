@@ -1,0 +1,86 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=hostap-driver
+pkgver=0.4.7
+pkgrel=7
+pkgdesc="This is a Linux driver for wireless LAN cards based on Intersil's Prism2/2.5/3 chipset. The driver supports a so called Host AP mode, i.e., it takes care of IEEE 802.11 management functions in the host computer and acts as an access point."
+url="http://hostap.epitest.fi"
+depends=('wireless_tools')
+source=(http://hostap.epitest.fi/releases/$pkgname-$pkgver.tar.gz	\
+	download.diff							)
+md5sums=('ee495686cf27011b4e401963c2c7f62a' \
+	 '665d684fe7fe84facd1e114c2220597a' )
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+vver26=2.6.15.5-Rubix
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+  
+## Changelog:
+##   rel7: rebuilt for 2.6.15.5 2006.03.03
+##   rel6: rebuilt for kernel 2.6.15.4 2006.02.12
+##   rel5: rebuilt for kernel 2.6.15.3 2006.02.07
+##   rel4: rebuilt for kernel 2.6.15.2 2006.01.31
+##   rel3: rebuilt for kernel 2.6.15.1 2006.01.20
+##   rel2: upgraded to 0.4.7, built for 2.6.15 (rel1 was only used internally) 2006.01.10
+##   rel4: rebuilt for kernels 2.4.32, 2.4.32-grsec 2005.11.17
+##   rel3: rebuilt for changes in 2.4 kernels 2005.11.14
+##   rel2: rebuilt for kernel 2.6.14.2 2005.11.12
+##   rel1: upgraded to 0.4.5, rebuilt for kernel 2.6.14 2005.10.27
+##   rel1: upgraded to development release 0.4.4 since 0.3.9 did not work in 2.6.13 2005.09.02
+##   rel4: rebuilt for kernel 2.6.13 2005.09.01
+##   rel3: rebuilt for kernel 2.6.12.1 2005.06.23
+##   rel2: rebuilt for rebuilt kernel26 2005.06.22
+##   rel1: upgraded to 0.3.9 and kernels 2.4.31, 2.4.31-grsec and 2.6.12 2005.06.18
+##   rel4: upgraded to kernel26 2.6.11.9, removed dep of pcmcia-cs 2005.05.15
+##   rel3: Upgraded to kernel24 2.4.30, kernel24-grsec 2.4.30-grsec, kernel26 2.6.11.7
+##   rel2: Added firmware update support 2005.04.02
+##   rel1: Initial rubix release
+
+build() {
+
+	export MAKEFLAGS=""
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/download.diff || return 1
+
+	mkdir -p $startdir/pkg/etc/pcmcia
+	cp driver/etc/hostap_cs.conf $startdir/pkg/etc/pcmcia
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		ChangeLog	\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	# Make 2.4 vanilla module:
+		make clean
+		make KERNEL_PATH=/usr/src/linux-$vver24 || return 1
+		mkdir -p $startdir/pkg/lib/modules/$vver24
+		make install KERNEL_PATH=/usr/src/linux-$vver24 DESTDIR=$startdir/pkg
+
+	# Make 2.4 grsec module:
+		make clean
+		make KERNEL_PATH=/usr/src/linux-$gver24 || return 1
+		mkdir -p $startdir/pkg/lib/modules/$gver24
+		make install KERNEL_PATH=/usr/src/linux-$gver24 DESTDIR=$startdir/pkg
+
+	# Make 2.6 vanilla module:
+		make clean
+		make KERNEL_PATH=/usr/src/linux-$vver26 || return 1
+		mkdir -p $startdir/pkg/lib/modules/$vver26
+		make install KERNEL_PATH=/usr/src/linux-$vver26 DESTDIR=$startdir/pkg
+
+	cd $startdir/pkg
+	find lib/modules -type f -name *.o -exec gzip {} \;
+	find lib/modules -type f -name *.ko -exec gzip {} \;
+
+}

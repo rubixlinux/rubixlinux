@@ -1,0 +1,63 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=blackmilter
+pkgver=0.75
+pkgrel=1
+pkgdesc="Blackmilter is a flexible and efficient tool for blocking mail senders by IP address. It could be used to implement an almost unlimited variety of blocking policies, depending on how the IP blacklists and whitelists are generated, how entries expire, and so on."
+depends=('glibc')
+backup=('etc/mail/whitelist'	\
+	'etc/mail/blacklist'	)
+source=(http://www.acme.com/software/$pkgname/$pkgname-$pkgver.tar.gz	\
+	http://www.acme.com/software/ipizer/ipizer_05jun2005.tar.gz	\
+	$pkgname							)
+md5sums=('2fd30188b07baa3b8f2bdcbfed75a61b' \
+	 '008c1a98cd6b31548fd9c958060e262b' \
+	 '4732d45db9657ca586aa3375ee847eca' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.75, updated rc script to new format 2006.01.15
+##   rel1: Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+        make BINDIR=$startdir/pkg/usr/bin MANDIR=$startdir/pkg/usr/man install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		FILES	\
+		README	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/ipizer
+	make || return 1
+	mkdir -p $startdir/pkg/usr/man/man1
+	make BINDIR=$startdir/pkg/usr/bin MANDIR=$startdir/pkg/usr/man/man1 install
+
+	mkdir -p $startdir/pkg/usr/doc/ipizer
+	cp -a README $startdir/pkg/usr/doc/ipizer
+
+	chown -R root.root	$startdir/pkg
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	mkdir -p $startdir/pkg/etc/{rc.d,mail}
+	mkdir -p $startdir/pkg/var/run/milter
+	chown nobody $startdir/pkg/var/run/milter
+
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+	touch $startdir/pkg/etc/mail/blacklist
+	touch $startdir/pkg/etc/mail/whitelist
+
+}

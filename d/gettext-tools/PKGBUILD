@@ -1,0 +1,65 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=gettext-tools
+pkgver=0.14.4
+pkgrel=1
+pkgdesc="gettext-tools The GNU gettext-tools package is useful for authors and maintainers of internationalized software, or for anyone compiling programs that use the gettext functions.  This package provides the needed tools and library functions for the handling of messages in different languages. Some other GNU packages use the gettext program (included in this package) to internationalize the messages given by shell scripts."
+url="http://www.gnu.org/software/gettext"
+depends=('gettext')
+source=(ftp://ftp.gnu.org/pub/gnu/gettext/gettext-$pkgver.tar.gz)
+md5sums=('7580b2d77ef26cafa248f525dcb960c3')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Upgraded to 0.14.4 2005.05.12
+#rel2: rebuilt 2005.04.25
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/gettext-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr
+
+	make
+
+	cd $pkgname
+
+	make install DESTDIR=$startdir/pkg
+
+	rm $startdir/pkg/usr/info/dir
+
+	cd $startdir/pkg/usr/share
+	mv man ..
+	mv doc ..
+
+	cd $startdir/pkg/usr/doc
+	mv gettext $pkgname-$pkgver
+	cd $pkgname-$pkgver
+	tar cf examples.tar examples
+	bzip2 -9 examples.tar
+	rm -r examples
+	mkdir html
+	mv *.html html
+	ln -sf /usr/share/gettext/ABOUT-NLS .
+
+	cd $startdir/src/gettext-$pkgver/$pkgname
+	cp	-a		\
+		AUTHORS		\
+		../COPYING	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

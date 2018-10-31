@@ -1,0 +1,16 @@
+post_install() {
+	if [ ! -f var/spool/mail/root ]; then
+		mv var/spool/mail/root.new var/spool/mail/root
+	else
+		cat var/spool/mail/root.new >> var/spool/mail/root
+		rm var/spool/mail/root.new
+	fi
+}
+
+post_upgrade() {
+	post_install
+}
+
+op=$1
+shift
+$op $*

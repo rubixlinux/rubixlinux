@@ -1,0 +1,360 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=util-linux
+pkgver=2.12r
+pkgrel=1
+pkgdesc="util-linux (a huge collection of essential utilities) adjtimex agetty arch blockdev cal cfdisk chkdupexe clear clock col colcrt colrm column ctrlaltdel cytune ddate dmesg dnsdomainname domainname elvtune fdformat fdisk fsck.cramfs fsck.minix getopt getoptprog hexdump hostname hwclock ipcrm ipcs isosize jaztool line logger look losetup mcookie mesg mkfs mkfs.bfs mkfs.cramfs mkfs.minix mkswap more mount namei nisdomainname pg pivot_root ramsize raw rdev readprofile rename renice reset rev rootflags script setfdprm setserial setsid setterm sfdisk sln strings swapoff swapon tput tunelp ul umount update vidmode wall whereis write ypdomainname ziptool"
+depends=('e2fsprogs' 'glibc' 'gpm' 'zlib' 'ncurses')
+source=(ftp://ftp.kernel.org/pub/linux/utils/$pkgname/$pkgname-$pkgver.tar.bz2		\
+	http://www.tazenda.demon.co.uk/phil/net-tools/net-tools-1.60.tar.bz2		\
+	http://dl.sourceforge.net/sourceforge/setserial/setserial-2.17.tar.gz		\
+	bsdstrings.tar.gz								\
+	http://www.ibiblio.org/pub/Linux/system/admin/time/adjtimex-1.20.tar.gz		\
+	http://www.ibiblio.org/pub/Linux/system/daemons/updated-2.11.tar.gz		\
+	net-tools.diff.gz								\
+	setserial-rc.serial.diff.gz							\
+	$pkgname.MCONFIG.diff.gz							\
+	$pkgname.fdisk-no-solaris.diff.gz						\
+	$pkgname-$pkgver.diff.gz							\
+	net-tools-1.60-gcc34-3.diff.gz							\
+	net-tools-1.60-kernel_headers-2.diff.gz						\
+	net-tools-1.60-mii_ioctl-1.diff.gz						)
+md5sums=('af9d9e03038481fbf79ea3ac33f116f9' \
+	 '888774accab40217dde927e21979c165' \
+	 'c4867d72c41564318e0107745eb7a0f2' \
+	 'fbb97d7b9b94ac8b3e5fb36dd794a28d' \
+	 '00b56c266e707b8c753dfe1d33745226' \
+	 '6328b9b044bd0a3653d703ebbd8b80fd' \
+	 'dbe71b98cd02410dbe729772ff58f8e7' \
+	 'dea00a3b7f577c605ab26bd6391066fe' \
+	 'ceda47ac6374159c25956e4214317fe8' \
+	 'ade3b1160a4fa54d026d9a7761c3a384' \
+	 '21db520deaef3ad099aa0d26e4702c85' \
+	 '499a8ebd20083cf4da8958b6cd529fb7' \
+	 '87de71769e123419ebcbb456ffea96ed' \
+	 'f889ec775e117c9c06abda64e69626fb' )
+
+#Todo:
+#None
+
+#Notes:
+#Zip tool is no longer included as it will not compile with recent kernels
+#  If someone has a patch to fix this, I will gladly put it back in.
+#tput is included in ncurses
+#does not build with pie
+#there are a ton of || return 1 statements because it is hard to keep track of things and this package
+#  is VITAL to every system
+
+#Changelog:
+#rel1: upgraded to 2.12r 2005.09.30
+#rel3: fixed security problem with 'umount -r' 2005.09.13
+#rel2: Added new loop-aes patch 2005.06.18
+#rel1: Upgraded to 2.12q 2005.04.13
+#rel1: Initial rubix release
+
+build() {
+
+	#Disable PIE
+	export CFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+	export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe -fstack-protector-all -Wa,--noexecstack"
+
+	cd $startdir/src/net-tools-1.60 || return 1
+
+	mkdir -p $startdir/pkg/bin || return 1
+	mkdir -p $startdir/pkg/usr/man/man1 || return 1
+	mkdir -p $startdir/pkg/usr/man/man5 || return 1
+	mkdir -p $startdir/pkg/usr/man/man8 || return 1
+	mkdir -p $startdir/pkg/sbin || return 1
+	mkdir -p $startdir/pkg/etc/rc.d || return 1
+	mkdir -p $startdir/pkg/usr/bin || return 1
+	mkdir -p $startdir/pkg/usr/sbin || return 1
+	mkdir -p $startdir/pkg/var/lock/subsys || return 1
+	mkdir -p $startdir/pkg/usr/info || return 1
+	mkdir -p $startdir/pkg/usr/share/misc/getopt || return 1
+
+	patch -p1 < $startdir/src/net-tools.diff			|| return 1
+	patch -p1 < $startdir/src/net-tools-1.60-gcc34-3.diff		|| return 1
+	patch -p1 < $startdir/src/net-tools-1.60-kernel_headers-2.diff	|| return 1
+	patch -p1 < $startdir/src/net-tools-1.60-mii_ioctl-1.diff	|| return 1
+
+	make || return 1
+	cp hostname $startdir/pkg/bin || return 1
+
+	cd man/en_US || return 1
+	for page in hostname.1 dnsdomainname.1 nisdomainname.1 ypdomainname.1 domainname.1 ; do
+		cp $page $startdir/pkg/usr/man/man1 || return 1
+	done
+
+	cd $startdir/src/setserial-2.17 || return 1
+	patch -p1 -E < $startdir/src/setserial-rc.serial.diff || return 1
+
+	./configure --prefix=/usr || return 1
+	make || return 1
+
+	cp setserial	$startdir/pkg/sbin || return 1
+	cp rc.serial	$startdir/pkg/etc/rc.d/serial || return 1
+	cp serial.conf	$startdir/pkg/etc || return 1
+	cp setserial.8	$startdir/pkg/usr/man/man8 || return 1
+
+	cd $startdir/src/bsdstrings || return 1
+	make || return 1
+	cp strings	$startdir/pkg/usr/bin || return 1
+	cp strings.1	$startdir/pkg/usr/man/man1 || return 1
+
+	cd $startdir/src/adjtimex-1.20 || return 1
+	./configure --prefix=/usr || return 1
+	make || return 1
+	cp	adjtimex	$startdir/pkg/sbin || return 1
+	chmod	755		$startdir/pkg/sbin/adjtimex || return 1
+	cp	adjtimex.8	$startdir/pkg/usr/man/man8 || return 1
+	mkdir	-p		$startdir/pkg/usr/doc/adjtimex-1.20 || return 1
+	cp	-a		\
+		COPYING		\
+		COPYRIGHT	\
+		README		\
+		README.ru	\
+		adjtimex.lsm	\
+	$startdir/pkg/usr/doc/adjtimex-1.20 || return 1
+
+	cd $startdir/src/$pkgname-$pkgver				|| return 1
+	patch -p1 < $startdir/src/$pkgname.MCONFIG.diff			|| return 1
+	patch -p1 < $startdir/src/$pkgname.fdisk-no-solaris.diff	|| return 1
+	patch -p1 < $startdir/src/$pkgname-$pkgver.diff			|| return 1
+
+	./configure
+	make || return 1
+
+	cp sys-utils/arch		$startdir/pkg/bin || return 1
+	cp sys-utils/dmesg		$startdir/pkg/bin || return 1
+	cp getopt/getopt		$startdir/pkg/bin || return 1
+	cp misc-utils/mcookie		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/rename		$startdir/pkg/usr/bin || return 1
+#	cp misc-utils/hostname		$startdir/pkg/bin || return 1
+	cp misc-utils/kill		$startdir/pkg/bin || return 1
+#	cp login-utils/login		$startdir/pkg/bin || return 1
+	cp text-utils/more		$startdir/pkg/bin || return 1
+	cp text-utils/line		$startdir/pkg/usr/bin || return 1
+	cp text-utils/pg		$startdir/pkg/usr/bin || return 1
+	cp mount/mount			$startdir/pkg/bin || return 1
+	cp mount/umount			$startdir/pkg/bin || return 1
+	cp mount/losetup		$startdir/pkg/sbin || return 1
+	cp mount/pivot_root		$startdir/pkg/sbin || return 1
+#	cp sys-utils/setserial		$startdir/pkg/bin || return 1
+	cp misc-utils/setterm		$startdir/pkg/bin || return 1
+	cp sys-utils/sln		$startdir/pkg/bin || return 1
+#	cp sys-utils/sync		$startdir/pkg/bin || return 1
+	cp login-utils/agetty		$startdir/pkg/sbin || return 1
+#	cp login-utils/chfn		$startdir/pkg/usr/bin || return 1
+#	cp bdflush			$startdir/pkg/sbin || return 1
+#	cp sys-utils/clock		$startdir/pkg/sbin || return 1
+	cp hwclock/hwclock		$startdir/pkg/sbin || return 1
+	cp fdisk/fdisk			$startdir/pkg/sbin || return 1
+	cp fdisk/sfdisk			$startdir/pkg/usr/sbin || return 1
+#	cp fsck				$startdir/pkg/sbin || return 1
+	cp disk-utils/fsck.minix	$startdir/pkg/sbin || return 1
+	cp disk-utils/fsck.cramfs	$startdir/pkg/sbin || return 1
+	cp disk-utils/raw		$startdir/pkg/usr/bin || return 1
+	cp sys-utils/readprofile	$startdir/pkg/usr/bin || return 1
+	cp disk-utils/blockdev		$startdir/pkg/sbin || return 1
+	cp disk-utils/elvtune		$startdir/pkg/sbin || return 1
+	cp disk-utils/mkfs.bfs		$startdir/pkg/sbin || return 1
+	cp disk-utils/mkfs.cramfs	$startdir/pkg/sbin || return 1
+	cp disk-utils/mkfs.minix	$startdir/pkg/sbin || return 1
+	cp disk-utils/mkfs		$startdir/pkg/sbin || return 1
+	cp disk-utils/mkswap		$startdir/pkg/sbin || return 1
+	cp sys-utils/rdev		$startdir/pkg/sbin || return 1
+	cp mount/swapon			$startdir/pkg/sbin || return 1
+	cp misc-utils/cal		$startdir/pkg/usr/bin || return 1
+#	cp login-utils/chsh		$startdir/pkg/usr/bin || return 1
+	cp text-utils/clear		$startdir/pkg/usr/bin || return 1
+	cp text-utils/col		$startdir/pkg/usr/bin || return 1
+	cp text-utils/colcrt		$startdir/pkg/usr/bin || return 1
+	cp text-utils/colrm		$startdir/pkg/usr/bin || return 1
+	cp text-utils/column		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/ddate		$startdir/pkg/usr/bin || return 1
+	cp disk-utils/fdformat		$startdir/pkg/usr/bin || return 1
+	cp text-utils/hexdump		$startdir/pkg/usr/bin || return 1
+#	cp misc-utils/hostid		$startdir/pkg/usr/bin || return 1
+	cp sys-utils/ipcrm		$startdir/pkg/usr/bin || return 1
+	cp disk-utils/isosize		$startdir/pkg/usr/bin || return 1
+	cp sys-utils/cytune		$startdir/pkg/usr/bin || return 1
+	cp sys-utils/ipcs		$startdir/pkg/usr/bin || return 1
+#	cp login-utils/last		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/logger		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/look		$startdir/pkg/usr/bin || return 1
+	cp login-utils/mesg		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/namei		$startdir/pkg/usr/bin || return 1
+#	cp login-utils/newgrp		$startdir/pkg/usr/bin || return 1
+#	cp login-utils/passwd		$startdir/pkg/usr/bin || return 1
+#	cp login-utils/vipw		$startdir/pkg/usr/sbin || return 1
+	cp sys-utils/renice		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/reset.sh		$startdir/pkg/usr/bin/reset || return 1
+	cp text-utils/rev		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/script		$startdir/pkg/usr/bin || return 1
+	cp disk-utils/setfdprm		$startdir/pkg/usr/bin || return 1
+	cp sys-utils/setsid		$startdir/pkg/usr/bin || return 1
+#	cp text-utils/strings		$startdir/pkg/usr/bin || return 1
+#	cp misc-utils/tsort		$startdir/pkg/usr/bin || return 1
+	cp sys-utils/tunelp		$startdir/pkg/usr/bin || return 1
+	cp text-utils/ul		$startdir/pkg/usr/bin || return 1
+	cp login-utils/wall		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/whereis		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/write		$startdir/pkg/usr/bin || return 1
+	cp misc-utils/chkdupexe		$startdir/pkg/usr/bin || return 1
+	cp fdisk/cfdisk			$startdir/pkg/usr/sbin || return 1
+#	cp sys-utils/chroot		$startdir/pkg/usr/sbin || return 1
+	cp sys-utils/ctrlaltdel		$startdir/pkg/usr/sbin || return 1
+	cp sys-utils/ipc.info		$startdir/pkg/usr/info || return 1
+
+	cp disk-utils/fdprm		$startdir/pkg/etc || return 1
+
+	cd getopt
+	cp getopt-parse.bash	$startdir/pkg/usr/share/misc/getopt || return 1
+	cp getopt-parse.tcsh	$startdir/pkg/usr/share/misc/getopt || return 1
+	cp getopt-test.bash	$startdir/pkg/usr/share/misc/getopt || return 1
+	cp getopt-test.tcsh	$startdir/pkg/usr/share/misc/getopt || return 1
+	cd ..
+
+	cd po
+	for message in *.gmo ; do
+		mkdir -p $startdir/pkg/usr/share/locale/`basename $message .gmo`/LC_MESSAGES
+		cp $message $startdir/pkg/usr/share/locale/`basename $message .gmo`/LC_MESSAGES/util-linux.mo || return 1
+	done
+	cd ..
+
+	cp getopt/getopt.1 $startdir/pkg/usr/man/man1 || return 1
+	for file in			\
+		sys-utils/arch.1	\
+		text-utils/more.1	\
+		text-utils/line.1	\
+		text-utils/pg.1		\
+		misc-utils/setterm.1	\
+		text-utils/clear.1	\
+		text-utils/col.1	\
+		text-utils/colcrt.1	\
+		text-utils/colrm.1	\
+		text-utils/column.1	\
+		text-utils/hexdump.1 	\
+		misc-utils/kill.1	\
+		misc-utils/logger.1	\
+		misc-utils/look.1	\
+		login-utils/mesg.1	\
+		misc-utils/rename.1	\
+		misc-utils/reset.1	\
+		text-utils/rev.1	\
+		misc-utils/script.1	\
+		text-utils/ul.1		\
+		login-utils/wall.1	\
+		misc-utils/whereis.1	\
+		misc-utils/write.1	\
+		misc-utils/namei.1	\
+		misc-utils/ddate.1	\
+		misc-utils/chkdupexe.1	\
+		sys-utils/readprofile.1	\
+		misc-utils/mcookie.1	\
+		misc-utils/cal.1
+	do
+		cp $file $startdir/pkg/usr/man/man1/`basename $file` || return 1
+	done
+
+#	cp mount/pivot_root.2	$startdir/pkg/usr/man/man2 || return 1
+	cp mount/fstab.5	$startdir/pkg/usr/man/man5 || return 1
+	cp mount/nfs.5		$startdir/pkg/usr/man/man5 || return 1
+	cp mount/pivot_root.8	$startdir/pkg/usr/man/man8 || return 1
+
+	for file in			\
+		sys-utils/dmesg.8	\
+		mount/mount.8		\
+		mount/losetup.8		\
+		mount/umount.8		\
+		login-utils/agetty.8	\
+		hwclock/hwclock.8	\
+		sys-utils/rdev.8	\
+		sys-utils/cytune.8	\
+		sys-utils/sln.8		\
+		fdisk/fdisk.8		\
+		disk-utils/fsck.minix.8	\
+		disk-utils/blockdev.8	\
+		disk-utils/elvtune.8	\
+		disk-utils/mkfs.bfs.8	\
+		disk-utils/isosize.8	\
+		disk-utils/raw.8	\
+		disk-utils/mkfs.minix.8	\
+		disk-utils/mkswap.8	\
+		mount/swapon.8		\
+		disk-utils/mkfs.8	\
+		disk-utils/fdformat.8	\
+		sys-utils/ipcrm.8	\
+		sys-utils/ipcs.8	\
+		sys-utils/renice.8	\
+		disk-utils/setfdprm.8	\
+		sys-utils/setsid.8	\
+		sys-utils/tunelp.8	\
+		sys-utils/ctrlaltdel.8	\
+		fdisk/cfdisk.8		\
+		fdisk/sfdisk.8		\
+		sys-utils/ramsize.8	\
+		mount/swapoff.8		\
+		sys-utils/vidmode.8	\
+		sys-utils/rootflags.8
+	do
+		cp $file $startdir/pkg/usr/man/man8/`basename $file` || return 1
+	done
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		HISTORY			\
+		INSTALL			\
+		hwclock/README*		\
+		fdisk/README*		\
+		login-utils/README*	\
+		misc-utils/README*	\
+		mount/README*		\
+		text-utils/README*	\
+		text-utils/LICENSE*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver || return 1
+
+	cp -a getopt/README $startdir/pkg/usr/doc/$pkgname-$pkgver/README.getopt-1.1.3 || return 1
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/* || return 1
+
+	cd $startdir/src/updated-2.11 || return 1
+	mkdir -p $startdir/pkg/usr/doc/updated-2.11 || return 1
+	cp -a update.lsm $startdir/pkg/usr/doc/updated-2.11 || return 1
+	chmod 644 $startdir/pkg/usr/doc/updated-2.11/update.lsm || return 1
+	make || return 1
+	cp update $startdir/pkg/sbin || return 1
+	cp update.8 $startdir/pkg/usr/man/man8 || return 1
+
+	cd $startdir/pkg/sbin || return 1
+	ln -sf rdev ramsize || return 1
+	ln -sf swapon swapoff || return 1
+	ln -sf rdev vidmode || return 1
+	ln -sf /bin/mount mount || return 1
+	ln -sf /bin/umount umount || return 1
+	ln -sf rdev rootflags || return 1
+
+	cd ../usr/bin || return 1
+	ln -sf /bin/more more || return 1
+
+	cd ../../bin || return 1
+	ln -sf getopt getoptprog || return 1
+	ln -sf hostname domainname || return 1
+	ln -sf hostname ypdomainname || return 1
+	ln -sf hostname dnsdomainname || return 1
+	ln -sf hostname nisdomainname || return 1
+
+	cd ../sbin || return 1
+	ln -sf hwclock clock || return 1
+
+	chmod 0644 $startdir/pkg/usr/man/man*/* || return 1
+
+	cd $startdir/pkg || return 1
+	chown root.bin -R bin sbin usr/bin usr/sbin || return 1
+	chmod 4755        bin/mount bin/umount || return 1
+	chown root.tty    usr/bin/write usr/bin/wall || return 1
+	chmod 2755	  usr/bin/write usr/bin/wall || return 1
+	chmod 1777        var/lock || return 1
+	chmod 0644        etc/serial.conf usr/share/misc/getopt/* || return 1
+	chmod 0755        etc/rc.d/serial usr/bin/reset || return 1
+
+}

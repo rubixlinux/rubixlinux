@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=rp-pppoe
+pkgver=3.7
+pkgrel=2
+pkgdesc="rp-pppoe (Roaring Penguin PPPoE client) PPPoE (Point-to-Point Protocol over Ethernet) is a protocol used by many ADSL Internet Service Providers. Roaring Penguin has a free client for Linux systems to connect to PPPoE service providers. The client is a user-mode program and does not require any kernel modifications. It is fully compliant with RFC 2516, the official PPPoE specification."
+depends=('glibc' 'ppp')
+url="http://www.roaringpenguin.com/pppoe"
+backup=(etc/ppp/pppoe.conf		\
+	etc/ppp/firewall-standalone	\
+	etc/ppp/firewall-masq		\
+	etc/ppp/pppoe-server-options	)
+source=(http://www.roaringpenguin.com/penguin/pppoe/$pkgname-$pkgver.tar.gz	\
+	pppoe									)
+md5sums=('32c34455ccdfd9610304479e1beac3ff' \
+	 '15664aec26fa7393d7b73f8bd181db96' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: updated rc script to new format 2006.01.16
+##   rel1: upgraded to 3.7 2005.11.25
+##   rel2: fixed rc script, renamed to pppoe 2005.10.09
+##   rel1: upgraded to 3.6 2005.09.16
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver/src
+
+	./configure --prefix=/usr
+	make || return 1
+	make docdir=/usr/doc/$pkgname-$pkgver RPM_INSTALL_ROOT=$startdir/pkg install
+
+	install -m755 -D $startdir/src/pppoe $startdir/pkg/etc/rc.d/pppoe
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+
+}

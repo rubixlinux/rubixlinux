@@ -1,0 +1,33 @@
+#!/bin/bash
+
+## change the following line to the location of your openvpn configuration file
+## alternatively, you can append the config file name in the start command, e.g.:
+##   /etc/rc.d/openvpn start /etc/openvpn.conf
+CONFIG="/etc/openvpn.conf"
+
+SCRIPT=`basename $0`
+PROG=/usr/sbin/openvpn
+
+. /etc/rubixlib
+case "$1" in
+	start)
+		if [ -z "$2" ]; then
+			start_daemon $SCRIPT $PROG --config $CONFIG
+		else
+			start_daemon $SCRIPT $PROG --config $2
+		fi
+		;;
+	stop)
+		stop_daemon $SCRIPT $PROG
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	status)
+		daemon_status $SCRIPT $PROG
+		;;
+	*)
+		stat_err "usage: $0 {start (network)|stop|restart|status}"
+esac

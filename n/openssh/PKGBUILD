@@ -1,0 +1,117 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=openssh
+pkgver=4.3p2
+pkgrel=1
+pkgdesc="openssh (Secure Shell daemon and clients) ssh (Secure Shell) is a program for logging into a remote machine and for executing commands on a remote machine.  It is intended to replace rlogin and rsh, and provide secure encrypted communications between two untrusted hosts over an insecure network.  sshd (SSH Daemon) is the daemon program for ssh.  OpenSSH is based on the last free version of Tatu Ylonen's SSH, further enhanced and cleaned up by Aaron Campbell, Bob Beck, Markus Friedl, Niels Provos, Theo de Raadt, and Dug Song.  It has a homepage at http://www.openssh.com"
+url="http://www.openssh.org"
+depends=('e2fsprogs' 'glibc' 'skey' 'db' 'heimdal' 'openssl' 'zlib')
+source=(ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/$pkgname-$pkgver.tar.gz	\
+	ssh										)
+md5sums=('7e9880ac20a9b9db0d3fea30a9ff3d46' \
+	 'd41a256d5391bb57a68da0994dde3844' )
+backup=('etc/ssh/ssh_config'	\
+	'etc/ssh/sshd_config'	)
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 4.3p2 2006.02.12
+##   rel1: upgraded to 4.3p1 2006.02.01
+##   rel6: updated rc script to new format 2006.01.17
+##   rel5: fixed kerberos support 2005.11.06
+##   rel4: added kerberos support 2005.11.04
+##   rel3: added skey support 2005.10.30
+##   rel2: fixed echoing in rc script 2005.09.25
+##   rel1: upgraded to 4.2p1 2005.09.03
+##   rel1: upgraded to 4.1p1 2005.06.12
+##   rel1: upgraded to 4.0p1 2005.03.09
+##   rel3: rebuilt with new execstack flags
+##   rel1: Initial Rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/var/empty
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/etc/rc.d
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure											\
+		--prefix=/usr										\
+		--sysconfdir=/etc/ssh									\
+		--without-pam										\
+		--with-md5-passwords									\
+		--with-tcp-wrappers									\
+		--with-default-path=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin	\
+		--with-ipv4-default									\
+		--with-privsep-path=/var/empty								\
+		--with-privsep-user=sshd								\
+		--with-skey										\
+		--with-kerberos5=/usr									\
+		$CHOST
+	sed -i -e "s/lkrb5 -ldes/lkrb5/" Makefile || return 1
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	cd $startdir/pkg/usr/man/man1
+	rm slogin.1
+	ln -s ssh.1.gz slogin.1.gz
+	cd $startdir/src/$pkgname-$pkgver
+
+	cp	-a			\
+		CREDITS			\
+		ChangeLog		\
+		INSTALL			\
+		LICENCE			\
+		OVERVIEW		\
+		README			\
+		README.privsep		\
+		README.smartcard	\
+		RFC.nroff		\
+		TODO			\
+		WARNING.RNG		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd	contrib
+	cp	ssh-copy-id	$startdir/pkg/usr/bin
+	chmod	0755		$startdir/pkg/usr/bin/ssh-copy-id
+	cp	ssh-copy-id.1	$startdir/pkg/usr/man/man1
+	cd	..
+
+	chmod 4755 $startdir/pkg/usr/libexec/ssh-keysign
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+	cp $startdir/src/ssh $startdir/pkg/etc/rc.d
+
+}
+
+# This build script is derived from the Slackware openssh build script and
+# I include the following to comply with Slackware policy:
+#
+# Copyright 2000 BSDi, Inc. Concord, CA, USA
+# Copyright 2001, 2002, 2003, 2004  Slackware Linux, Inc. Concord, CA, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

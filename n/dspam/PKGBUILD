@@ -1,0 +1,67 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=dspam
+pkgver=3.6.3
+pkgrel=1
+pkgdesc="The DSPAM (as in De-Spam) Project is a scalable, open-source statistical anti-spam filter. While most commercial solutions only claim a mere 95% accuracy (1 error in 20), a majority of DSPAM users frequently see around 99.95% (1 error in 2000) and can sometimes reach peaks as high as 99.991% (2 errors in 22,786, as with one particular user)."
+depends=('glibc' 'mysql' 'openssl' 'openldap' 'zlib' 'cyrus-sasl')
+url="http://dspam.nuclearelephant.com"
+source=(http://dspam.nuclearelephant.com/sources/$pkgname-$pkgver.tar.gz)
+md5sums=('db1aedb9677e6bf5c7a47a72d4f130e5')
+backup=('etc/dspam.conf')
+
+## Todo:
+##   None
+
+## Notes:
+##   Make sure you add dspam to the trusted users list (I only have dspam and daemon trusted)
+
+## Changelog:
+##   rel1: upgraded to 3.6.3
+##   rel2: added ldap and clamav support, fixed history in webui 2005.10.19
+##   rel1: upgraded to 3.6.0 2005.10.18
+##   rel1: upgraded to 3.4.9 2005.09.04
+##   rel1: Initial Rubix Release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure						\
+		--prefix=/usr					\
+		--sysconfdir=/etc				\
+		--with-dspam-home=/var/dspam			\
+		--with-dspam-home-group=dspam			\
+		--with-dspam-group=dspam			\
+		--with-storage-driver=mysql_drv			\
+		--with-mysql-includes=/usr/include/mysql	\
+		--enable-virtual-users				\
+		--enable-preferences-extension			\
+		--enable-ldap					\
+		--enable-clamav					\
+		$CHOST
+	make || return 1
+        make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		CHANGELOG		\
+		LICENSE			\
+		README			\
+		RELEASE.NOTES		\
+		UPGRADING		\
+		doc			\
+		txt			\
+		src/tools.mysql_drv	\
+		webui			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	find $startdir/pkg/usr/doc -type f -exec chmod 644 {} \;
+	find $startdir/pkg/usr/doc -type f -name "Makefile*" -exec rm {} \;
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	chown root.dspam	$startdir/pkg/usr/bin/dspam
+	chmod 2710		$startdir/pkg/usr/bin/dspam
+
+}

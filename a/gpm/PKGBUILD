@@ -1,0 +1,126 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gpm
+pkgver=1.20.1
+pkgrel=3
+pkgdesc="gpm (general purpose mouse server) The general purpose mouse server, or gpm, allows you to use the mouse to cut and paste text from the screen.  It also acts as a mouse server for applications running on the Linux console, such as the Midnight Commander file manager. NOTE:  This program may cause problems when you start X on systems that do not use a serial mouse.  If you get an 'unable to open mouse device' error from X, disable /etc/rc.d/rc.gpm."
+depends=('ncurses')
+source=(ftp://arcana.linux.it/pub/$pkgname/$pkgname-$pkgver.tar.gz	\
+	$pkgname							\
+	$pkgname-$pkgver-segfault.diff					\
+	$pkgname-$pkgver-silent.diff					\
+	$pkgname-$pkgver-10.diff					\
+	$pkgname-$pkgver.time.diff					)
+md5sums=('632a8fa8a6613027e407ee3e7a54cf13' \
+	 '57bb842ee0adf8fb54f7602cb3bfdfd5' \
+	 '8c88f92990ba7613014fcd1db14ca7ac' \
+	 'bf6cbefe20c6f15b587f19ebc1c8a37a' \
+	 '4819d3ffc29f51dc98da859a7ec39103' \
+	 'b54fd22822cf53cc7457a4fc2c0549f4' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel3: updated rc script to new format 2006.01.15
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+
+	#Link with the math library for ceil()
+	export LDFLAGS="-lm"
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	mkdir -p $startdir/pkg/lib
+	mkdir -p $startdir/pkg/usr/bin
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/sbin
+	mkdir -p $startdir/pkg/usr/info
+	mkdir -p $startdir/pkg/usr/include
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	mkdir -p $startdir/pkg/usr/share/emacs/site-lisp
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver-segfault.diff	|| return 1
+	patch -p1 < $startdir/src/$pkgname-$pkgver-silent.diff		|| return 1
+	patch -p1 < $startdir/src/gpm-1.20.1-10.diff			|| return 1
+	patch -p1 < $startdir/src/gpm-1.20.1.time.diff			|| return 1
+
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 700 -exec chmod 755 {} \;
+
+	./configure			\
+		--prefix=/usr		\
+		--with-curses		\
+		--sysconfdir=/etc	\
+		$CHOST
+	make || return 1
+
+	cd src
+
+	cp prog/disable-paste	$startdir/pkg/usr/bin
+	cp gpm			$startdir/pkg/usr/sbin
+	cp prog/mev		$startdir/pkg/usr/bin
+	cp prog/gpm-root	$startdir/pkg/usr/bin
+	cp headers/gpm.h	$startdir/pkg/usr/include
+	cp lib/libgpm.a		$startdir/pkg/usr/lib
+	cp lib/libgpm.so.1.19.0	$startdir/pkg/lib
+
+	cd ../conf
+
+	cp gpm-root.conf	$startdir/pkg/etc
+	cp gpm-syn.conf		$startdir/pkg/etc
+	cp gpm-twiddler.conf	$startdir/pkg/etc
+
+	cd ../contrib/emacs
+
+	cp t-mouse.el $startdir/pkg/usr/share/emacs/site-lisp
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	cp	-a		\
+		BUGS		\
+		COPYING		\
+		Changelog	\
+		Changes		\
+		MANIFEST	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/src/$pkgname-$pkgver/doc
+
+	for page in *.1 *.7 *.8 ; do
+		CHAPTER=`echo $page | cut -f 2 -d .`
+		mkdir -p $startdir/pkg/usr/man/man$CHAPTER
+		cp $page $startdir/pkg/usr/man/man$CHAPTER
+	done
+
+	cp gpm.info $startdir/pkg/usr/info
+
+	cp	-a		\
+		Announce	\
+		FAQ		\
+		README*		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.root $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/pkg/lib
+	ln -s libgpm.so.1.19.0 libgpm.so.1
+
+	cd $startdir/pkg/usr/lib
+	ln -s ../../lib/libgpm.so.1 libgpm.so
+
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+	chown -R root.bin $startdir/pkg/usr/bin $startdir/pkg/usr/sbin
+
+}

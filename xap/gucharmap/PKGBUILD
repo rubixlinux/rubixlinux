@@ -1,0 +1,46 @@
+#Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=gucharmap
+pkgver=1.4.2
+pkgrel=1
+pkgdesc="gucharmap (character map utility) gucharmap is a Unicode character map and font viewer."
+url="http://www.gnome.org"
+depends=('glibc' 'freetype2' 'gtk+2' 'cairo' 'pango' 'atk' 'x11' 'fontconfig' 'expat' 'glib2' 'zlib' 'popt' 'libpng')
+source=(ftp://ftp.gnome.org/pub/gnome/sources/$pkgname/1.4/$pkgname-$pkgver.tar.bz2	\
+	$pkgname.noscrollkeeper.diff.gz							\
+	$pkgname.desktop.diff.gz							)
+md5sums=('73847836c1adeadf166fd4fe909687c9' \
+	 'c98d5788d1d5780d95979c2cb2afcf35' \
+	 '96f8f5dada57a0651e558316e1ff5f2e' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.noscrollkeeper.diff	|| return 1
+	patch -p1 < $startdir/src/$pkgname.desktop.diff		|| return 1
+
+	./configure				\
+		--prefix=/usr			\
+		--sysconfdir=/etc		\
+		--localstatedir=/var/lib	\
+		--enable-static=no		\
+		--disable-gnome			\
+		$CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		COPYING		\
+		COPYING.LIB	\
+		NEWS		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}
+

@@ -1,0 +1,194 @@
+# Maintainer: Jason Chu <jason@archlinux.org>
+
+EBOARD=0.9.5
+XBOARD=4.2.7
+SJENG=11.2
+
+pkgname=gnuchess
+pkgver=5.07
+pkgrel=1
+pkgdesc="gnuchess (GPL licensed chess engines and graphical frontends) This is a package of programs for playing chess.  It includes the gnuchess and Sjeng chess engines, and the eboard and XBoard graphical interfaces to these engines."
+depends=('gdbm' 'imlib' 'readline')
+url="http://www.gnu.org/software/chess/chess.html"
+source=(ftp://ftp.gnu.org/pub/gnu/chess/$pkgname-$pkgver.tar.gz			\
+	http://dl.sourceforge.net/sourceforge/eboard/eboard-$EBOARD.tar.bz2	\
+	http://ftp.gnu.org/gnu/xboard/xboard-$XBOARD.tar.gz			\
+	http://sjeng.org/ftp/Sjeng-Free-$SJENG.tar.gz				\
+	xboard.desktop.gz							\
+	xboard.infodir.diff.gz							\
+	eboard.desktop.gz							\
+	chess.png.gz								)
+md5sums=('259da00aa559e5624c65279484fccaf7' \
+	 '4adb12cdea3d4106bf05dead61969e3f' \
+	 'b70ad8ff7569975302c5fb402d5eea32' \
+	 '6561e740b7af703c16701304697d2870' \
+	 '6456750c02d60ee480b6769ed3c9ddc0' \
+	 '0dc1a3f0391e2a808e08805c66efc4ce' \
+	 'd97b17cf9abba992867ce11dea3e31ad' \
+	 '5ba71e77172d04000293be2ffdd1bf2b' )
+
+build() {
+
+	### gnuchess
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+ 		doc/README	\
+		AUTHORS		\
+		COPYING		\
+		INSTALL		\
+		NEWS		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	### Sjeng
+
+	cd $startdir/src/Sjeng-Free-$SJENG
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/Sjeng-Free-$SJENG
+	cp	-a	\
+		AUTHORS	\
+		BUGS	\
+		COPYING	\
+		NEWS	\
+		README	\
+		THANKS	\
+		TODO	\
+	$startdir/pkg/usr/doc/Sjeng-Free-$SJENG
+
+	### eboard
+
+	cd $startdir/src/eboard-$EBOARD
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr
+	make || return 1
+
+	install -d				$startdir/pkg/usr/bin
+	install -m 0755 eboard			$startdir/pkg/usr/bin/eboard
+	install -m 0755 eboard-config		$startdir/pkg/usr/bin/eboard-config
+	install -m 0755 eboard-addtheme		$startdir/pkg/usr/bin/eboard-addtheme
+
+	install -d				$startdir/pkg/usr/man/man1
+	install -d				$startdir/pkg/usr/man/man6
+	install -m 0644 eboard.6		$startdir/pkg/usr/man/man6
+	install -m 0644 eboard-addtheme.1	$startdir/pkg/usr/man/man1
+	install -m 0644 eboard-config.1		$startdir/pkg/usr/man/man1
+
+	install -d $startdir/pkg/usr/share/eboard
+	install -m 0644 classic.png		$startdir/pkg/usr/share/eboard/classic.png
+	install -m 0644 ghouls.png		$startdir/pkg/usr/share/eboard/ghouls.png
+	install -m 0644 plastic.png		$startdir/pkg/usr/share/eboard/plastic.png
+	install -m 0644 eboard_themes.conf	$startdir/pkg/usr/share/eboard/eboard_themes.conf
+	install -m 0644 NAG.en.txt		$startdir/pkg/usr/share/eboard/NAG.en.txt
+
+	cd multilang
+	install -d				$startdir/pkg/usr/share/eboard
+	install -m 0644 eboard.cs.dict		$startdir/pkg/usr/share/eboard
+	install -m 0644 eboard.de.dict		$startdir/pkg/usr/share/eboard
+	install -m 0644 eboard.es.dict		$startdir/pkg/usr/share/eboard
+	install -m 0644 eboard.it.dict		$startdir/pkg/usr/share/eboard
+	install -m 0644 eboard.pt_BR.dict	$startdir/pkg/usr/share/eboard
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/eboard-$EBOARD
+	cp	-a	\
+		AUTHORS	\
+		COPYING	\
+		README	\
+		TODO	\
+	$startdir/pkg/usr/doc/eboard-$EBOARD
+
+	### XBoard
+
+	cd $startdir/src/xboard-$XBOARD
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	patch -p1 < $startdir/src/xboard.infodir.diff
+
+	./configure --prefix=/usr --infodir=/usr/info --enable-zippy $CHOST
+	make || return 1
+
+	install -c xboard		$startdir/pkg/usr/bin/xboard
+	install -c zic2xpm		$startdir/pkg/usr/bin/zic2xpm
+	install -c cmail		$startdir/pkg/usr/bin/cmail
+	install -c pxboard		$startdir/pkg/usr/bin/pxboard
+	install -c -m 644 xboard.man	$startdir/pkg/usr/man/man6/xboard.6
+	install -c -m 644 zic2xpm.man	$startdir/pkg/usr/man/man6/zic2xpm.6
+
+	install -d			$startdir/pkg/usr/info
+	install -c -m 644 xboard.info	$startdir/pkg/usr/info/xboard.info
+
+	mkdir -p $startdir/pkg/usr/doc/xboard-$XBOARD
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYRIGHT	\
+		FAQ		\
+		FAQ.html	\
+		NEWS		\
+		READ_ME		\
+	$startdir/pkg/usr/doc/xboard-$XBOARD
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p			$startdir/pkg/usr/share/pixmaps
+	cp $startdir/src/chess.png	$startdir/pkg/usr/share/pixmaps
+
+	mkdir -p			$startdir/pkg/usr/share/applications
+	cp $startdir/src/eboard.desktop	$startdir/pkg/usr/share/applications/eboard.desktop
+	cp $startdir/src/xboard.desktop	$startdir/pkg/usr/share/applications/xboard.desktop
+
+}

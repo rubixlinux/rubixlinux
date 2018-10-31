@@ -1,0 +1,11 @@
+--- ./src/sql/drivers/mysql/qsql_mysql.h.orig	2005-02-03 15:18:39.000000000 -0700
++++ ./src/sql/drivers/mysql/qsql_mysql.h	2005-02-03 15:19:00.000000000 -0700
+@@ -46,7 +46,7 @@
+ #include <qt_windows.h>
+ #endif
+ 
+-#include <mysql.h>
++#include <mysql/mysql.h>
+ 
+ #ifdef QT_PLUGIN
+ #define Q_EXPORT_SQLDRIVER_MYSQL

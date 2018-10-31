@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-soap-lite
+pkgver=0.60a
+pkgrel=2
+pkgdesc="SOAP::Lite - Client and server side SOAP implementation"
+url="http://search.cpan.org/~byrne/SOAP-Lite-$pkgver/lib/SOAP/Lite.pm"
+depends=('perl-crypt-ssleay' 'perl-mime-lite' 'perl-mime-tools' 'perl-lwp' 'perl-xml-parser' 'perl-compress-zlib')
+source=(http://search.cpan.org/CPAN/authors/id/B/BY/BYRNE/SOAP/SOAP-Lite-$pkgver.tar.gz)
+md5sums=('aed9f8e9c4cf180d15c6e15aedc484d7')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: rebuilt for perl 5.8.7 2005.06.13
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/SOAP-Lite-0.60
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/SOAP-Lite-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		README		\
+	$startdir/pkg/usr/doc/perl-$PERL/SOAP-Lite-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/SOAP-Lite-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

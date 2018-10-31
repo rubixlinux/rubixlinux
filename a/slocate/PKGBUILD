@@ -1,0 +1,72 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=slocate
+pkgver=2.7
+pkgrel=1
+pkgdesc="slocate (Secure Locate) Slocate is an enhanced version of locate, a command to help you locate files on the system.  Like the original version of locate, Slocate maintains a database of files on the system, updating it nightly. Unlike the original, Slocate indexes every file on the machine rather than only the ones that can be seen by everyone.  The "secure" part of slocate is that it will only return matches if the user is allowed to see the files."
+url="http://www.geekreview.org/slocate"
+depends=('glibc')
+source=(ftp://ftp.geekreview.org/$pkgname/src/$pkgname-$pkgver.tar.gz	\
+	updatedb.conf.gz						\
+	slocate.gz							)
+backup=('etc/updatedb.conf')
+md5sums=('4872830642ea2ed5f9aff932720583c9' \
+	 'b5e38f302ca86c8b484895de2178bf66' \
+	 '7f0791defbae287dbb8d6997e3566809' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 664 -exec chmod 644 {} \;
+	find . -perm 600 -exec chmod 644 {} \;
+	find . -perm 444 -exec chmod 644 {} \;
+	find . -perm 400 -exec chmod 644 {} \;
+	find . -perm 440 -exec chmod 644 {} \;
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 775 -exec chmod 755 {} \;
+	find . -perm 511 -exec chmod 755 {} \;
+	find . -perm 711 -exec chmod 755 {} \;
+	find . -perm 555 -exec chmod 755 {} \;
+
+	./configure --prefix=/usr
+	make -i clean
+	make -i
+
+	mkdir -p	$startdir/pkg/usr/bin
+	cp slocate	$startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/man/man1
+	cp doc/slocate.1.linux.gz	$startdir/pkg/usr/man/man1/slocate.1.gz
+	cp doc/updatedb.1.gz		$startdir/pkg/usr/man/man1
+	chmod 0644 $startdir/pkg/usr/man/man1/*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		ChangeLog	\
+		INSTALL		\
+		LICENSE		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	cd $startdir/pkg/usr/bin
+	ln -sf slocate locate
+	ln -sf slocate updatedb
+
+	cd $startdir/pkg/usr/man/man1
+	ln -sf slocate.1.gz locate.1.gz
+
+	mkdir -p $startdir/pkg/etc/cron.daily
+	cp $startdir/src/updatedb.conf	$startdir/pkg/etc
+	cp $startdir/src/slocate	$startdir/pkg/etc/cron.daily
+
+	mkdir -p $startdir/pkg/var/lib/slocate
+	chown -R root.bin $startdir/pkg/usr/bin
+	chown root.slocate $startdir/pkg/var/lib/slocate
+	chown root.slocate $startdir/pkg/usr/bin/slocate
+	chmod 2755 $startdir/pkg/usr/bin/slocate
+	chmod 0750 $startdir/pkg/var/lib/slocate
+
+}

@@ -1,0 +1,46 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=inkscape
+pkgver=0.43
+pkgrel=1
+pkgdesc="Inkscape is an Open Source vector graphics editor, with capabilities similar to Illustrator, Freehand, CorelDraw, or Xara X using the W3C standard Scalable Vector Graphics  (SVG) file format."
+url="http://www.inkscape.org"
+depends=('glibc' 'aspell' 'gtk+2' 'atk' 'gtkmm' 'glibmm' 'fontconfig' 'x11' 'libsigc++' 'expat' 'zlib'		\
+	 'freetype2' 'libxslt' 'pango' 'cairo' 'libxml2' 'boehm-gc' 'glib2' 'gtkspell' 'gcc' 'libpng' 'popt'	)
+source=(http://dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.bz2)
+md5sums=('97c606182f5e177eef70c1e8a55efc1f')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.43 2005.11.25
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure		\
+		--prefix=/usr	\
+		--disable-mmx
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		ChangeLog	\
+		INSTALL		\
+		NEWS		\
+		README		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+}

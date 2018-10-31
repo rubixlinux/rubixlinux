@@ -1,0 +1,80 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=samhain
+pkgver=2.1.2
+pkgrel=1
+pkgdesc="samhain is a multiplatform, open source solution for centralized  file integrity checking / host-based intrusion detection on POSIX systems (Unix, Linux, Cygwin/Windows). It has been designed to monitor multiple hosts with potentially different operating systems from a central location, although it can also be used as standalone application on a single host."
+backup=('etc/samhainrc')
+url="http://la-samhna.de/samhain"
+source=(http://la-samhna.de/archive/${pkgname}_signed-$pkgver.tar.gz	\
+	${pkgname}rc							\
+	$pkgname							)
+md5sums=('9e009035d7a04a6203a6b0ce404c385c' \
+	 'e05f13233aa8698a306ca5ef03fa253b' \
+	 '24132ae5c0514a52ee276a6629552dda' )
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: upgraded to 2.1.2, rewrote rc script to new format 2006.01.13
+##   rel1: upgraded to 2.1.1 2005.12.21
+##   rel2: fixed a small bug in the rc script 2005.11.02
+##   rel1: upgraded to 2.1.0 2005.11.01
+##   rel1: upgraded to 2.0.10a 2005.10.01
+##   rel6: added "check" option to rc script 2005.06.18
+##   rel5: added sleep to update script to wait for running samhain to die 2005.06.14
+##   rel4: added update option to samhain rc script 2005.06.14
+##   rel3: forgot to update the rc script 2005.06.14
+##   rel2: fixed doc location and gzipped up the doc tar file 2005.06.14
+##   rel1: Upgraded to 2.0.7 2005.06.14
+##   rel1: Initial Rubix release
+
+build() {
+
+	export MAKEFLAGS="-j2"
+
+	cd $startdir/src
+	gpg --verify $pkgname-$pkgver.tar.gz.asc
+	sleep 5
+	tar zxf $pkgname-$pkgver.tar.gz
+	chown -R root.root .
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--localstatedir=/var	\
+		--mandir=/usr/man	\
+		--sysconfdir=/etc	\
+		--enable-db-reload	\
+		--enable-static		\
+		--enable-login-watch	\
+		--enable-mounts-check	\
+		--enable-userfiles	\
+		--enable-suidcheck
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		COPYING	\
+		LICENSE	\
+		README	\
+		docs	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	gzip -9 $startdir/pkg/usr/doc/$pkgname-$pkgver/docs/*.tar
+	gzip -9 $startdir/pkg/usr/doc/$pkgname-$pkgver/docs/*.ps
+
+	chown -R root.bin $startdir/pkg/usr/sbin
+	rmdir $startdir/pkg/var/log
+	rmdir $startdir/pkg/var/run
+
+	cp $startdir/src/${pkgname}rc $startdir/pkg/etc
+
+	mkdir -p $startdir/pkg/etc/rc.d
+	cp $startdir/src/$pkgname $startdir/pkg/etc/rc.d
+
+}

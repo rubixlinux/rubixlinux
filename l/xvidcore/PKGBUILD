@@ -1,0 +1,34 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=xvidcore
+pkgver=1.0.3
+pkgrel=1
+pkgdesc="XviD is an ISO MPEG-4 compliant video codec, so a software to compress/decompress digital video. It's a open source research project, which is developed and maintained by a handful of interested people from all over the world."
+url="http://www.xvid.org"
+depends=('glibc')
+source=(http://downloads.xvid.org/downloads/$pkgname-$pkgver.tar.bz2)
+md5sums=('1487c4dd4449aedeb695807467e69054')
+
+build() {
+
+	mkdir -p $startdir/pkg/usr/lib
+	mkdir -p $startdir/pkg/usr/include
+
+	cd $startdir/src/$pkgname-$pkgver/build/generic
+
+	./configure --prefix=/usr
+	make || return 1
+	make prefix=$startdir/pkg/usr install
+
+	cd ../..
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		AUTHORS		\
+		ChangeLog	\
+		CodingStyle	\
+		LICENSE		\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+}
+

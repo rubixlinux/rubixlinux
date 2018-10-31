@@ -1,0 +1,53 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=libidn
+pkgver=0.5.17
+pkgrel=1
+pkgdesc="libidn (GNU Internationalized Domain Name library) GNU Libidn is an implementation of the Stringprep, Punycode and IDNA specifications defined by the IETF Internationalized Domain Names (IDN) working group, used for internationalized domain names."
+url="http://www.gnu.org/software/libidn"
+depends=('glibc')
+source=(ftp://alpha.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('cd890b571f2a27222052eac9dccb7c80')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel1: upgraded to 0.5.17 2005.06.13
+##   rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	find . -perm 777 -exec chmod 755 {} \;
+	find . -perm 664 -exec chmod 644 {} \;
+
+	./configure --prefix=/usr $CHOST
+	make || return 1
+	make install DESTDIR=$startdir/pkg
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		ABOUT-NLS	\
+		AUTHORS		\
+		COPYING		\
+		COPYING.LIB	\
+		FAQ		\
+		INSTALL		\
+		NEWS		\
+		README		\
+		README-alpha	\
+		THANKS		\
+		TODO		\
+		contrib		\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	rm $startdir/pkg/usr/info/dir
+
+}

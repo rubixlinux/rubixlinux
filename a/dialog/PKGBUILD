@@ -1,0 +1,59 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+SUBVER=20050306
+
+pkgname=dialog
+pkgver=1.0
+pkgrel=2
+pkgdesc="A tool to display dialog boxes from shell scripts"
+depends=('glibc' 'gpm' 'ncurses')
+url="http://hightek.org/dialog"
+source=(ftp://ftp.us.debian.org/debian/pool/main/d/$pkgname/${pkgname}_$pkgver-$SUBVER.orig.tar.gz)
+md5sums=('8ce5945be0660bd3152bd9eb0827f945')
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel2: upgarded to 20050906
+##   rel1: initial rubix release
+
+build() {
+
+	mkdir -p $startdir/pkg/bin
+	mkdir -p $startdir/pkg/usr/man/man1
+
+	cd $startdir/src/$pkgname-$pkgver-$SUBVER
+
+	find . -perm 444 -exec chmod 644 {} \;
+
+	  ./configure		\
+		--prefix=/usr	\
+		--enable-nls
+	make || return 1
+	cp dialog	$startdir/pkg/bin
+	cp dialog.1	$startdir/pkg/usr/man/man1
+
+	cd po
+	make || return 1
+	for file in *.gmo ; do
+		mkdir -p $startdir/pkg/usr/share/locale/`basename $file .gmo`/LC_MESSAGES
+		cp $file $startdir/pkg/usr/share/locale/`basename $file .gmo`/LC_MESSAGES/dialog.mo
+	done
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a		\
+		CHANGES		\
+		COPYING		\
+		README		\
+		VERSION		\
+		dialog.lsm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	chown -R root.bin $startdir/pkg/bin
+
+}

@@ -1,0 +1,49 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-bit-vector
+pkgver=6.4
+pkgrel=2
+pkgdesc="Bit::Vector - Efficient bit vector, set of integers and \"big int\" math library"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/S/ST/STBEY/Bit-Vector-$pkgver.tar.gz)
+md5sums=('681433ff4f0b4da95dc5c560b7f5cc31')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Fixed pkgdesc quotes 2005.06.15
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/Bit-Vector-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/Bit-Vector-$pkgver
+	cp	-a		\
+		*.txt		\
+		MANIFEST	\
+	$startdir/pkg/usr/doc/perl-$PERL/Bit-Vector-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/Bit-Vector-$pkgver/*
+
+	find $startdir/pkg -perm 444 -exec chmod 644 {} \;
+	find $startdir/pkg -perm 555 -exec chmod 755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+	find $startdir/pkg -name .packlist -exec rm {} \;
+
+}

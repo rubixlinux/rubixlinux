@@ -1,0 +1,32 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=xsane
+pkgver=0.97
+pkgrel=1
+pkgdesc="xsane (Graphical frontend to SANE, Scanner Access Now Easy) xsane provides a graphical user-interface to control an image acquisition device such as a flatbed scanner.  It allows previewing and scanning individual images and can be invoked either directly from the command-line or through the GIMP image manipulation program. xsane accesses image acquisition devices through the SANE (Scanner Access Now Easy) interface."
+url="http://www.xsane.org"
+source=(ftp://ftp.sane-project.org/pub/sane/$pkgname/$pkgname-$pkgver.tar.gz)
+md5sums=('3d1f889d88c3462594febd53be58c561')
+depends=('glibc' 'libtiff' 'gtk+2' 'atk' 'libieee1284' 'fontconfig' 'x11'	\
+	 'expat' 'libusb' 'zlib' 'sane' 'freetype2' 'libjpeg' 'gimp' 'pango'	\
+	 'cairo' 'glib2' 'libpng'						)
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure --prefix=/usr
+	make || return 1
+	make install prefix=$startdir/pkg/usr
+
+	rmdir $startdir/pkg/usr/sbin
+
+	chown -R root.bin $startdir/pkg/usr/bin
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a	\
+		xsane.*	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	rm -f $startdir/pkg/usr/doc/$pkgname-$pkgver/xsane.spec*
+
+}

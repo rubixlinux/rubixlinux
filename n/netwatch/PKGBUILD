@@ -1,0 +1,48 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=netwatch
+pkgver=1.0a
+pkgrel=1
+pkgdesc="netwatch allows a user (superuser) to monitor activity on the network. The monitor includes statistics on transmitted and received packets, bytes, protocol, and more."
+url="http://www.slctech.org/~mackay/netwatch.html"
+depends=('glibc' 'gpm' 'ncurses')
+source=(http://www.slctech.org/~mackay/$pkgname-$pkgver.src.tgz	\
+	$pkgname.phonemyself.diff.gz				\
+	$pkgname.time.diff.gz					)
+md5sums=('0d9bbfe6930e058ea6c5eb9bacffdb77' \
+	 '304e3599c24448725e389b4df68654c7' \
+	 'd7e60bfe4dc387a9b8f4699ab4e8ef30' )
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname.time.diff		|| return 1
+	patch -p1 < $startdir/src/$pkgname.phonemyself.diff	|| return 1
+
+	./configure --prefix=/usr
+	make || return 1
+
+	mkdir -p		$startdir/pkg/usr/bin
+	cp netresolv		$startdir/pkg/usr/bin
+	cp netwatch		$startdir/pkg/usr/bin
+	chmod 755		$startdir/pkg/usr/bin/*
+	chown -R root.bin	$startdir/pkg/usr/bin
+
+	mkdir -p	$startdir/pkg/usr/man/man1
+	cp netwatch.1	$startdir/pkg/usr/man/man1
+	chmod 644	$startdir/pkg/usr/man/man1/*
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		BUGS			\
+		CHANGES			\
+		COPYING			\
+		README			\
+		README.performance	\
+		TODO			\
+		netwatch-1.0a.lsm	\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+}

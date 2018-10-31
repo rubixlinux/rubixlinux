@@ -1,0 +1,43 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+pkgname=ash
+pkgver=0.4.0
+pkgrel=1
+pkgdesc="ash (Kenneth Almquist's ash shell) A lightweight (92K) Bourne compatible shell.  Great for machines with low memory, but does not provide all the extras of shells like bash, tcsh, and zsh.  Runs most shell scripts compatible with the Bourne shell.  Note that under Linux, most scripts seem to use at least some bash-specific syntax.  The Slackware setup scripts are a notable exception, since ash is the shell used on the install disks.  NetBSD uses ash as its /bin/sh."
+depends=('glibc')
+install=$pkgname.install
+source=($pkgname-$pkgver.tar.gz		\
+	$pkgname-$pkgver.diff.gz	)
+md5sums=('1c59f5b62a081cb0cb3b053c01d79529' \
+	 'e6acabb3957e569e579b6c01f8a8f1d4' )
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel1: Initial Rubix release 2005.03.04
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	patch -p1 < $startdir/src/$pkgname-$pkgver.diff
+
+	make
+
+	mkdir -p		$startdir/pkg/bin
+	cp sh			$startdir/pkg/bin/ash
+	chmod 755		$startdir/pkg/bin/ash
+	chown -R root.bin	$startdir/pkg/bin
+
+	mkdir -p		$startdir/pkg/usr/man/man1
+	cp sh.1			$startdir/pkg/usr/man/man1/ash.1
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 TOUR
+	cp -a TOUR $startdir/pkg/usr/doc/$pkgname-$pkgver
+
+}

@@ -1,0 +1,52 @@
+# Maintainer: Joshua Rubin <joshua@rubix-os.org>
+
+PERL=5.8.7
+
+pkgname=perl-html-tree
+pkgver=3.18
+pkgrel=2
+pkgdesc="HTML::Tree contains a suite of modules for representing, creating, and extracting information from HTML syntax trees; there is also relevent documentation."
+url="http://search.cpan.org/~sburke/HTML-Tree-$pkgver"
+depends=('perl')
+source=(http://search.cpan.org/CPAN/authors/id/S/SB/SBURKE/HTML-Tree-$pkgver.tar.gz)
+md5sums=('6a9e4e565648c9772e7d8ec6d4392497')
+
+#Todo:
+#None
+
+#Notes:
+#None
+
+#Changelog:
+#rel2: Rebuilt for perl 5.8.7
+#rel1: Initial Rubix release
+
+build() {
+
+	cd $startdir/src/HTML-Tree-$pkgver
+
+	perl Makefile.PL || return 1
+	make || return 1
+	make test || return 1
+	make install DESTDIR=$startdir/pkg
+
+	mkdir -p $startdir/pkg/usr/doc/perl-$PERL/HTML-Tree-$pkgver
+	cp	-a		\
+		Changes		\
+		MANIFEST	\
+		MANIFEST.SKIP	\
+		README		\
+		TODO		\
+	$startdir/pkg/usr/doc/perl-$PERL/HTML-Tree-$pkgver
+	chmod 0644 $startdir/pkg/usr/doc/perl-$PERL/HTML-Tree-$pkgver/*
+
+	find $startdir/pkg -perm 0444 -exec chmod 0644 {} \;
+	find $startdir/pkg -perm 0555 -exec chmod 0755 {} \;
+
+	rm -r $startdir/pkg/usr/lib/perl5/$PERL
+	rm -r $startdir/pkg/usr/lib/perl5/site_perl/$PERL/$CHOST-thread-multi
+
+	mv $startdir/pkg/usr/share/man $startdir/pkg/usr
+	rmdir $startdir/pkg/usr/share
+
+}

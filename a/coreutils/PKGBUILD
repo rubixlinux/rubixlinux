@@ -1,0 +1,111 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=coreutils
+pkgver=5.93
+pkgrel=1
+pkgdesc="These are the GNU core utilities, the basic command line programs such as 'mkdir', 'ls', and 'rm' that are needed for the system to run.  This package is the union of the GNU fileutils, sh-utils, and textutils packages. Most of these programs have significant advantages over their Unix counterparts, such as greater speed, additional options, and fewer arbitrary limits."
+depends=('glibc')
+url="http://www.gnu.org/software/coreutils"
+backup=('etc/DIR_COLORS')
+source=(ftp://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.bz2	\
+	DIR_COLORS.gz						\
+	dircolors.1.gz						\
+	dircolors.c.gz						\
+	dircolors.h.gz						)
+md5sums=('955d8abfd3dd8af2ca3af51480f1f9af' \
+	 '208eae476aa756774ee8587c0a2525b6' \
+	 'c39e2a8680b6fa11e526f9535b8c5f77' \
+	 'c1cffdbd04dc79fc64bcd1831ad4cc38' \
+	 '54b3386657a8a7e926e7969c304f544d' )
+
+## Todo:
+##   None
+
+## Notes:
+##   This version of coreutils uses the slackware custom dircolors
+##   The files DIR_COLORS, dircolors.1, dircolors.c, and dircolors.h are all part of the slackware dircolor system
+
+## Changelog:
+##   rel1: upgraded to 5.93 2005.11.09
+##   rel2: Reverted to older POSIX spec so head -#, tail -# still work
+##   rel1: Initial rubix release
+
+build() {
+
+	export DEFAULT_POSIX2_VERSION=199209
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	./configure			\
+		--prefix=/usr		\
+		--sysconfdir=/etc	\
+		--datarootdir=/usr	\
+		$CHOST
+	make || return 1
+	make DESTDIR=$startdir/pkg install
+
+	mkdir -p $startdir/pkg/usr/share
+	mv $startdir/pkg/usr/locale $startdir/pkg/usr/share
+
+	# The GNU version still hasn't caught up with the features of the Slackware dircolors from long ago,
+	# so we will replace it with the version Slackware has long used:
+	cd src
+	rm dircolors.c
+	rm dircolors.h
+	cp $startdir/src/dircolors.c .
+	cp $startdir/src/dircolors.h .
+	make || return 1
+	cp dircolors $startdir/pkg/usr/bin/dircolors
+	cd ..
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver $startdir/pkg/usr/sbin
+	cp	-a			\
+		ABOUT-NLS		\
+		AUTHORS			\
+		COPYING			\
+		NEWS			\
+		README			\
+		THANKS			\
+		THANKS-to-translators	\
+		TODO			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+
+	cd $startdir/pkg
+	cp $startdir/src/dircolors.1 usr/man/man1/dircolors.1
+
+	mkdir -p $startdir/pkg/usr/sbin
+
+	# Remove things that are provided by other rubix packages
+	for dupe in hostname kill su uptime ; do
+		rm usr/bin/${dupe} usr/man/man1/${dupe}.1
+	done
+
+	mkdir -p bin
+	for move in									\
+		cat	chgrp		chmod	chown	cp	cut	date	dd	\
+		df	dircolors	du	echo	false	head	ln	ls	\
+		mkdir	mkfifo		mknod	mv	pwd	rm	rmdir	shred	\
+		sleep	stty		sync	touch	true	uname
+	do
+		mv usr/bin/${move} bin
+		ln -s ../../bin/${move} usr/bin/${move}
+	done
+
+	# Add a chroot link in case any scripts use the historic location:
+	ln -s ../bin/chroot usr/sbin/chroot
+
+	rm usr/info/dir
+
+	mkdir -p etc
+	cp $startdir/src/DIR_COLORS $startdir/pkg/etc/DIR_COLORS
+
+	# Add ginstall links:
+	cd $startdir/pkg/usr/bin
+	ln -s install ginstall
+	cd $startdir/pkg/usr/man/man1
+	ln -s install.1.gz ginstall.1.gz
+
+	cd $startdir/pkg
+	chown -R root.bin bin usr/bin usr/sbin
+
+}

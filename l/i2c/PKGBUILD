@@ -1,0 +1,57 @@
+# Maintainer: Joshua Rubin <joshua@rubixlinux.org>
+
+pkgname=i2c
+pkgver=2.9.2
+pkgrel=4
+pkgdesc="i2c is an acronym for Inter Integrated Circuit bus. This package contains updated kernel modules for the 2.4 kernel that allow for things like hardware monitoring with lm_sensors"
+source=(http://www2.lm-sensors.nu/~lm78/archive/$pkgname-$pkgver.tar.gz)
+url="http://www2.lm-sensors.nu/~lm78"
+md5sums=('5569049be9d17f697e2838ab5c449a41')
+install=$pkgname.install
+
+vver24=2.4.32
+gver24=2.4.32-grsec
+
+## Todo:
+##   None
+
+## Notes:
+##   None
+
+## Changelog:
+##   rel4: rebuilt 2006.01.19
+##   rel3: rebuilt for kernels 2.4.32, 2.4.32-grsec 2005.11.17
+##   rel2: rebuilt for config changes in kernels 2005.11.14
+##   rel1: upgraded to 2.9.2 2005.10.28
+##   rel2: upgraded to kernels 2.4.31 and 2.4.31-grsec 2005.06.18
+##   rel1: upgraded to 2.9.1, kernel24 2.4.30, kernel24-grsec 2.4.30-grsec
+##   rel1: initial rubix release
+
+build() {
+
+	cd $startdir/src/$pkgname-$pkgver
+
+	mkdir -p $startdir/pkg/usr/doc/$pkgname-$pkgver
+	cp	-a			\
+		CHANGES			\
+		COPYING			\
+		DIRECTORIES		\
+		IMPORTANT_CHANGES	\
+		INSTALL			\
+		QUICKSTART		\
+		README			\
+		TODO			\
+	$startdir/pkg/usr/doc/$pkgname-$pkgver
+	chmod 644 $startdir/pkg/usr/doc/$pkgname-$pkgver/*
+
+	make LINUX=/usr/src/linux-$vver24 || return 1
+	make install DESTDIR=$startdir/pkg LINUX=/usr/src/linux-$vver24 LINUX_INCLUDE_DIR=/usr/include/i2c/linux
+
+	make clean
+
+	make LINUX=/usr/src/linux-$gver24 || return 1
+	make install DESTDIR=$startdir/pkg LINUX=/usr/src/linux-$gver24 LINUX_INCLUDE_DIR=/usr/include/i2c/linux
+
+	find $startdir/pkg/lib/modules -type f -name *.o -exec gzip {} \;
+
+}
